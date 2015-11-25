@@ -10,7 +10,8 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected to DB");
   db = database;
 });
-///USER COLLECTION
+///***************USER COLLECTION***************************
+//Create
 var insertUser = function(db, newUser) {
 	db.collection('users').insertOne( 
 	{
@@ -26,6 +27,9 @@ var insertUser = function(db, newUser) {
 	});
 
 };
+
+//READ
+//find user <username> (does not include password in data)
 var getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
 		{
@@ -34,11 +38,12 @@ var getUserByUsername = function(db, username, next){
 		{
 			"password" : 0     //does not include password field in result
 
-		}, function(err, userFound){
+		}, function(err, user){
 			assert.equal(err, null);
-			next(userFound);
+			next(user);
 		});
 };
+//For logging in, checks that passwords match, sends boolean to next()
 var validateUser = function(db, username, password, next){
 	db.collection('users').findOne(
 		{
@@ -54,6 +59,8 @@ var validateUser = function(db, username, password, next){
 			}
 		});
 }
+//Check if newUser's email or username is already in database,
+//sends boolean to next()
 var userExists = function(db, newUser, next){
 	db.collection('users').findOne(
 		{
@@ -67,27 +74,35 @@ var userExists = function(db, newUser, next){
 			    }
 		});
 };
+
+//UPDATE
+//update the user <username>'s name and or description
 var updateUserInfo = function(db, user){
 	db.collection('users').update(
 		{
 			"username" : user.username
 		},{
-			"name" : user.name,
-			"description" : user.description,
+			$set{
+				"name" : user.name,
+				"description" : user.description
+			}
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
 }
+//update the user <username>'s password
 var updateUserPassword = function(db, username, password){
 	db.collection('users').update(
 		{
 			"username" : username
 		},{
-			"password" : password
+			$set{"password" : password}
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
 }
+
+//DELETE
 var deleteUser = function(db, username){
 	db.collection('users').remove(
 	{
@@ -97,7 +112,8 @@ var deleteUser = function(db, username){
 	});
 }
 
-///POST COLLECTION
+///***********************POSTS COLLECTION*******************************************
+//CREATE
 var insertPost = function(db, newPost){
 	db.collection('posts').insertOne( 
 	{
@@ -110,7 +126,8 @@ var insertPost = function(db, newPost){
 		"postContent" : newPost.postContent,
 		"tags" : newPost.tags,
 
-		"availible" : true  //Set to false when game is rented/bought
+		"availible" : true,  //Set to false when game is rented/bought
+		"buyer" : "" //User who buys/rents game
 
 	}, function(err, result) {
 			    assert.equal(err, null);
@@ -118,7 +135,91 @@ var insertPost = function(db, newPost){
 	});
 };
 
-///REVIEW COLLECTION
+//READ
+//Finds a post by it's unique id
+var getPostByID = function(db, postID, next){
+	db.collection('posts').findOne(
+		{
+			"id" : postID
+		}, function (err, post){
+			assert.equal(err, null);
+			next(post);
+		});
+};
+//Finds all posts made by user <username>
+var getPostsFrom = function(db, username, next){
+	db.collection('posts').find(
+		{
+			"username" : username
+		}, function (err, posts){
+			assert.equal(err.null);
+			next(posts);
+		});
+};
+//Finds all posts where the buyer is user <username>
+var getPostsBoughtBy = function(db, username, next){
+	db.collection('posts').find(
+		{
+			"buyer" : username
+		}, function (err, posts){
+			assert.equal(err.null);
+			next(posts);
+		});
+};
+//Finds all posts that are currently availible
+var getAvailiblePosts  = function(db, next){
+	db.collection('posts').find(
+		{
+			"availible" : true
+		}, function (err, posts){
+			assert.equal(err.null);
+			next(posts);
+		});
+};
+
+//UPDATE
+//Updates the title, postContent, and tags
+var updatePost = function(db, post){
+	db.collection('posts').update(
+		{
+			"id" : post.id
+		},{
+			$set{
+				"title" : newPost.title,
+				"postContent" : newPost.postContent,
+				"tags" : newPost.tags
+			}
+
+		}, function(err, result) {
+			assert.equal(err, null);
+		});
+};
+//For use when a user buys/rents this post's offer
+var makeUnavailible = function(db, postID, secUsername){
+	db.collection('posts').update(
+		{
+			$set{"id" : postID}
+		}, {
+			"availible" : false,
+			"buyer" : secUsername
+
+		}, function(err, result){
+			assert.equal(err, null);
+		});
+}
+
+//DELETE
+var deletePost = function(db, postID){
+	db.collection('posts').remove(
+	{
+		"id": postID
+	}, function(err, result){
+		assert.equal(err, null);
+	});
+};
+
+///**************REVIEW COLLECTION*********************************
+//CREATION
 var insertReview = function(db, newReview){
 	db.collection('review').insertOne( 
 	{
@@ -135,5 +236,76 @@ var insertReview = function(db, newReview){
 	}, function(err, result) {
 			    assert.equal(err, null);
 			    console.log("Inserted a review into the review collection");
+	});
+};
+
+//READ
+//Finds the review by <reviewer> related to the post with id <POSTID>
+var getReview = function(db, postID, reviewer, next){
+	db.collection("review").findOne(
+		{
+			"postID" : postID,
+			"reviewer" : reviewer
+		}, function(err, review){
+			assert.equal(err, null);
+			next(review);
+		});
+};
+//Finds all reviews based on the related post with id postID 
+var getReviewsByID =  function(db, postID, next){
+	db.collection("review").find(
+		{
+			"postID" : postID
+		}, function(err, reviews){
+			assert.equal(err, null);
+			next(reviews);
+		});
+};
+//Finds all reviews written by <username>
+var getReviewsFrom =  function(db, username, next){
+	db.collection("review").find(
+		{
+			"reviewer" : username
+		}, function(err, reviews){
+			assert.equal(err, null);
+			next(reviews);
+		});
+};
+//Finds all reviews where <username> is reviewed
+var getReviewsAbout =  function(db, username, next){
+	db.collection("review").find(
+		{
+			"reviewee" : username
+		}, function(err, reviews){
+			assert.equal(err, null);
+			next(reviews);
+		});
+};
+
+
+//UPDATE
+//Updates the date, rating, and comment (other values cannot change)
+var updateReview = function(db, review){
+	db.collection('review').update(
+		{
+			"postID" : review.postID,
+			"reviewer" : review.reviewer
+		}, {
+			$set: {
+				"date" : review.date, 
+				"rating" : review.rating, 
+				"comment" : review.comment
+			}
+		}, function(err, result){});
+};
+
+//DELETE
+var deleteReview = function(db, postID, reviewer){
+	db.collection('review').remove(
+	{
+		"postID" : postID,
+		"reviewer" : reviewer
+	}, function(err, result){
+		assert.equal(err, null);
 	});
 };
