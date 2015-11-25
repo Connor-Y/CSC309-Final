@@ -10,6 +10,7 @@ MongoClient.connect(url, function(err, database) {
   console.log("Connected to DB");
   db = database;
 });
+
 ///USER COLLECTION
 var insertUser = function(db, newUser) {
 	db.collection('users').insertOne( 
