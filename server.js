@@ -247,7 +247,12 @@ app.get("*", function (req, res) {
 
 app.listen(PORT);
 
+
 */
+
+/*
+
+// Database code below
 
 function userUpdate (target, field, newInfo) {
 	console.log("User Update");
@@ -288,9 +293,6 @@ function addLog (data) {
 	newLog.save();
 }
 
-/*
-
-// Database code below
 
 mongoose.connect('mongodb://localhost/DB', PORT);
 var db = mongoose.connection;

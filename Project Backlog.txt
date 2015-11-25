@@ -1,0 +1,92 @@
+CSC309 Final Project
+
+Things to keep in mind:
+Only 23.5% (40/170) of the marks are for the functionality of the site.
+Only 6% (10/170) of the marks are for a nice UI.
+So if you can't get one part of the site working or looking nice,
+just leave it and work on something else.
+
+Goal: Create a video game selling/sharing site.
+
+Functionality:
+Users should be able to:
+-Register
+-Login
+-Update their profile
+-View other users' profiles
+
+-View a listing of games for sale
+-Post a new listing
+
+-Purchase a listing
+-Privately message another user**
+
+-Search through listings
+-Search through users
+
+-Rate a user
+-Comment on a user's profile
+
+-Rate a game
+-Comment on a game
+
+-Rate a listing
+-Comment on a listing
+
+Admins should be able to:
+-Update or Delete users, listings, comments, (ratings)
+-Add, Update or Delete game information
+-Initializing/Repopulating the database
+
+Other Site functionality:
+-Display recommendations based on current page
+-Display recommendations based on purchase history
+-Metrics on games sold**
+-Information should be secure.
+
+Other Tasks:
+-Develop a testing framework (15/170)
+-Develop a nice UI (10/170)
+-Documentation (20/170)
+-Read me (5/170)
+-Project Video (5/170)
+-Code Quality (10/170)
+-Code Optimization and performance graphs (15/170)
+-Hosted online (Bonus 5 marks)
+
+Note: ** represents additional functionality
+Should use 3-tier architecture.
+Presentation logic
+-Contains the user interface (UI) which displays data to the user 
+and accepts input from the user
+-Only communicates with Business logic
+Tasks:
+Design static pages
+	-Front page, login, register, listing, inbox** etc.
+Pass information to business logic 
+	-Login info, profile updates, purchases, new listings, comments etc.
+Display Information from business logic
+	-Retrieved listings, profiles etc.
+
+Business logic 
+-Handles data validation, business rules and task-specific behaviour.
+-Creates recommendations
+-Queries database and validates data
+-Decides which information to send to Presentation logic
+Tasks:
+Generate recommendations
+Filter and verify information sent to Data access
+Filter information sent to Presentation logic
+
+Data Access logic 
+-Communicates with the database by constructing SQL queries
+and executing them via the relevant API
+-Only communicates with Business logic
+Tasks:
+Create a database which stores all information
+	-Schemas for Users, listings, comments, ratings etc.
+	-Functions to add, delete, retrieve or update information
+Provide the easy access through functions.
+Information should be stored securely.
+
+
