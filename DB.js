@@ -167,11 +167,11 @@ var getPostsBoughtBy = function(db, username, next){
 			next(posts);
 		});
 };
-//Finds all posts that are currently availible
+//Finds all posts that are currently available
 var getAvailiblePosts  = function(db, next){
 	db.collection('posts').find(
 		{
-			"availible" : true
+			"available" : true
 		}, function (err, posts){
 			assert.equal(err.null);
 			next(posts);
@@ -201,7 +201,7 @@ var makeUnavailible = function(db, postID, secUsername){
 		{
 			$set{"id" : postID}
 		}, {
-			"availible" : false,
+			"available" : false,
 			"buyer" : secUsername
 
 		}, function(err, result){
