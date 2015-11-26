@@ -1,11 +1,43 @@
 var expect = require('chai').expect;
 var db = require( __dirpath + "DB"); //
 
+// Helper Functions
+function createNoHashUser(mail, name, pass) {
+	var newUser = {email: mail, username: name, password: pass};
+	return newUser;
+	
+});
+
 // Database Testing
 describe("Database", function() {
+	var db;
 	before(function() {
-		// Create database here
-		var db = connect(); ...	
+		var url = 'mongodb://localhost:27017/VGExchange';
+		MongoClient.connect(url, function(err, database) {
+			assert.equal(null, err);
+			console.log("Connected to DB");
+			db = database;
+		});
+		
+		
+		var email1 = "a@test.com";
+		var name1 = "Alice";
+		var pass1 = "aPass";
+		
+		var email2 = "b@test.com";
+		var name2 = "Bob";
+		var pass2 = "bpass";
+		
+		var email3 = "e@test.com";
+		var name3 = "Eve";
+		var pass3 = "epass";
+		
+		var user1 = createNoHashUser(email1, name1, pass1);
+		var user2 = createNoHashUser(email2, name2, pass2);
+		var user3 = createNoHashUser(email3, name3, pass3);
+		insertUser(db, user1);
+		insertUser(db, user2);
+		db.insertUser(db, user3);
 	});
 	
 	describe("Database check", function () {
@@ -15,80 +47,63 @@ describe("Database", function() {
 		});
 	});
 	
-	describe("User Functions", function () {
-		before(function () {
-			var email1 = "email@test.com";
-			var name1 = "Alice";
-			var pass1 = "123pass";
-			var user1 = createUser(email1, name1, pass1);
-			db.insertUser(user1);
-			
-			var email2 = "email@test.com";
-			var name2 = "Alice";
-			var pass2 = "123pass";
-			var user2 = createUser(email2, name2, pass2);
-			db.insertUser(user2);
-			
-			var email3 = "email@test.com";
-			var name3 = "Alice";
-			var pass3 = "123pass";
-			var user3 = createUser(email3, name3, pass3);
-			db.insertUser(user3);
-		});
-		
+	describe("User Functions", function () {			
 		describe("Check User", function () {
 			before("getUsers", function () {
-				var userA = getUser(email1);
-				var userB = getUser(email2);
-				var userC = getUser(email3);
+				var userA = getUserByUsername(name1);
+				var userB = getUserByUsername(name2);
+				var userC = getUserByUsername(name3);
 			});
-			// If you can't access name ... make them semi-global
-			it('user1', function() {
-				expect(userA.name).to.equal(name1);
-				expect(userA.pass).to.equal(pass1);
+
+			it('user1 check', function() {
+				expect(userA.username).to.equal(name1);
 				expect(userA.email).to.equal(email1);
 			});
 			
-			it('user2', function() {
-				expect(userB.name).to.equal(name2);
-				expect(userB.pass).to.equal(pass2);
+			it('user2 check', function() {
+				expect(userB.username).to.equal(name2);
 				expect(userB.email).to.equal(email2);
 			});
 			
-			it('user3', function() {
+			it('user3 check', function() {
+				expect(userC.username).to.equal(name3);
 				expect(userC.email).to.equal(email3);
-				expect(userC.name).to.equal(name3);
-				expect(userC.pass).to.equal(pass3);
 			});
 		});	
 		
 		describe("Update User", function () {
 			it('Update name', function () {
 				var newName = Math.floor((Math.random() * 10000)).toString();
-				updateUser(email, newName, ...);
-				expect((getUser(email).name).to.equal(newName));
+				updateUserInfo(db, getUserByUsername(name1));
+				expect(getUserByUsername(newName).name).to.equal(newName));
 			});
 			
-			// Security?
-			it('Update pass', function () {
+			
+			it('Update Description', function () {
 				var newPass = Math.floor((Math.random() * 10000)).toString();
 				updateUser(email, newPass, ...);
 				expect((getUser(email).pass).to.equal(newPass));
 			});
-			// Other updates ...
+			
+			// Security?
+			it('Update pass', function () {
+				var newDesc = Math.floor((Math.random() * 10000)).toString();
+				updateUserInfo(db, getUserByUsername(name1));
+				expect(getUserByUsername(name1).description).to.equal(newDesc));
+			});
+			
 		});
 		
 		describe("Delete User", function () {
 			before('tempUser', function () {
-				var email = Math.floor((Math.random() * 10000)).toString();
-				var newUser = createUser(email, "temp2", ...);
-				db.insertUser(newUser)
-				var temp = db.getUser(newUser.email);
+				var gen = Math.floor((Math.random() * 10000)).toString();
+				var newUser = createNoHashUser(gen, gen, "pass");
+				insertUser(db, newUser)
 			});
-			
+			// What does getUserByUsername return if not existent?
 			it('Delete user', function () {
-				db.removeUser(temp/newUser);
-				expect(db.getuser(email).to.be.null);
+				deleteUser(db, gen);
+				expect(db.getUserByUsername(gen).to.be.null);
 			});
 		});
 	});
@@ -98,23 +113,7 @@ describe("Database", function() {
 			// Add Listings here
 			// Randomize key
 			
-			var email1 = "email@test.com";
-			var name1 = "Alice";
-			var pass1 = "123pass";
-			var user1 = createUser(email1, name1, pass1);
-			db.insertUser(user1);
-			
-			var email2 = "email@test.com";
-			var name2 = "Alice";
-			var pass2 = "123pass";
-			var user2 = createUser(email2, name2, pass2);
-			db.insertUser(user2);
-			
-			var email3 = "email@test.com";
-			var name3 = "Alice";
-			var pass3 = "123pass";
-			var user3 = createUser(email3, name3, pass3);
-			db.insertUser(user3);
+		
 		});
 		
 		it('Verify Listing', function () {
