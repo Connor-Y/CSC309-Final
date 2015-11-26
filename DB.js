@@ -127,7 +127,7 @@ var insertPost = function(db, newPost){
 		"postContent" : newPost.postContent,
 		"tags" : newPost.tags,
 
-		"availible" : true,  //Set to false when game is rented/bought
+		"available" : true,  //Set to false when game is rented/bought
 		"buyer" : "" //User who buys/rents game
 
 	}, function(err, result) {
