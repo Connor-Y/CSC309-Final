@@ -47,14 +47,14 @@ MongoClient.connect(url, function(err, database) {
 	};
 	deletePost(db, 1);
 	insertPost(db, testPost);
-	makeUnavailible(db, 1, "user222");
+	makeUnavailable(db, 1, "user222");
 	getPostByID(db, 1, function(post){
 		console.log("Posy by ID:");
 		console.dir(post);
 	});
 	deletePost(db, 1);
-	getAvailiblePosts(db, function(posts){
-		console.log("availible (after deletion): ");
+	getAvailablePosts(db, function(posts){
+		console.log("available (after deletion): ");
 		console.dir(posts);
 	});
 	"reviewer" : newReview.reviewer,
@@ -204,7 +204,7 @@ var insertPost = function(db, newPost){
 		"postContent" : newPost.postContent,
 		"tags" : newPost.tags,
 
-		"availible" : true,  //Set to false when game is rented/bought
+		"available" : true,  //Set to false when game is rented/bought
 		"buyer" : "" //User who buys/rents game
 
 	}, function(err, result) {
@@ -244,11 +244,11 @@ var getPostsBoughtBy = function(db, username, next){
 			next(posts);
 		});
 };
-//Finds all posts that are currently availible
-var getAvailiblePosts  = function(db, next){
+//Finds all posts that are currently available
+var getAvailablePosts  = function(db, next){
 	db.collection('posts').find(
 		{
-			"availible" : true
+			"available" : true
 		}).toArray(function (err, posts){
 			assert.equal(err, null);
 			next(posts);
@@ -273,13 +273,13 @@ var updatePost = function(db, post){
 		});
 };
 //For use when a user buys/rents this post's offer
-var makeUnavailible = function(db, postID, secUsername){
+var makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
 			"id" : postID
 		}, {
 			$set: {
-				"availible" : false,
+				"available" : false,
 				"buyer" : secUsername
 			}
 
