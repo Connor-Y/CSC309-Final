@@ -9,6 +9,12 @@ var app = express();
 var db = require('./DB');
 var User = db.User;
 
+// How similar recommendations should be by
+// number of tags
+var recommendationSimiliarityFactor = 0.8;
+// How many recommendations do you want
+var numberOfRecs = 4;
+
 app.use(express.static( __dirname + '/public/html'));
 app.use(express.static( __dirname + '/public/css'));
 app.use(express.static( __dirname + '/public/javascript'));
@@ -16,38 +22,192 @@ app.use(bodyParser.json());
 
 
 app.get('/', function (req, res) {
-	res.sendFile(__dirname + '/public/html/index.html');
+	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 
 app.listen(PORT);
-/*
+
+var generateHash = function (password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+app.post("/registration", function (req, res) {
+	console.log("Registration Request Received");
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User already exists");
+			res.send("User Exists");
+        }
+
+        else {
+            console.log("New User");
+            insertUser(db, {email : req.body.mail, username : req.body.username, password : generateHash(req.body.password)});
+        }
+    });
+});
+
+
+
 app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
-	User.findOne({ "email": req.body.mail }, 
-	function (err, user) {
-		if (err) {
-			console.log("verifyLogin Error " + err);
-			res.send("An Error Has Occurred, Please Try Again"); 
-		}
-		if (user == undefined)
-			return false;
-		if (req.body.pass === user.password) { 
-			console.log("Valid Login");
-			sess=req.session;
-			sess.email = req.body.mail;
-			sess.type = user.type;
-			sess.view = "landing";
-			sess.targetType = null;
-			userUpdate(req.body.mail, 'ip', req.body.ip);
-			res.send("Success");
-		}
-		else {
-			console.log("Invalid Login");
-			res.send("Invalid Login"); 
-		}
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+			validateUser(db, req.body.mail, generateHash(req.body.password), function (valid) {
+               if (!valid) {
+                   console.log("Invalid Password");
+                   res.send("Invalid Password");
+               }
+                
+                else {
+                    
+                    console.log("Successful Login");
+                    //res.sendFile(__dirname + '/mainpage.html');
+                    res.send("Success");
+                }
+                
+            });
+        }
+
+        else {
+            console.log("Invalid User");
+            res.send("Invalid User");
+        }
+    });
+});
+
+//searching by tag
+app.post("/searchtag", function (req, res) {
+	console.log("search request received");
+	getPostsFrom(db, req.body.mail, function (posts) {
+		
+        //a user was found when the email was queried
+        if (posts) {
+            console.log("Matching posts found");
+			res.json(posts);
+        }
+
+        else {
+            console.log("No match");
+            res.send("No match");
+        }
+    });
+});
+
+//searching by user
+app.post("/searchuser", function (req, res) {
+	console.log("search request received");
+	getMatchingPosts(db, req.body.tag, function (posts) {
+		
+        //a user was found when the email was queried
+        if (posts) {
+            console.log("Matching posts found");
+			res.json(posts);
+        }
+
+        else {
+            console.log("No match");
+            res.send("No match");
+        }
+    });
+});
+
+
+app.post("/profile", function (req, res) {
+    console.log("profile view request received");
+    
+    getUserByUsername(db, req.body.mail, function (user) {
+        if (user) {
+            res.json(user);
+        }
+        
+        else {
+            res.send("Cannot find user in database");
+        }
+    });
+});
+
+
+app.get("/post:id", function (req, res) {
+    console.log("post retrieval request received");
+    
+    getPostByID(db, req.params.id, function(post) {
+        if (post) {
+            res.json(post);   
+        }
+        
+        else {
+            res.send("No post with this ID");
+        }
+        
+    });
+
+});
+
+
+// ====
+
+app.post("/recommendations", function (req, res) {
+	console.log("Generate and Send Recommendations");
+	// Need database code for games
+	getPostByID(db, req.params.id, function(post) {
+		if (post) {
+			// Pick some/all tags
+			// Find games with similar tags
+			// Send game info
+			// TODO: set to actual delimiter
+			var tags = post.tags.split(" ");
+			var lowSimTags = tags.slice();
+			tags = shuffleArray(tags);
+			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
+			
+			var recList = getGamesByTag(db, tags);
+			
+			// If we don't have enough recommendations, relax the similarity
+			if (recList.length < numberOfRecs) {
+				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
+				recList = recList.concat(getGamesByTag(db, tags));
+			}
+			// Shuffle the recommendations we have
+			recList = shuffleArray(recList);
+			
+			// If we still don't have enough recommendations
+			// Pick some random games to fill out the number.
+			if (recList.length < numberOfRecs) {
+				// Just pick some random games
+				recList = recList.concat(getGamesByTag(db, ""));
+			}
+			recList = recList.slice(0, numberOfRecs + 1);
+			// TODO: format recList
+			res.send(recList);
+		} else { 
+			res.redirect('/404');
+		}	
 	});
 });
+
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+
+
+app.get('/404', function () {
+	res.send('404.html');
+});
+
+/*
 
 app.post("/loadTable", function (req, res) {
 	console.log("Load Table");
