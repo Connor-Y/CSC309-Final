@@ -19,7 +19,7 @@ Users should be able to:
 -Post a new listing
 
 -Purchase a listing
--Privately message another user**
+-Privately message another user
 
 -Search through listings
 -Search through users
@@ -62,7 +62,7 @@ and accepts input from the user
 -Only communicates with Business logic
 Tasks:
 Design static pages
-	-Front page, login, register, listing, inbox** etc.
+	-Front page, login, register, listing, inbox etc.
 Pass information to business logic 
 	-Login info, profile updates, purchases, new listings, comments etc.
 Display Information from business logic

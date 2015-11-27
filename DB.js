@@ -88,6 +88,7 @@ MongoClient.connect(url, function(err, database) {
 
 
 });
+
 ///***************USER COLLECTION***************************
 //Create
 var insertUser = function(db, newUser) {
@@ -249,8 +250,13 @@ var getAvailablePosts  = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
+<<<<<<< HEAD
 		}).toArray(function (err, posts){
 			assert.equal(err, null);
+=======
+		}, function (err, posts){
+			assert.equal(err.null);
+>>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 			next(posts);
 		});
 };
@@ -278,10 +284,15 @@ var makeUnavailable = function(db, postID, secUsername){
 		{
 			"id" : postID
 		}, {
+<<<<<<< HEAD
 			$set: {
 				"available" : false,
 				"buyer" : secUsername
 			}
+=======
+			"available" : false,
+			"buyer" : secUsername
+>>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 
 		}, function(err, result){
 			assert.equal(err, null);
