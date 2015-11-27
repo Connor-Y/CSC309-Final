@@ -69,6 +69,46 @@ app.post("/recommendations", function (req, res) {
 	});
 });
 
+app.post('/searchGames', function (req, res) {
+	getAvailablePosts(db, function (posts) {
+		var results = searchPostings(req.params.query, posts);
+		
+		// TODO: Format results
+		res.send(results);
+			
+		}
+		
+	});
+	
+	
+});
+
+function searchPostings(q, postings) {
+	var results = [];
+	var query = q.trim();
+	query = query.replace(",", " ");
+	for (elem : postings) {
+		if (elem.title == query)
+			results.push(elem);
+		// Multiple ifs to arrange results in order of priority
+		else if (elem.username == query) 
+			results.push(elem);
+		else if (elem.id == query)
+			results.push(elem);
+		else {
+			// TODO: set proper tag delimiter
+			var tags = elem.tags.split(" ");
+			var splitQuery = query.split(" ");
+			for (val : splitQuery) {
+				if (tags.indexOf(val) > -1) {
+					results.push(elem);
+					break;
+				}
+			}
+		}
+	}
+}
+
 function shuffleArray(array) {
     for (var i = array.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -78,8 +118,6 @@ function shuffleArray(array) {
     }
     return array;
 }
-
-
 
 app.get('/404', function () {
 	res.send('404.html');
