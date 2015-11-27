@@ -78,23 +78,33 @@ describe("Database", function() {
 			});
 		});	
 		
-		describe("Update User", function () {
+		describe("Update User", function () {	
+			before("Create Temp User", function () {
+				var gen = Math.floor((Math.random() * 10000)).toString();
+				var newUser = createNoHashUser(gen, gen, "pass");
+				insertUser(db, newUser)
+			});
+			
 			it('Update name', function () {
 				var newName = Math.floor((Math.random() * 10000)).toString();
-				var updatedUser = getUserByUsername(name1);
+				var updatedUser = getUserByUsername(gen);
 				updatedUser.name = newName;
 				updateUserInfo(db, updatedUser);
-				expect(getUserByUsername(name1).name.to.equal(newName));
+				expect(getUserByUsername(gen).name.to.equal(newName));
 			});
 			
 			
 			it('Update Description', function () {
 				var newDesc = Math.floor((Math.random() * 10000)).toString();
-				var updatedUser = getUserByUsername(name1);
+				var updatedUser = getUserByUsername(gen);
 				updatedUser.description = newDesc;
 				updateUserInfo(db, updatedUser);
-				expect(getUserByUsername(name1).description.to.equal(newDesc));
+				expect(getUserByUsername(gen).description.to.equal(newDesc));
 
+			});
+			
+			after("Delete Temp User", function () {
+				deleteUser(db, gen);
 			});
 			
 			// Security?
@@ -154,6 +164,22 @@ describe("Database", function() {
 			insertPost(db, p4);
 		});
 		
+		beforeEach('Create Temporary Posting', function () {
+			var tempGen = [];
+			for (i = 0; i < 7; i++) {
+				if (i == 0)
+					tempGen.push(u3.username);
+				else
+					tempGen.push(Math.floor((Math.random() * 10000)).toString());
+			}
+			var tempPost = createPosting(tempGen[0], tempGen[1], tempGen[2], tempGen[3], tempGen[4], tempGen[5], tempGen[6]);
+			insertPost(db, tempPost);
+		});
+		
+		afterEach('Delete Temporary Posting', function () {
+			deletePost(db, tempGen[1]);	
+		});
+
 		describe('Verify Postings', function () {
 			it('Get Postings', function () {
 				var testP1 = getPostByID(db, gen[1]);
@@ -168,39 +194,48 @@ describe("Database", function() {
 			});
 		});
 		
-		/*
-		describe('Update Posting', function () {
-			before('Get Postings', function () {
-				var testP1 = getPostByID(db, gen[1]);
-				var testP2 = getPostByID(db, gen[8]);
-				var testP3 = getPostByID(db, gen[15]);
-				var testP4 = getPostByID(db, gen[21]);	
+		
+		describe('Update Posting', function () {	
+			it('Update All Info', function () {
+				var newTitle = Math.floor((Math.random() * 10000)).toString();
+				var newContent = Math.floor((Math.random() * 10000)).toString();
+				var newTags = Math.floor((Math.random() * 10000)).toString();
+				var updatedPost = getPostByID(tempGen[1]);
+				updatedPost.title = newTitle;
+				updatedPost.postContent = newContent;
+				updatedPost.tags = newTags;
+				updatePost(db, updatedUser);
+				expect(getPostByID(tempGen[1]).title.to.equal(newTitle));
+				expect(getPostByID(tempGen[1]).postContent.to.deep.equal(newContent));
+				expect(getPostByID(tempGen[1]).tags.to.deep.equal(newTags));
 			});
 			
-			it('Update', function () {
+			it('Make Unavailable', function () {
+				var tempBuyer = Math.floor((Math.random() * 10000)).toString();
+				makeUnavailable(db, tempGen[1], tempBuyer);
 				
-				
+				expect(getPostByID(tempGen[1]).available.to.false);
+				expect(getPostByID(tempGen[1]).buyer.to.equal(tempBuyer));
 			});
+		});
 			
 			
-		}); */
-		/*
-		describe('Delete Function', function() {
-			before('Create deletable listing', function () {
-				// Create deletable listing here
-				
-			});
-				
+		}); 
+		
+		describe('Delete Function', function() {						
 			it('Delete Posting', function () {
-				// Delete above listing
-				// expect(listing).to.be.null;
+				deletePost(db, tempGen[1]);
+				expect(getPostByID(db, tempGen[1]).to.be.null);
 				
 			});
 		});
 		
+		
+		/*
+		// Review Testing
 		describe('Posting Comments', function () {
 			before('Posting Comments', function () {
-				// Create comments on listings
+				// Create comments on Postings
 				
 				// Create comments on games
 				
@@ -275,7 +310,7 @@ describe("Database", function() {
 		
 		describe('Ratings', function() {
 			before('Init Ratings', function() {
-				// Create ratings on various listings
+				// Create ratings on various Postings
 				
 				// Create ratings on users
 				
