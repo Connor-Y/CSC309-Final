@@ -9,6 +9,84 @@ MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
   console.log("Connected to DB");
   db = database;
+
+  console.log("testing");
+  /*
+  var testUser = {email: "name@mail.com", username : "no1", password : "123", name: "Nam", description : "testing the database"};
+  var testUser2 = {email: "name2@mail.com", username : "no1", password : "123", name: "ME", description : "ALso testing the database"};
+  insertUser(db, testUser);
+  getUserByUsername(db, testUser.username, function(result){
+  	console.log("getUserByUsername: ");
+  	console.dir(result);
+  });
+  validateUser(db, testUser.username, testUser.password, function(isValid){
+  	console.log("ValidateUser, true: " + isValid);
+  });
+  validateUser(db, testUser.username, "567", function(isValid){
+  	console.log("ValidateUser, false: " + isValid);
+  });
+  userExists(db, testUser, function(exists){
+  	console.log("UserExists, true: " + exists);
+  });
+    userExists(db, testUser2, function(exists){
+  	console.log("UserExists, true: " + exists);
+  });
+  updateUserInfo(db, testUser2);
+  updateUserPassword(db, testUser.username, "666");
+  validateUser(db, testUser.username, "666", function(isValid){
+  	console.log("ValidateUser, true: " + isValid);
+  });
+  getUserByUsername(db, testUser.username, function(result){
+  	console.log("getUserByUsername: ");
+  	console.dir(result);
+  });
+  deleteUser(db, testUser.username);
+  
+  	var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
+  		title : "RENT MY GAME", postContent : "Great Deal, only $10", tags : ["rental", "Specific Game"],
+	};
+	deletePost(db, 1);
+	insertPost(db, testPost);
+	makeUnavailable(db, 1, "user222");
+	getPostByID(db, 1, function(post){
+		console.log("Posy by ID:");
+		console.dir(post);
+	});
+	deletePost(db, 1);
+	getAvailablePosts(db, function(posts){
+		console.log("available (after deletion): ");
+		console.dir(posts);
+	});
+	"reviewer" : newReview.reviewer,
+		"reviewee" : newReview.reviewee,
+
+		"postID" : newReview.postID, //Reviewed experience
+
+		"date" : newReview.date,
+		"rating" : newReview.rating,
+		"comment" : newReview.comment
+	*/
+	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 5, comment: "Awesome deal!"};
+	insertReview(db, testReview);
+	getReviewsFrom(db, "user1", function(reviews){
+		console.log("Reviews from user1");
+		console.dir(reviews);
+	});
+	getReviewsAbout(db, "user222", function(reviews){
+		console.log("Reviews about user222");
+		console.dir(reviews);
+	});
+	getReviewsByID(db, 1, function(reviews){
+		console.log("Reviews about post#1");
+		console.dir(reviews);
+	});
+	getReview(db, 1, "user1", function(reviews){
+		console.log("Reviews about post#1");
+		console.dir(reviews);
+	});
+	deleteReview(db, 1, "user1");
+
+
 });
 
 ///***************USER COLLECTION***************************
@@ -18,13 +96,13 @@ var insertUser = function(db, newUser) {
 	{
 		"email" : newUser.email,
 		"username" : newUser.username,
-		"password" : password,
+		"password" : newUser.password,
 		"name" : "",
 		"description" : "NEW USER",
 
 	}, function(err, result) {
-			    assert.equal(err, null);
-			    console.log("Inserted a document into the users collection.");
+			assert.equal(err, null);
+			console.log("Inserted a document into the users collection.");
 	});
 
 };
@@ -37,7 +115,7 @@ var getUserByUsername = function(db, username, next){
 			"username" : username
 		},
 		{
-			"password" : 0     //does not include password field in result
+			password : 0     //does not include password field in result
 
 		}, function(err, user){
 			assert.equal(err, null);
@@ -83,7 +161,7 @@ var updateUserInfo = function(db, user){
 		{
 			"username" : user.username
 		},{
-			$set{
+			$set: {
 				"name" : user.name,
 				"description" : user.description
 			}
@@ -97,7 +175,7 @@ var updateUserPassword = function(db, username, password){
 		{
 			"username" : username
 		},{
-			$set{"password" : password}
+			$set: {"password" : password}
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
@@ -152,8 +230,8 @@ var getPostsFrom = function(db, username, next){
 	db.collection('posts').find(
 		{
 			"username" : username
-		}, function (err, posts){
-			assert.equal(err.null);
+		}).toArray(function (err, posts){
+			assert.equal(err, null);
 			next(posts);
 		});
 };
@@ -162,8 +240,8 @@ var getPostsBoughtBy = function(db, username, next){
 	db.collection('posts').find(
 		{
 			"buyer" : username
-		}, function (err, posts){
-			assert.equal(err.null);
+		}).toArray(function (err, posts){
+			assert.equal(err, null);
 			next(posts);
 		});
 };
@@ -172,8 +250,13 @@ var getAvailablePosts  = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
+<<<<<<< HEAD
+		}).toArray(function (err, posts){
+			assert.equal(err, null);
+=======
 		}, function (err, posts){
 			assert.equal(err.null);
+>>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 			next(posts);
 		});
 };
@@ -185,7 +268,7 @@ var updatePost = function(db, post){
 		{
 			"id" : post.id
 		},{
-			$set{
+			$set: {
 				"title" : newPost.title,
 				"postContent" : newPost.postContent,
 				"tags" : newPost.tags
@@ -199,10 +282,17 @@ var updatePost = function(db, post){
 var makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
-			$set{"id" : postID}
+			"id" : postID
 		}, {
+<<<<<<< HEAD
+			$set: {
+				"available" : false,
+				"buyer" : secUsername
+			}
+=======
 			"available" : false,
 			"buyer" : secUsername
+>>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 
 		}, function(err, result){
 			assert.equal(err, null);
@@ -257,7 +347,7 @@ var getReviewsByID =  function(db, postID, next){
 	db.collection("review").find(
 		{
 			"postID" : postID
-		}, function(err, reviews){
+		}).toArray(function (err, reviews){
 			assert.equal(err, null);
 			next(reviews);
 		});
@@ -267,7 +357,7 @@ var getReviewsFrom =  function(db, username, next){
 	db.collection("review").find(
 		{
 			"reviewer" : username
-		}, function(err, reviews){
+		}).toArray(function (err, reviews){
 			assert.equal(err, null);
 			next(reviews);
 		});
@@ -277,7 +367,7 @@ var getReviewsAbout =  function(db, username, next){
 	db.collection("review").find(
 		{
 			"reviewee" : username
-		}, function(err, reviews){
+		}).toArray(function (err, reviews){
 			assert.equal(err, null);
 			next(reviews);
 		});
@@ -310,3 +400,4 @@ var deleteReview = function(db, postID, reviewer){
 		assert.equal(err, null);
 	});
 };
+
