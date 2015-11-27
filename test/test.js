@@ -1,13 +1,18 @@
 var expect = require('chai').expect;
-var db = require( __dirpath + "DB"); //
+var db = require("../DB"); 
 
 // Helper Functions
 function createNoHashUser(mail, name, pass) {
 	var newUser = {email: mail, username: name, password: pass};
 	return newUser;
 	
-});
+}
 
+function createPosting(username, id, date, title, content, tags, buyer) {
+	var newPost = {username: username, id: id, date: date, title: title,
+					postContent: content, tags: tags, buyer: buyer};
+	return newPost
+}
 // Database Testing
 describe("Database", function() {
 	var db;
@@ -19,36 +24,38 @@ describe("Database", function() {
 			db = database;
 		});
 		
-		
-		var email1 = "a@test.com";
-		var name1 = "Alice";
-		var pass1 = "aPass";
-		
-		var email2 = "b@test.com";
-		var name2 = "Bob";
-		var pass2 = "bpass";
-		
-		var email3 = "e@test.com";
-		var name3 = "Eve";
-		var pass3 = "epass";
-		
-		var user1 = createNoHashUser(email1, name1, pass1);
-		var user2 = createNoHashUser(email2, name2, pass2);
-		var user3 = createNoHashUser(email3, name3, pass3);
-		insertUser(db, user1);
-		insertUser(db, user2);
-		db.insertUser(db, user3);
 	});
 	
 	describe("Database check", function () {
 		// Check that the database exists
-		if("db connection", function () {
+		it("db connection", function () {
 			assert.isNotNull(db);
 		});
 	});
 	
-	describe("User Functions", function () {			
-		describe("Check User", function () {
+	describe("User Functions", function () {	
+		before("Create Users", function () {
+			var email1 = "a@test.com";
+			var name1 = "Alice";
+			var pass1 = "aPass";
+			
+			var email2 = "b@test.com";
+			var name2 = "Bob";
+			var pass2 = "bpass";
+			
+			var email3 = "e@test.com";
+			var name3 = "Eve";
+			var pass3 = "epass";
+			
+			var user1 = createNoHashUser(email1, name1, pass1);
+			var user2 = createNoHashUser(email2, name2, pass2);
+			var user3 = createNoHashUser(email3, name3, pass3);
+			insertUser(db, user1);
+			insertUser(db, user2);
+			insertUser(db, user3);
+		});
+		
+		describe("Verify Users", function () {
 			before("getUsers", function () {
 				var userA = getUserByUsername(name1);
 				var userB = getUserByUsername(name2);
@@ -74,25 +81,31 @@ describe("Database", function() {
 		describe("Update User", function () {
 			it('Update name', function () {
 				var newName = Math.floor((Math.random() * 10000)).toString();
-				updateUserInfo(db, getUserByUsername(name1));
-				expect(getUserByUsername(newName).name).to.equal(newName));
+				var updatedUser = getUserByUsername(name1);
+				updatedUser.name = newName;
+				updateUserInfo(db, updatedUser);
+				expect(getUserByUsername(name1).name.to.equal(newName));
 			});
 			
 			
 			it('Update Description', function () {
-				var newPass = Math.floor((Math.random() * 10000)).toString();
-				updateUser(email, newPass, ...);
-				expect((getUser(email).pass).to.equal(newPass));
+				var newDesc = Math.floor((Math.random() * 10000)).toString();
+				var updatedUser = getUserByUsername(name1);
+				updatedUser.description = newDesc;
+				updateUserInfo(db, updatedUser);
+				expect(getUserByUsername(name1).description.to.equal(newDesc));
+
 			});
 			
 			// Security?
+			/* TODO: Implement
 			it('Update pass', function () {
-				var newDesc = Math.floor((Math.random() * 10000)).toString();
-				updateUserInfo(db, getUserByUsername(name1));
-				expect(getUserByUsername(name1).description).to.equal(newDesc));
-			});
+				var newPass = Math.floor((Math.random() * 10000)).toString();
+				updateUser(email, newPass, ...);
+				expect((getUser(email).pass).to.equal(newPass));
+			}); 
 			
-		});
+		});*/
 		
 		describe("Delete User", function () {
 			before('tempUser', function () {
@@ -108,43 +121,85 @@ describe("Database", function() {
 		});
 	});
 	
-	describe('Listing Functions', function () {
-		before('Add Listings', function() {
-			// Add Listings here
-			// Randomize key
+	describe('Posting Functions', function () {
+		before('Create Posting', function() {
+			var u1 = createNoHashUser("A", "A", "A");
+			var u2 = createNoHashUser("B", "B", "B");
+			var u3 = createNoHashUser("C", "C", "C");
+			insertUser(db, u1);
+			insertUser(db, u2);
+			insertUser(db, u3);
+			var gen = [];
+			for (i = 0; i < 4*7; i++) {
+				if (i == 0)
+					gen.push(u1.username);
+				else if (i == 7)
+					gen.push(u2.username);
+				else if (i == 14)
+					gen.push(u3.username);
+				else if (i == 21)
+					gen.push(u1.username);
+				else
+					gen.push(Math.floor((Math.random() * 10000)).toString());
+			}
 			
-		
+			// Name, id, date, title, postContent, tags, available (unused), buyer (unused)
+			var p1 = createPosting(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6]);
+			var p2 = createPosting(gen[7], gen[8], gen[9], gen[10], gen[11], gen[12], gen[13]);
+			var p3 = createPosting(gen[14], gen[15], gen[16], gen[17], gen[18], gen[19], gen[20]);
+			var p4 = createPosting(gen[20], gen[21], gen[22], gen[23], gen[24], gen[25], gen[26]);
+			insertPost(db, p1);
+			insertPost(db, p2);
+			insertPost(db, p3);
+			insertPost(db, p4);
 		});
 		
-		it('Verify Listing', function () {
-			// Check that the listings exist
-			
-			
+		describe('Verify Postings', function () {
+			it('Get Postings', function () {
+				var testP1 = getPostByID(db, gen[1]);
+				var testP2 = getPostByID(db, gen[8]);
+				var testP3 = getPostsFrom(db, gen[14]);
+				var testP4 = getPostsFrom(db, gen[20]);
+				
+				expect(testP1.username).to.equal(gen[0]);
+				expect(testP2.date).to.equal(gen[9]);
+				expect(testP3.postContent).to.equal(gen[18]);
+				expect(testP4.tags).to.equal(gen[25]);	
+			});
 		});
 		
-		
-		it('Update Listing', function () {
-			// Update listing and verify 
+		/*
+		describe('Update Posting', function () {
+			before('Get Postings', function () {
+				var testP1 = getPostByID(db, gen[1]);
+				var testP2 = getPostByID(db, gen[8]);
+				var testP3 = getPostByID(db, gen[15]);
+				var testP4 = getPostByID(db, gen[21]);	
+			});
+			
+			it('Update', function () {
+				
+				
+			});
 			
 			
-			
-		});
-		
+		}); */
+		/*
 		describe('Delete Function', function() {
 			before('Create deletable listing', function () {
 				// Create deletable listing here
 				
 			});
 				
-			it('Delete Listing', function () {
+			it('Delete Posting', function () {
 				// Delete above listing
 				// expect(listing).to.be.null;
 				
 			});
 		});
 		
-		describe('Listing Comments', function () {
-			before('Listing Comments', function () {
+		describe('Posting Comments', function () {
+			before('Posting Comments', function () {
 				// Create comments on listings
 				
 				// Create comments on games
@@ -153,16 +208,16 @@ describe("Database", function() {
 				
 			});
 			
-			decribe('Verify Listing', function () {
-				it('Listing 1, Comment 1', function () {
+			decribe('Verify Posting', function () {
+				it('Posting 1, Comment 1', function () {
 					// expect L1C1 = get(L1C1)
 					
 				});
-				it('Listing 1, Comment 3', function () {
+				it('Posting 1, Comment 3', function () {
 					// expect L1C3 = get(L1C3)
 					
 				});
-				it('Listing 2, Comment 2', function () {
+				it('Posting 2, Comment 2', function () {
 					// expect L2C2 = get(L2C2)
 					
 				});
@@ -229,7 +284,7 @@ describe("Database", function() {
 			
 			// See above for tests
 		});
-		
+		*/
 	});
 	
 });

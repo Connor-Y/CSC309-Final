@@ -168,7 +168,7 @@ var getPostsBoughtBy = function(db, username, next){
 		});
 };
 //Finds all posts that are currently available
-var getAvailiblePosts  = function(db, next){
+var getAvailablePosts  = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
@@ -196,7 +196,7 @@ var updatePost = function(db, post){
 		});
 };
 //For use when a user buys/rents this post's offer
-var makeUnavailible = function(db, postID, secUsername){
+var makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
 			$set{"id" : postID}
