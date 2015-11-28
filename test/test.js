@@ -13,6 +13,14 @@ function createPosting(username, id, date, title, content, tags, buyer) {
 					postContent: content, tags: tags, buyer: buyer};
 	return newPost
 }
+
+function createReview(reviewer, reviewee, id, date, rating, comment) {
+	var newReview = {reviewer: reviewer, reviewee: reviewee, postID: id, 
+	date: date, rating: rating, comment: comment};
+	
+	return newReview;
+	
+}
 // Database Testing
 describe("Database", function() {
 	var db;
@@ -164,6 +172,18 @@ describe("Database", function() {
 			insertPost(db, p4);
 		});
 		
+		after('Delete Temp', function () {
+			deleteUser(db, u1.username);
+			deleteUser(db, u2.username);
+			deleteUser(db, u3.username);
+			deletePost(db, p1.id);
+			deletePost(db, p1.id);
+			deletePost(db, p2.id);
+			deletePost(db, p3.id);
+			deletePost(db, p4.id);
+			
+		});
+		
 		beforeEach('Create Temporary Posting', function () {
 			var tempGen = [];
 			for (i = 0; i < 7; i++) {
@@ -218,9 +238,6 @@ describe("Database", function() {
 				expect(getPostByID(tempGen[1]).buyer.to.equal(tempBuyer));
 			});
 		});
-			
-			
-		}); 
 		
 		describe('Delete Function', function() {						
 			it('Delete Posting', function () {
@@ -229,97 +246,162 @@ describe("Database", function() {
 				
 			});
 		});
+			
+	}); 
+		
+	
 		
 		
+		
+	// Review Testing
+	describe('Review Testing', function () {
+		before('Init Temp Users/Postings', function() {
+			var u1 = createNoHashUser("A", "A", "A");
+			var u2 = createNoHashUser("B", "B", "B");
+			var u3 = createNoHashUser("C", "C", "C");
+			insertUser(db, u1);
+			insertUser(db, u2);
+			insertUser(db, u3);
+			var gen = [];
+			for (i = 0; i < 4*7; i++) {
+				if (i == 0)
+					gen.push(u1.username);
+				else if (i == 7)
+					gen.push(u2.username);
+				else if (i == 14)
+					gen.push(u3.username);
+				else if (i == 21)
+					gen.push(u1.username);
+				else
+					gen.push(Math.floor((Math.random() * 10000)).toString());
+			}
+			
+			// Name, id, date, title, postContent, tags, available (unused), buyer (unused)
+			var p1 = createPosting(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6]);
+			var p2 = createPosting(gen[7], gen[8], gen[9], gen[10], gen[11], gen[12], gen[13]);
+			var p3 = createPosting(gen[14], gen[15], gen[16], gen[17], gen[18], gen[19], gen[20]);
+			var p4 = createPosting(gen[20], gen[21], gen[22], gen[23], gen[24], gen[25], gen[26]);
+			insertPost(db, p1);
+			insertPost(db, p2);
+			insertPost(db, p3);
+			insertPost(db, p4);
+		});
+		
+		after('Delete Temp Users/Posts', function () {
+			deleteUser(db, u1.username);
+			deleteUser(db, u2.username);
+			deleteUser(db, u3.username);
+			deletePost(db, p1.id);
+			deletePost(db, p1.id);
+			deletePost(db, p2.id);
+			deletePost(db, p3.id);
+			deletePost(db, p4.id);
+			
+		});
+		
+		beforeEach('Create Temporary Review', function () {
+			var tempGen = [];
+			for (i = 0; i < 6; i++) {
+				if (i == 0)
+					tempGen.push(u2.username);
+				else if (i == 1)
+					tempGen.push(u1.id);
+				else if (i == 2)
+					tempGen.push(p1.id);
+				else
+					tempGen.push(Math.floor((Math.random() * 10000)).toString());
+			}
+			var tempReview = createReview(tempGen[0], tempGen[1], tempGen[2], tempGen[3], tempGen[4], tempGen[5], tempGen[6]);
+			insertReview(db, tempReview);
+		});
+		
+		afterEach('Delete Temporary Posting', function () {
+			deleteReview(db, tempGen[2], tempGen[0]);	
+		});
+		
+		describe('Verify Posting', function () {
+			it('getReview', function () {
+				getReview(db, tempGen[2], tempGen[0], function (review) {
+					expect(review.to.deep.equal(tempReview));
+				});
+			});
+			
+			it('getReviewByID', function () {
+				getReviewsByID(db, tempGen[2], function (review) {
+					expect(review[0].to.deep.equal(tempReview));
+				});
+			});
+			
+			
+			it('getReviewsFrom', function () {
+				getReviewsFrom(db, u2.username, tempGen[0], function (review) {
+					expect(review.to.deep.equal(tempReview));
+				});
+			});
+		});
 		/*
-		// Review Testing
-		describe('Posting Comments', function () {
-			before('Posting Comments', function () {
-				// Create comments on Postings
-				
-				// Create comments on games
-				
-				// Create comments on users
+		decribe('Verify Games', function () {
+			it('Game 1, Comment 3', function () {
+			
 				
 			});
-			
-			decribe('Verify Posting', function () {
-				it('Posting 1, Comment 1', function () {
-					// expect L1C1 = get(L1C1)
-					
-				});
-				it('Posting 1, Comment 3', function () {
-					// expect L1C3 = get(L1C3)
-					
-				});
-				it('Posting 2, Comment 2', function () {
-					// expect L2C2 = get(L2C2)
-					
-				});
+			it('Game 2, Comment 1', function () {
+		
+				
 			});
-			
-			decribe('Verify Games', function () {
-				it('Game 1, Comment 3', function () {
-				
-					
-				});
-				it('Game 2, Comment 1', function () {
-			
-					
-				});
-				it('Game 2, Comment 2', function () {
-			
-					
-				});
-			});
-			
-			decribe('Verify User', function () {
-				it('User 1, Comment 1', function () {
-					
-					
-				});
-				it('User 1, Comment 2', function () {
-				
-					
-				});
-				it('User 2, Comment 2', function () {
-					
-					
-				});
-			});
-			
-			describe('Edit Comment', function () {
-				it('Edit Comment 1', function () {
-					// Edit and verify
-				})
-			});	
-			
-			describe('Delete Comment', function () {
-				before('Create deletable comment', function () {
-				
-					
-				});
-				
-				it('Delete comment 1', function () {
-					// Delete comment and verify null
-					
-				});
+			it('Game 2, Comment 2', function () {
+		
 				
 			});
 		});
 		
-		describe('Ratings', function() {
-			before('Init Ratings', function() {
-				// Create ratings on various Postings
+		decribe('Verify User', function () {
+			it('User 1, Comment 1', function () {
 				
-				// Create ratings on users
 				
-				// Create rating on games
+			});
+			it('User 1, Comment 2', function () {
+			
+				
+			});
+			it('User 2, Comment 2', function () {
+				
+				
+			});
+		});
+		
+		describe('Edit Comment', function () {
+			it('Edit Comment 1', function () {
+				// Edit and verify
+			})
+		});	
+		
+		describe('Delete Comment', function () {
+			before('Create deletable comment', function () {
+			
+				
 			});
 			
-			// See above for tests
+			it('Delete comment 1', function () {
+				// Delete comment and verify null
+				
+			});
+			
 		});
-		*/
+	});
+	
+	describe('Ratings', function() {
+		before('Init Ratings', function() {
+			// Create ratings on various Postings
+			
+			// Create ratings on users
+			
+			// Create rating on games
+		});
+		
+		// See above for tests
+	});
+	*/
 	});
 	
 });

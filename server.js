@@ -26,6 +26,9 @@ app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
+app.get('/404', function () {
+	res.sendFile(__dirname + '/public/html/404.html');
+});
 
 app.listen(PORT);
 
@@ -36,9 +39,6 @@ app.post("/recommendations", function (req, res) {
 	// Need database code for games
 	getPostByID(db, req.params.id, function(post) {
 		if (post) {
-			// Pick some/all tags
-			// Find games with similar tags
-			// Send game info
 			// TODO: set to actual delimiter
 			var tags = post.tags.split(" ");
 			var lowSimTags = tags.slice();
@@ -46,21 +46,38 @@ app.post("/recommendations", function (req, res) {
 			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
 			
 			var recList = getGamesByTag(db, tags);
-			
 			// If we don't have enough recommendations, relax the similarity
 			if (recList.length < numberOfRecs) {
 				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
 				recList = recList.concat(getGamesByTag(db, tags));
 			}
+			
+			// Strip copies of the same game
+			for (elem : recList) {
+				if (elem.title == post.title)
+					recList.splice(recList.indexOf(elem), 1);
+			}
 			// Shuffle the recommendations we have
 			recList = shuffleArray(recList);
 			
+			
+			// Strip copies of the same game
+			for (elem : recList) {
+				if (elem.title == post.title)
+					recList.splice(recList.indexOf(elem), 1);
+			}
 			// If we still don't have enough recommendations
 			// Pick some random games to fill out the number.
 			if (recList.length < numberOfRecs) {
 				// Just pick some random games
 				recList = recList.concat(getGamesByTag(db, ""));
+				// Strip copies of the same game
+				for (elem : recList) {
+					if (elem.title == post.title)
+						recList.splice(recList.indexOf(elem), 1);
+				}
 			}
+	
 			recList = recList.slice(0, numberOfRecs + 1);
 			// TODO: format recList
 			res.send(recList);
@@ -120,9 +137,7 @@ function shuffleArray(array) {
     return array;
 }
 
-app.get('/404', function () {
-	res.send('404.html');
-});
+
 
 
 var generateHash = function (password) {
