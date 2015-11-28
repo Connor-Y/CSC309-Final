@@ -69,7 +69,7 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(posts);
 	});
 
-	*/
+
 	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
 	var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
 	insertReview(db, testReview);
@@ -91,7 +91,7 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(reviews);
 	});
 	deleteReview(db, 1, "user222");
-	
+		*/
 
 });
 
