@@ -94,6 +94,9 @@ var insertUser = function(db, newUser) {
 		"name" : "",
 		"description" : "NEW USER",
 
+		"rating" : 0,
+		"numReviews" : 0
+
 	}, function(err, result) {
 			assert.equal(err, null);
 			console.log("Inserted a document into the users collection.");
@@ -174,7 +177,24 @@ var updateUserPassword = function(db, username, password){
 			assert.equal(err, null);
 		});
 }
-
+var updateUserRating = function(db, username, newRating){
+	db.collection('users').findOne(
+		{
+			"username" : username
+		},function(err, user) {
+			assert.equal(err, null);
+			var updatedRating = ((user.rating*user.numReviews) + newRating)/(user.numReviews+1)
+			db.collection('users').update(
+			{
+				"username" : username
+			},{
+				$set: {"rating" : updatedRating,
+						"numReviews" : user.numReviews+1}
+			}, function(err, result){
+				assert.equal(err, null);
+			});
+		});
+}
 //DELETE
 var deleteUser = function(db, username){
 	db.collection('users').remove(
