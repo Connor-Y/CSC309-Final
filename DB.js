@@ -42,9 +42,14 @@ MongoClient.connect(url, function(err, database) {
   });
   deleteUser(db, testUser.username);
   */
-  
+  /*
   	var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
-  		title : "RENT MY GAME", postContent : "Great Deal, only $10", image : "url.com/pic", price: 10, tags : ["rental", "Specific Game"],
+  		title : "RENT MY GAME", postContent : "Great Deal, only $10", image : "url.com/pic", 
+  		price: 10, tags : ["rental", "Specific Game"],
+	};
+	var testPost2 = {username : "testUser", id : 1, date : "2015-04-17", 
+  		title : "PLEASE RENT MY GAME", postContent : "Great Deal, only $8", image : "url.com/pic2", 
+  		price: 8, tags : ["rental", "Specific Game"],
 	};
 	deletePost(db, 1);
 	insertPost(db, testPost);
@@ -53,6 +58,7 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(posts);
 	});
 	makeUnavailable(db, 1, "user222");
+	updatePost(db, testPost2);
 	getPostByID(db, 1, function(post){
 		console.log("Post by ID:");
 		console.dir(post);
@@ -63,14 +69,15 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(posts);
 	});
 
-	/*
-	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 5, comment: "Awesome deal!"};
+	*/
+	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
+	var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
 	insertReview(db, testReview);
-	getReviewsFrom(db, "user1", function(reviews){  
+	getReviewsFrom(db, "user222", function(reviews){  
 		console.log("Reviews from user1");
 		console.dir(reviews);
 	});
-	getReviewsAbout(db, "user222", function(reviews){
+	getReviewsAbout(db, "user1", function(reviews){
 		console.log("Reviews about user222");
 		console.dir(reviews);
 	});
@@ -78,12 +85,13 @@ MongoClient.connect(url, function(err, database) {
 		console.log("Reviews about post#1");
 		console.dir(reviews);
 	});
-	getReview(db, 1, "user1", function(reviews){
-		console.log("Reviews about post#1");
+	updateReview(db, updatedReview);
+	getReview(db, 1, "user222", function(reviews){
+		console.log("Reviews about post#1 by user222");
 		console.dir(reviews);
 	});
-	deleteReview(db, 1, "user1");
-	*/
+	deleteReview(db, 1, "user222");
+	
 
 });
 
