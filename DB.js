@@ -44,7 +44,7 @@ MongoClient.connect(url, function(err, database) {
   */
   
   	var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
-  		title : "RENT MY GAME", postContent : "Great Deal, only $10", price: 10, tags : ["rental", "Specific Game"],
+  		title : "RENT MY GAME", postContent : "Great Deal, only $10", image : "url.com/pic", price: 10, tags : ["rental", "Specific Game"],
 	};
 	deletePost(db, 1);
 	insertPost(db, testPost);
@@ -222,6 +222,7 @@ var insertPost = function(db, newPost){
 		"title" : newPost.title,
 		"price" : newPost.price,
 		"postContent" : newPost.postContent,
+		"image" : newPost.image,
 		"tags" : newPost.tags,
 
 		"available" : true,  //Set to false when game is rented/bought
@@ -296,6 +297,7 @@ var updatePost = function(db, post){
 			$set: {
 				"title" : post.title,
 				"postContent" : post.postContent,
+				"image" : post.image,
 				"price" : post.price,
 				"tags" : post.tags
 			}
