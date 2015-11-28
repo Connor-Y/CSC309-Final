@@ -4,10 +4,17 @@ var PORT = 3000;
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
 var db = require('./DB');
 var User = db.User;
+
+// How similar recommendations should be by
+// number of tags
+var recommendationSimiliarityFactor = 0.8;
+// How many recommendations do you want
+var numberOfRecs = 4;
 
 app.use(express.static( __dirname + '/public/html'));
 app.use(express.static( __dirname + '/public/css'));
@@ -16,38 +23,248 @@ app.use(bodyParser.json());
 
 
 app.get('/', function (req, res) {
-	res.sendFile(__dirname + '/public/html/index.html');
+	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 
 app.listen(PORT);
-/*
-app.post("/loginVerification", function (req, res) {
-	console.log("Login Request Received");
-	User.findOne({ "email": req.body.mail }, 
-	function (err, user) {
-		if (err) {
-			console.log("verifyLogin Error " + err);
-			res.send("An Error Has Occurred, Please Try Again"); 
-		}
-		if (user == undefined)
-			return false;
-		if (req.body.pass === user.password) { 
-			console.log("Valid Login");
-			sess=req.session;
-			sess.email = req.body.mail;
-			sess.type = user.type;
-			sess.view = "landing";
-			sess.targetType = null;
-			userUpdate(req.body.mail, 'ip', req.body.ip);
-			res.send("Success");
-		}
-		else {
-			console.log("Invalid Login");
-			res.send("Invalid Login"); 
-		}
+
+// ====
+
+app.post("/recommendations", function (req, res) {
+	console.log("Generate and Send Recommendations");
+	// Need database code for games
+	getPostByID(db, req.params.id, function(post) {
+		if (post) {
+			// Pick some/all tags
+			// Find games with similar tags
+			// Send game info
+			// TODO: set to actual delimiter
+			var tags = post.tags.split(" ");
+			var lowSimTags = tags.slice();
+			tags = shuffleArray(tags);
+			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
+			
+			var recList = getGamesByTag(db, tags);
+			
+			// If we don't have enough recommendations, relax the similarity
+			if (recList.length < numberOfRecs) {
+				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
+				recList = recList.concat(getGamesByTag(db, tags));
+			}
+			// Shuffle the recommendations we have
+			recList = shuffleArray(recList);
+			
+			// If we still don't have enough recommendations
+			// Pick some random games to fill out the number.
+			if (recList.length < numberOfRecs) {
+				// Just pick some random games
+				recList = recList.concat(getGamesByTag(db, ""));
+			}
+			recList = recList.slice(0, numberOfRecs + 1);
+			// TODO: format recList
+			res.send(recList);
+		} else { 
+			res.redirect('/404');
+		}	
 	});
 });
+
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+
+
+app.get('/404', function () {
+	res.send('404.html');
+});
+
+
+var generateHash = function (password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+app.post("/registration", function (req, res) {
+	console.log("Registration Request Received");
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User already exists");
+			res.send("User Exists");
+        }
+
+        else {
+            console.log("New User");
+            insertUser(db, {email : req.body.mail, username : req.body.username, password : generateHash(req.body.password)});
+        }
+    });
+});
+
+
+
+app.post("/loginVerification", function (req, res) {
+	console.log("Login Request Received");
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+			validateUser(db, req.body.mail, generateHash(req.body.password), function (valid) {
+               if (!valid) {
+                   console.log("Invalid Password");
+                   res.send("Invalid Password");
+               }
+                
+                else {
+                    
+                    console.log("Successful Login");
+                    //res.sendFile(__dirname + '/mainpage.html');
+                    res.send("Success");
+                }
+                
+            });
+        }
+
+        else {
+            console.log("Invalid User");
+            res.send("Invalid User");
+        }
+    });
+});
+
+//searching by user
+app.post("/searchuser", function (req, res) {
+	console.log("search request received");
+	getPostsFrom(db, req.body.mail, function (posts) {
+		
+        //a user was found when the email was queried
+        if (posts) {
+            console.log("Matching posts found");
+			res.json(posts);
+        }
+
+        else {
+            console.log("No match");
+            res.send("No match");
+        }
+    });
+});
+
+
+app.post("/profile", function (req, res) {
+    console.log("profile view request received");
+    
+    getUserByUsername(db, req.body.mail, function (user) {
+        if (user) {
+            res.json(user);
+        }
+        
+        else {
+            res.send("Cannot find user in database");
+        }
+    });
+});
+
+
+app.get("/post:id", function (req, res) {
+    console.log("post retrieval request received");
+    
+    getPostByID(db, req.params.id, function(post) {
+        if (post) {
+            res.json(post);   
+        }
+        
+        else {
+            res.send("No post with this ID");
+        }
+        
+    });
+
+});
+
+
+// ***** Old Code for Facebook Verification *****
+// Feel free to use/change it to work.
+
+/*
+
+// This is called with the results from from FB.getLoginStatus().
+  function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+	  $("#main").load("landing.php");
+    } else {
+		moveTo('/');
+    }
+  }
+  
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      //statusChangeCallback(response);
+	return response.status;
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '1098933153474400',
+    cookie     : true,  // enable cookies to allow the server to access
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.2' // use version 2.2
+  });
+  // Now that we've initialized the JavaScript SDK, we call
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+  
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+  };
+  
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+  
+
+
+
+
+*/
+
+
+/*
+// Code from A4
 
 app.post("/loadTable", function (req, res) {
 	console.log("Load Table");
