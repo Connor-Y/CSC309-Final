@@ -226,6 +226,16 @@ app.post("/profile", function (req, res) {
     });
 });
 
+app.post("/postingsByUser", function (req, res) {
+	getPostsFrom(db, req.params.username, function (posts) {
+		if (post) {
+			res.send(post);
+		} else
+			res.redirect('/404');
+		
+	});
+	
+});
 
 app.get("/post:id", function (req, res) {
     console.log("post retrieval request received");
