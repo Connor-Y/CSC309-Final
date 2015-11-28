@@ -4,6 +4,7 @@ var PORT = 3000;
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
 var db = require('./DB');
@@ -84,6 +85,111 @@ function shuffleArray(array) {
 app.get('/404', function () {
 	res.send('404.html');
 });
+
+
+var generateHash = function (password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+app.post("/registration", function (req, res) {
+	console.log("Registration Request Received");
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User already exists");
+			res.send("User Exists");
+        }
+
+        else {
+            console.log("New User");
+            insertUser(db, {email : req.body.mail, username : req.body.username, password : generateHash(req.body.password)});
+        }
+    });
+});
+
+
+
+app.post("/loginVerification", function (req, res) {
+	console.log("Login Request Received");
+	userExists(db, { email: req.body.mail }, function (result) {
+		
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+			validateUser(db, req.body.mail, generateHash(req.body.password), function (valid) {
+               if (!valid) {
+                   console.log("Invalid Password");
+                   res.send("Invalid Password");
+               }
+                
+                else {
+                    
+                    console.log("Successful Login");
+                    //res.sendFile(__dirname + '/mainpage.html');
+                    res.send("Success");
+                }
+                
+            });
+        }
+
+        else {
+            console.log("Invalid User");
+            res.send("Invalid User");
+        }
+    });
+});
+
+//searching by user
+app.post("/searchuser", function (req, res) {
+	console.log("search request received");
+	getPostsFrom(db, req.body.mail, function (posts) {
+		
+        //a user was found when the email was queried
+        if (posts) {
+            console.log("Matching posts found");
+			res.json(posts);
+        }
+
+        else {
+            console.log("No match");
+            res.send("No match");
+        }
+    });
+});
+
+
+app.post("/profile", function (req, res) {
+    console.log("profile view request received");
+    
+    getUserByUsername(db, req.body.mail, function (user) {
+        if (user) {
+            res.json(user);
+        }
+        
+        else {
+            res.send("Cannot find user in database");
+        }
+    });
+});
+
+
+app.get("/post:id", function (req, res) {
+    console.log("post retrieval request received");
+    
+    getPostByID(db, req.params.id, function(post) {
+        if (post) {
+            res.json(post);   
+        }
+        
+        else {
+            res.send("No post with this ID");
+        }
+        
+    });
+
+});
+
 
 // ***** Old Code for Facebook Verification *****
 // Feel free to use/change it to work.
