@@ -41,7 +41,8 @@ MongoClient.connect(url, function(err, database) {
   	console.dir(result);
   });
   deleteUser(db, testUser.username);
-  
+  */
+  /*
   	var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
   		title : "RENT MY GAME", postContent : "Great Deal, only $10", tags : ["rental", "Specific Game"],
 	};
@@ -49,7 +50,7 @@ MongoClient.connect(url, function(err, database) {
 	insertPost(db, testPost);
 	makeUnavailable(db, 1, "user222");
 	getPostByID(db, 1, function(post){
-		console.log("Posy by ID:");
+		console.log("Post by ID:");
 		console.dir(post);
 	});
 	deletePost(db, 1);
@@ -57,15 +58,8 @@ MongoClient.connect(url, function(err, database) {
 		console.log("available (after deletion): ");
 		console.dir(posts);
 	});
-	"reviewer" : newReview.reviewer,
-		"reviewee" : newReview.reviewee,
 
-		"postID" : newReview.postID, //Reviewed experience
-
-		"date" : newReview.date,
-		"rating" : newReview.rating,
-		"comment" : newReview.comment
-	*/
+	
 	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 5, comment: "Awesome deal!"};
 	insertReview(db, testReview);
 	getReviewsFrom(db, "user1", function(reviews){
@@ -85,7 +79,7 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(reviews);
 	});
 	deleteReview(db, 1, "user1");
-
+	*/
 
 });
 
@@ -250,13 +244,8 @@ var getAvailablePosts  = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
-<<<<<<< HEAD
 		}).toArray(function (err, posts){
 			assert.equal(err, null);
-=======
-		}, function (err, posts){
-			assert.equal(err.null);
->>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 			next(posts);
 		});
 };
@@ -284,15 +273,10 @@ var makeUnavailable = function(db, postID, secUsername){
 		{
 			"id" : postID
 		}, {
-<<<<<<< HEAD
 			$set: {
 				"available" : false,
 				"buyer" : secUsername
 			}
-=======
-			"available" : false,
-			"buyer" : secUsername
->>>>>>> 20cc36fa7c91160fb5fc6d04abf16448334ea3b4
 
 		}, function(err, result){
 			assert.equal(err, null);
