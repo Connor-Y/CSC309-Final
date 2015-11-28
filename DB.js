@@ -42,12 +42,16 @@ MongoClient.connect(url, function(err, database) {
   });
   deleteUser(db, testUser.username);
   */
-  /*
+  
   	var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
-  		title : "RENT MY GAME", postContent : "Great Deal, only $10", tags : ["rental", "Specific Game"],
+  		title : "RENT MY GAME", postContent : "Great Deal, only $10", price: 10, tags : ["rental", "Specific Game"],
 	};
 	deletePost(db, 1);
 	insertPost(db, testPost);
+	getPostsByTag(db, "rental", function(posts){
+		console.log("Post by tag:");
+		console.dir(posts);
+	});
 	makeUnavailable(db, 1, "user222");
 	getPostByID(db, 1, function(post){
 		console.log("Post by ID:");
@@ -59,7 +63,7 @@ MongoClient.connect(url, function(err, database) {
 		console.dir(posts);
 	});
 
-	
+	/*
 	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 5, comment: "Awesome deal!"};
 	insertReview(db, testReview);
 	getReviewsFrom(db, "user1", function(reviews){  
@@ -261,10 +265,21 @@ var getPostsBoughtBy = function(db, username, next){
 		});
 };
 //Finds all posts that are currently available
-var getAvailablePosts  = function(db, next){
+var getAvailablePosts = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
+		}).toArray(function (err, posts){
+			assert.equal(err, null);
+			next(posts);
+		});
+};
+
+var getPostsByTag = function(db, tag, next){
+	db.collection('posts').find(
+		{
+			"available" : true,
+			"tags" : tag
 		}).toArray(function (err, posts){
 			assert.equal(err, null);
 			next(posts);
@@ -284,7 +299,6 @@ var updatePost = function(db, post){
 				"price" : post.price,
 				"tags" : post.tags
 			}
-
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
@@ -303,7 +317,7 @@ var makeUnavailable = function(db, postID, secUsername){
 		}, function(err, result){
 			assert.equal(err, null);
 		});
-}
+};
 
 //DELETE
 var deletePost = function(db, postID){
