@@ -62,7 +62,7 @@ MongoClient.connect(url, function(err, database) {
 	
 	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 5, comment: "Awesome deal!"};
 	insertReview(db, testReview);
-	getReviewsFrom(db, "user1", function(reviews){
+	getReviewsFrom(db, "user1", function(reviews){  
 		console.log("Reviews from user1");
 		console.dir(reviews);
 	});
@@ -196,6 +196,7 @@ var insertPost = function(db, newPost){
 
 		"date" : newPost.date,
 		"title" : newPost.title,
+		"price" : newPost.price,
 		"postContent" : newPost.postContent,
 		"tags" : newPost.tags,
 
@@ -258,9 +259,10 @@ var updatePost = function(db, post){
 			"id" : post.id
 		},{
 			$set: {
-				"title" : newPost.title,
-				"postContent" : newPost.postContent,
-				"tags" : newPost.tags
+				"title" : post.title,
+				"postContent" : post.postContent,
+				"price" : post.price,
+				"tags" : post.tags
 			}
 
 		}, function(err, result) {
