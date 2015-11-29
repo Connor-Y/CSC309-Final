@@ -92,7 +92,7 @@ var generateHash = function (password) {
 
 app.post("/registration", function (req, res) {
 	console.log("Registration Request Received");
-	userExists(db, { email: req.body.mail }, function (result) {
+	userExists(db, req.body.username, req.body.email, function (result) {
 		
         //a user was found when the email was queried
         if (result) {
