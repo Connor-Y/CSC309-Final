@@ -8,7 +8,7 @@ var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
 var db = require('./DB');
-var User = db.User;
+//var User = db.User;
 
 // How similar recommendations should be by
 // number of tags
@@ -16,9 +16,15 @@ var recommendationSimiliarityFactor = 0.8;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
-app.use(express.static( __dirname + '/public/html'));
-app.use(express.static( __dirname + '/public/css'));
-app.use(express.static( __dirname + '/public/javascript'));
+app.use(express.static(__dirname + '/public'));
+//app.use(express.static( __dirname + '/public/html'));
+//app.use(express.static( __dirname + '/public/css'));
+//app.use(express.static( __dirname + '/public/javascript'));
+
+app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+
 app.use(bodyParser.json());
 
 
@@ -37,7 +43,7 @@ app.listen(PORT);
 app.post("/recommendations", function (req, res) {
 	console.log("Generate and Send Recommendations");
 	// Need database code for games
-	getPostByID(db, req.params.id, function(post) {
+	db.getPostByID(db.db, req.params.id, function(post) {
 		if (post) {
 			// TODO: set to actual delimiter
 			var tags = post.tags.split(" ");
@@ -45,11 +51,11 @@ app.post("/recommendations", function (req, res) {
 			tags = shuffleArray(tags);
 			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
 			
-			var recList = getGamesByTag(db, tags);
+			var recList = db.getPostsByTag(db.db, tags);
 			// If we don't have enough recommendations, relax the similarity
 			if (recList.length < numberOfRecs) {
 				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
-				recList = recList.concat(getGamesByTag(db, tags));
+				recList = recList.concat(db.getPostsByTag(db.db, tags));
 			}
 			
 			// Strip copies of the same game
@@ -70,12 +76,14 @@ app.post("/recommendations", function (req, res) {
 			// Pick some random games to fill out the number.
 			if (recList.length < numberOfRecs) {
 				// Just pick some random games
-				recList = recList.concat(getGamesByTag(db, ""));
+
+				recList = recList.concat(db.getPostsByTag(db.db, ""));
 				// Strip copies of the same game
 				for (elem : recList) {
 					if (elem.title == post.title)
 						recList.splice(recList.indexOf(elem), 1);
 				}
+
 			}
 	
 			recList = recList.slice(0, numberOfRecs + 1);
@@ -146,17 +154,19 @@ var generateHash = function (password) {
 
 app.post("/registration", function (req, res) {
 	console.log("Registration Request Received");
-	userExists(db, { email: req.body.mail }, function (result) {
-		
-        //a user was found when the email was queried
+    db.userExists(db.db, req.body.username, req.body.mail, function (result) {
+        
+        //a user was found when the email and username queried
         if (result) {
             console.log("User already exists");
 			res.send("User Exists");
         }
 
         else {
+            req.body.password = generateHash(req.body.password);
             console.log("New User");
-            insertUser(db, {email : req.body.mail, username : req.body.username, password : generateHash(req.body.password)});
+            db.insertUser(db.db, req.body);
+            res.send("Success");
         }
     });
 });
@@ -165,19 +175,20 @@ app.post("/registration", function (req, res) {
 
 app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
-	userExists(db, { email: req.body.mail }, function (result) {
+	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
 		
+        console.log("" + req.body.username);
+        console.log("" + req.body.password);
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
-			validateUser(db, req.body.mail, generateHash(req.body.password), function (valid) {
+			db.validateUser(db.db, req.body.username, generateHash(req.body.password), function (valid) {
                if (!valid) {
                    console.log("Invalid Password");
                    res.send("Invalid Password");
                }
                 
                 else {
-                    
                     console.log("Successful Login");
                     //res.sendFile(__dirname + '/mainpage.html');
                     res.send("Success");
@@ -196,7 +207,7 @@ app.post("/loginVerification", function (req, res) {
 //searching by user
 app.post("/searchuser", function (req, res) {
 	console.log("search request received");
-	getPostsFrom(db, req.body.mail, function (posts) {
+	db.getPostsFrom(db.db, req.body.username, function (posts) {
 		
         //a user was found when the email was queried
         if (posts) {
@@ -215,7 +226,7 @@ app.post("/searchuser", function (req, res) {
 app.post("/profile", function (req, res) {
     console.log("profile view request received");
     
-    getUserByUsername(db, req.body.mail, function (user) {
+    db.getUserByUsername(db.db, req.body.username, function (user) {
         if (user) {
             res.json(user);
         }
@@ -251,7 +262,7 @@ app.post("/postingsByUser", function (req, res) {
 app.get("/post:id", function (req, res) {
     console.log("post retrieval request received");
     
-    getPostByID(db, req.params.id, function(post) {
+    db.getPostByID(db.db, req.params.id, function(post) {
         if (post) {
             res.json(post);   
         }
