@@ -26,6 +26,9 @@ app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
+app.get('/404', function () {
+	res.sendFile(__dirname + '/public/html/404.html');
+});
 
 app.listen(PORT);
 
@@ -36,9 +39,6 @@ app.post("/recommendations", function (req, res) {
 	// Need database code for games
 	getPostByID(db, req.params.id, function(post) {
 		if (post) {
-			// Pick some/all tags
-			// Find games with similar tags
-			// Send game info
 			// TODO: set to actual delimiter
 			var tags = post.tags.split(" ");
 			var lowSimTags = tags.slice();
@@ -46,21 +46,38 @@ app.post("/recommendations", function (req, res) {
 			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
 			
 			var recList = getGamesByTag(db, tags);
-			
 			// If we don't have enough recommendations, relax the similarity
 			if (recList.length < numberOfRecs) {
 				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
 				recList = recList.concat(getGamesByTag(db, tags));
 			}
+			
+			// Strip copies of the same game
+			for (elem : recList) {
+				if (elem.title == post.title)
+					recList.splice(recList.indexOf(elem), 1);
+			}
 			// Shuffle the recommendations we have
 			recList = shuffleArray(recList);
 			
+			
+			// Strip copies of the same game
+			for (elem : recList) {
+				if (elem.title == post.title)
+					recList.splice(recList.indexOf(elem), 1);
+			}
 			// If we still don't have enough recommendations
 			// Pick some random games to fill out the number.
 			if (recList.length < numberOfRecs) {
 				// Just pick some random games
 				recList = recList.concat(getGamesByTag(db, ""));
+				// Strip copies of the same game
+				for (elem : recList) {
+					if (elem.title == post.title)
+						recList.splice(recList.indexOf(elem), 1);
+				}
 			}
+	
 			recList = recList.slice(0, numberOfRecs + 1);
 			// TODO: format recList
 			res.send(recList);
@@ -69,6 +86,46 @@ app.post("/recommendations", function (req, res) {
 		}	
 	});
 });
+
+app.post('/searchGames', function (req, res) {
+	getAvailablePosts(db, function (posts) {
+		var results = searchPostings(req.params.query, posts);
+		
+		// TODO: Format results
+		res.send(results);
+			
+		}
+		
+	});
+	
+	
+});
+
+function searchPostings(q, postings) {
+	var results = [];
+	var query = q.trim();
+	query = query.replace(",", " ");
+	for (elem : postings) {
+		if (elem.title == query)
+			results.push(elem);
+		// Multiple ifs to arrange results in order of priority
+		else if (elem.username == query) 
+			results.push(elem);
+		else if (elem.id == query)
+			results.push(elem);
+		else {
+			// TODO: set proper tag delimiter
+			var tags = elem.tags.split(" ");
+			var splitQuery = query.split(" ");
+			for (val : splitQuery) {
+				if (tags.indexOf(val) > -1) {
+					results.push(elem);
+					break;
+				}
+			}
+		}
+	}
+}
 
 function shuffleArray(array) {
     for (var i = array.length - 1; i > 0; i--) {
@@ -81,10 +138,6 @@ function shuffleArray(array) {
 }
 
 
-
-app.get('/404', function () {
-	res.send('404.html');
-});
 
 
 var generateHash = function (password) {
@@ -170,7 +223,28 @@ app.post("/profile", function (req, res) {
         else {
             res.send("Cannot find user in database");
         }
-    });
+    }); 
+});
+
+
+app.post("/updateUserInfo", function (req, res) {
+	if (req.params.name !== "")
+		updateUserName(db, {username: req.params.username, name: req.params.name});
+	if (req.params.description !== "")
+		updateUserDescription(db, {username: req.params.username, description: req.params.description});
+	
+});
+
+app.post("/postingsByUser", function (req, res) {
+	getPostsFrom(db, req.params.username, function (posts) {
+		if (post) {
+			// TODO: format return value
+			res.send(post);
+		} else
+			res.redirect('/404');
+		
+	});
+	
 });
 
 
@@ -189,6 +263,39 @@ app.get("/post:id", function (req, res) {
     });
 
 });
+
+app.post("/createPosting", function (req, res) {
+	var posting = createPosting(req.params.username, req.params.id, req.params.date,
+		req.params.content, req.params.tags);
+	insertPost(db, posting);
+	res.send("Success");
+});
+
+app.post("/deleteUser", function (req, res) {
+	deletePost(db, req.params.id);
+	res.send("Success");
+	
+});
+
+app.post("/makeUnavailable", function (req, res) {
+	// id refers to the posting's id
+	makeUnavailable(db, req.params.id, req.params.buyerUsername);
+	res.send("Success");
+	
+});
+function createPosting(username, id, date, title, content, tags) {
+	var newPost = {username: username, id: id, date: date, title: title,
+					postContent: content, tags: tags};
+	return newPost
+}
+
+function createReview(reviewer, reviewee, id, date, rating, comment) {
+	var newReview = {reviewer: reviewer, reviewee: reviewee, postID: id, 
+	date: date, rating: rating, comment: comment};
+	
+	return newReview;
+	
+}
 
 
 // ***** Old Code for Facebook Verification *****

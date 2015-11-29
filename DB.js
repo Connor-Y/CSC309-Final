@@ -178,6 +178,33 @@ var updateUserInfo = function(db, user){
 			assert.equal(err, null);
 		});
 }
+
+
+var updateUserName = function(db, user){
+	db.collection('users').update(
+		{
+			"username" : user.username
+		},{
+			$set: {
+				"description" : user.description
+			}
+		}, function(err, result) {
+			assert.equal(err, null);
+		});
+}
+
+var updateUserDescription = function(db, user){
+	db.collection('users').update(
+		{
+			"username" : user.username
+		},{
+			$set: {
+				"description" : user.description
+			}
+		}, function(err, result) {
+			assert.equal(err, null);
+		});
+}
 //update the user <username>'s password
 var updateUserPassword = function(db, username, password){
 	db.collection('users').update(
