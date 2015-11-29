@@ -223,12 +223,22 @@ app.post("/profile", function (req, res) {
         else {
             res.send("Cannot find user in database");
         }
-    });
+    }); 
+});
+
+
+app.post("/updateUserInfo", function (req, res) {
+	if (req.params.name !== "")
+		updateUserName(db, {username: req.params.username, name: req.params.name});
+	if (req.params.description !== "")
+		updateUserDescription(db, {username: req.params.username, description: req.params.description});
+	
 });
 
 app.post("/postingsByUser", function (req, res) {
 	getPostsFrom(db, req.params.username, function (posts) {
 		if (post) {
+			// TODO: format return value
 			res.send(post);
 		} else
 			res.redirect('/404');
@@ -236,6 +246,7 @@ app.post("/postingsByUser", function (req, res) {
 	});
 	
 });
+
 
 app.get("/post:id", function (req, res) {
     console.log("post retrieval request received");
@@ -252,6 +263,39 @@ app.get("/post:id", function (req, res) {
     });
 
 });
+
+app.post("/createPosting", function (req, res) {
+	var posting = createPosting(req.params.username, req.params.id, req.params.date,
+		req.params.content, req.params.tags);
+	insertPost(db, posting);
+	res.send("Success");
+});
+
+app.post("/deleteUser", function (req, res) {
+	deletePost(db, req.params.id);
+	res.send("Success");
+	
+});
+
+app.post("/makeUnavailable", function (req, res) {
+	// id refers to the posting's id
+	makeUnavailable(db, req.params.id, req.params.buyerUsername);
+	res.send("Success");
+	
+});
+function createPosting(username, id, date, title, content, tags) {
+	var newPost = {username: username, id: id, date: date, title: title,
+					postContent: content, tags: tags};
+	return newPost
+}
+
+function createReview(reviewer, reviewee, id, date, rating, comment) {
+	var newReview = {reviewer: reviewer, reviewee: reviewee, postID: id, 
+	date: date, rating: rating, comment: comment};
+	
+	return newReview;
+	
+}
 
 
 // ***** Old Code for Facebook Verification *****
