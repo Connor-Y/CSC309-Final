@@ -17,9 +17,15 @@ var recommendationSimiliarityFactor = 0.8;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
-app.use(express.static( __dirname + '/public/html'));
-app.use(express.static( __dirname + '/public/css'));
-app.use(express.static( __dirname + '/public/javascript'));
+app.use(express.static(__dirname + '/public'));
+//app.use(express.static( __dirname + '/public/html'));
+//app.use(express.static( __dirname + '/public/css'));
+//app.use(express.static( __dirname + '/public/javascript'));
+
+app.use(bodyParser.urlencoded({
+        extended: true
+    }));
+
 app.use(bodyParser.json());
 
 
@@ -116,6 +122,7 @@ app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
 	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
 		
+        
         console.log("" + req.body.username);
         console.log("" + req.body.password);
         //a user was found when the email was queried
