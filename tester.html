@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+	<title>CURD App</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-1.11.3.js"></script>
+    <script src="js/jquery.validate.js"></script>
+    <script type="text/javascript" src="http://freegeoip.net/json.js?var=myip"></script>
+    
+    <script>
+    
+    var userip = '';
+    var userlocation = '';
+
+//DEFAULT USER ICON IS FROM:
+//https://pixabay.com/en/avatar-person-neutral-man-blank-159236/
+
+$(document).ready(function(){
+    
+    
+    //this code was taken from http://stackoverflow.com/questions/17414972/get-ip-address-with-javascript
+    //and modified for my usage. Also used in the signup.html file
+    $.ajax({
+        url: '//freegeoip.net/json/',
+        type: 'POST',
+        dataType: 'jsonp',
+        success: function(userinfo) {
+            userip = userinfo.ip;
+            userlocation = userinfo.city +  ', ' + userinfo.region_code + ', ' + userinfo.country_code;             
+        }
+    });       
+    
+    
+    function login () {
+        
+    
+        var e = ("" + $( "#username" ).val());
+        var p = ("" + $( "#password" ).val());
+        $.post( "/loginVerification", { username: e, password: p, mail: "mail@mail.com"}, function(data, status) {
+            if (data == "Invalid credentials!" || data == "User does not exist!") {
+                $("#loginlabel").attr("class", "label label-danger");
+                $("#loginlabel").html(data);
+            }
+
+            else {
+                var user = JSON.parse(JSON.stringify(data));
+                
+                //record IP address and other info following a successful login
+                
+               
+                //$.post("/update", {email: user[0].email, pass: user[0].password, image: user[0].image, display: user[0].displayname, descrip: user[0].description, admin: user[0].admin, ip: userip, userlocation: userlocation, mostvisited: user[0].mostvisited }, function(data,status) {                       
+                      
+               // });
+                
+                //actually log them in now 
+                //window.location.href = "/users";
+            }
+        });    
+        
+    }   
+           
+});
+    </script>
+</head>
+    
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div id = "main" class="col-md-offset-4 col-md-4">
+            <form class="loginform" id="form-login">
+                <h4 class="page">Login</h4>
+                <span id=loginlabel class="label label-default"></span></label>
+                <br>
+                <br>
+                <div class="form-group">
+                    <label for="username" > Email <span> (Must be valid email) </span></label>
+                    <input type="email" id="username" name="username" class="form-control input-sm chat-input" required/>
+                </div>
+                <div class="form-group">
+                    <label for="password" > Password <span></span></label>
+                    <input type="password" id="password" name="password" class="form-control input-sm chat-input" required/>
+                </div>
+                <div class="wrapper">
+                        <!-- Submit button is used so that the form validation will respond to it-->
+                        <button type="submit" id="loginbutton" class="btn btn-primary"> login </button>
+                        <!-- This button is an <a> because it is just a link to another page, not other function-->
+                        <a id="signupbutton" class="btn btn-link" href="/signup"> signup </a>  
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+
+</html>
