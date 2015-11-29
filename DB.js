@@ -3,12 +3,12 @@ var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
 
 var url = 'mongodb://localhost:27017/VGExchange';
-var db;
+
 
 MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
   console.log("Connected to DB");
-  db = database;
+  exports.db = database;
 
   console.log("testing");
   /*
@@ -97,7 +97,7 @@ MongoClient.connect(url, function(err, database) {
 
 ///***************USER COLLECTION***************************
 //Create
-var insertUser = function(db, newUser) {
+exports.insertUser = function(db, newUser) {
 	db.collection('users').insertOne( 
 	{
 		"email" : newUser.email,
@@ -118,7 +118,7 @@ var insertUser = function(db, newUser) {
 
 //READ
 //find user <username> (does not include password in data)
-var getUserByUsername = function(db, username, next){
+exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
 		{
 			"username" : username
@@ -132,7 +132,7 @@ var getUserByUsername = function(db, username, next){
 		});
 };
 //For logging in, checks that passwords match, sends boolean to next()
-var validateUser = function(db, username, password, next){
+exports.validateUser = function(db, username, password, next){
 	db.collection('users').findOne(
 		{
 			"username" : username,
@@ -149,7 +149,7 @@ var validateUser = function(db, username, password, next){
 }
 //Check if newUser's email or username is already in database,
 //sends boolean to next()
-var userExists = function(db, username, email, next){
+exports.userExists = function(db, username, email, next){
 	db.collection('users').findOne(
 		{
 			$or: [{"email": email}, {"username": username}]
@@ -165,7 +165,7 @@ var userExists = function(db, username, email, next){
 
 //UPDATE
 //update the user <username>'s name and or description
-var updateUserInfo = function(db, user){
+exports.updateUserInfo = function(db, user){
 	db.collection('users').update(
 		{
 			"username" : user.username
@@ -179,7 +179,7 @@ var updateUserInfo = function(db, user){
 		});
 }
 //update the user <username>'s password
-var updateUserPassword = function(db, username, password){
+exports.updateUserPassword = function(db, username, password){
 	db.collection('users').update(
 		{
 			"username" : username
@@ -189,7 +189,7 @@ var updateUserPassword = function(db, username, password){
 			assert.equal(err, null);
 		});
 }
-var updateUserRating = function(db, username, newRating){
+exports.updateUserRating = function(db, username, newRating){
 	db.collection('users').findOne(
 		{
 			"username" : username
@@ -208,7 +208,7 @@ var updateUserRating = function(db, username, newRating){
 		});
 }
 //DELETE
-var deleteUser = function(db, username){
+exports.deleteUser = function(db, username){
 	db.collection('users').remove(
 	{
 		"username": username
@@ -219,7 +219,7 @@ var deleteUser = function(db, username){
 
 ///***********************POSTS COLLECTION*******************************************
 //CREATE
-var insertPost = function(db, newPost){
+exports.insertPost = function(db, newPost){
 	db.collection('posts').insertOne( 
 	{
 		//Idenifiers
@@ -244,7 +244,7 @@ var insertPost = function(db, newPost){
 
 //READ
 //Finds a post by it's unique id
-var getPostByID = function(db, postID, next){
+exports.getPostByID = function(db, postID, next){
 	db.collection('posts').findOne(
 		{
 			"id" : postID
@@ -254,7 +254,7 @@ var getPostByID = function(db, postID, next){
 		});
 };
 //Finds all posts made by user <username>
-var getPostsFrom = function(db, username, next){
+exports.getPostsFrom = function(db, username, next){
 	db.collection('posts').find(
 		{
 			"username" : username
@@ -264,7 +264,7 @@ var getPostsFrom = function(db, username, next){
 		});
 };
 //Finds all posts where the buyer is user <username>
-var getPostsBoughtBy = function(db, username, next){
+exports.getPostsBoughtBy = function(db, username, next){
 	db.collection('posts').find(
 		{
 			"buyer" : username
@@ -274,7 +274,7 @@ var getPostsBoughtBy = function(db, username, next){
 		});
 };
 //Finds all posts that are currently available
-var getAvailablePosts = function(db, next){
+exports.getAvailablePosts = function(db, next){
 	db.collection('posts').find(
 		{
 			"available" : true
@@ -284,7 +284,7 @@ var getAvailablePosts = function(db, next){
 		});
 };
 
-var getPostsByTag = function(db, tag, next){
+exports.getPostsByTag = function(db, tag, next){
 	db.collection('posts').find(
 		{
 			"available" : true,
@@ -297,7 +297,7 @@ var getPostsByTag = function(db, tag, next){
 
 //UPDATE
 //Updates the title, postContent, and tags
-var updatePost = function(db, post){
+exports.updatePost = function(db, post){
 	db.collection('posts').update(
 		{
 			"id" : post.id
@@ -314,7 +314,7 @@ var updatePost = function(db, post){
 		});
 };
 //For use when a user buys/rents this post's offer
-var makeUnavailable = function(db, postID, secUsername){
+exports.makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
 			"id" : postID
@@ -330,7 +330,7 @@ var makeUnavailable = function(db, postID, secUsername){
 };
 
 //DELETE
-var deletePost = function(db, postID){
+exports.deletePost = function(db, postID){
 	db.collection('posts').remove(
 	{
 		"id": postID
@@ -341,7 +341,7 @@ var deletePost = function(db, postID){
 
 ///**************REVIEW COLLECTION*********************************
 //CREATION
-var insertReview = function(db, newReview){
+exports.insertReview = function(db, newReview){
 	db.collection('review').insertOne( 
 	{
 		//users
@@ -362,7 +362,7 @@ var insertReview = function(db, newReview){
 
 //READ
 //Finds the review by <reviewer> related to the post with id <POSTID>
-var getReview = function(db, postID, reviewer, next){
+exports.getReview = function(db, postID, reviewer, next){
 	db.collection("review").findOne(
 		{
 			"postID" : postID,
@@ -373,7 +373,7 @@ var getReview = function(db, postID, reviewer, next){
 		});
 };
 //Finds all reviews based on the related post with id postID 
-var getReviewsByID =  function(db, postID, next){
+exports.getReviewsByID =  function(db, postID, next){
 	db.collection("review").find(
 		{
 			"postID" : postID
@@ -383,7 +383,7 @@ var getReviewsByID =  function(db, postID, next){
 		});
 };
 //Finds all reviews written by <username>
-var getReviewsFrom =  function(db, username, next){
+exports.getReviewsFrom =  function(db, username, next){
 	db.collection("review").find(
 		{
 			"reviewer" : username
@@ -393,7 +393,7 @@ var getReviewsFrom =  function(db, username, next){
 		});
 };
 //Finds all reviews where <username> is reviewed
-var getReviewsAbout =  function(db, username, next){
+exports.getReviewsAbout =  function(db, username, next){
 	db.collection("review").find(
 		{
 			"reviewee" : username
@@ -406,7 +406,7 @@ var getReviewsAbout =  function(db, username, next){
 
 //UPDATE
 //Updates the date, rating, and comment (other values cannot change)
-var updateReview = function(db, review){
+exports.updateReview = function(db, review){
 	db.collection('review').update(
 		{
 			"postID" : review.postID,
@@ -421,7 +421,7 @@ var updateReview = function(db, review){
 };
 
 //DELETE
-var deleteReview = function(db, postID, reviewer){
+exports.deleteReview = function(db, postID, reviewer){
 	db.collection('review').remove(
 	{
 		"postID" : postID,
