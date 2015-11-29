@@ -116,7 +116,6 @@ app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
 	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
 		
-        
         console.log("" + req.body.username);
         console.log("" + req.body.password);
         //a user was found when the email was queried
