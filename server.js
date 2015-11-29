@@ -7,8 +7,9 @@ var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
+//var datab = require("./public/js/requests");
 var db = require('./DB');
-var User = db.User;
+//var User = db.User;
 
 // How similar recommendations should be by
 // number of tags
@@ -92,17 +93,19 @@ var generateHash = function (password) {
 
 app.post("/registration", function (req, res) {
 	console.log("Registration Request Received");
-	userExists(db, req.body.username, req.body.email, function (result) {
-		
-        //a user was found when the email was queried
+    db.userExists(db.db, req.body.username, req.body.mail, function (result) {
+        
+        //a user was found when the email and username queried
         if (result) {
             console.log("User already exists");
 			res.send("User Exists");
         }
 
         else {
+            req.body.password = generateHash(req.body.password);
             console.log("New User");
-            insertUser(db, {email : req.body.mail, username : req.body.username, password : generateHash(req.body.password)});
+            db.insertUser(db.db, req.body);
+            res.send("Success");
         }
     });
 });
@@ -111,19 +114,21 @@ app.post("/registration", function (req, res) {
 
 app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
-	userExists(db, { email: req.body.mail }, function (result) {
+	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
 		
+        
+        console.log("" + req.body.username);
+        console.log("" + req.body.password);
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
-			validateUser(db, req.body.mail, generateHash(req.body.password), function (valid) {
+			db.validateUser(db.db, req.body.username, generateHash(req.body.password), function (valid) {
                if (!valid) {
                    console.log("Invalid Password");
                    res.send("Invalid Password");
                }
                 
                 else {
-                    
                     console.log("Successful Login");
                     //res.sendFile(__dirname + '/mainpage.html');
                     res.send("Success");
@@ -142,7 +147,7 @@ app.post("/loginVerification", function (req, res) {
 //searching by user
 app.post("/searchuser", function (req, res) {
 	console.log("search request received");
-	getPostsFrom(db, req.body.mail, function (posts) {
+	db.getPostsFrom(db.db, req.body.username, function (posts) {
 		
         //a user was found when the email was queried
         if (posts) {
@@ -161,7 +166,7 @@ app.post("/searchuser", function (req, res) {
 app.post("/profile", function (req, res) {
     console.log("profile view request received");
     
-    getUserByUsername(db, req.body.mail, function (user) {
+    db.getUserByUsername(db.db, req.body.username, function (user) {
         if (user) {
             res.json(user);
         }
@@ -176,7 +181,7 @@ app.post("/profile", function (req, res) {
 app.get("/post:id", function (req, res) {
     console.log("post retrieval request received");
     
-    getPostByID(db, req.params.id, function(post) {
+    db.getPostByID(db.db, req.params.id, function(post) {
         if (post) {
             res.json(post);   
         }
