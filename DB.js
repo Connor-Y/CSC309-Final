@@ -149,10 +149,10 @@ var validateUser = function(db, username, password, next){
 }
 //Check if newUser's email or username is already in database,
 //sends boolean to next()
-var userExists = function(db, newUser, next){
+var userExists = function(db, username, email, next){
 	db.collection('users').findOne(
 		{
-			$or: [{"email": newUser.email}, {"username": newUser.username}]
+			$or: [{"email": email}, {"username": username}]
 		}, function(err, result) {
 				assert.equal(err, null);
 			    if (result){
