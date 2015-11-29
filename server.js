@@ -34,7 +34,7 @@ app.listen(PORT);
 app.post("/recommendations", function (req, res) {
 	console.log("Generate and Send Recommendations");
 	// Need database code for games
-	getPostByID(db, req.params.id, function(post) {
+	db.getPostByID(db.db, req.params.id, function(post) {
 		if (post) {
 			// Pick some/all tags
 			// Find games with similar tags
@@ -45,12 +45,12 @@ app.post("/recommendations", function (req, res) {
 			tags = shuffleArray(tags);
 			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
 			
-			var recList = getGamesByTag(db, tags);
+			var recList = db.getPostsByTag(db.db, tags);
 			
 			// If we don't have enough recommendations, relax the similarity
 			if (recList.length < numberOfRecs) {
 				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
-				recList = recList.concat(getGamesByTag(db, tags));
+				recList = recList.concat(db.getPostsByTag(db.db, tags));
 			}
 			// Shuffle the recommendations we have
 			recList = shuffleArray(recList);
@@ -59,7 +59,7 @@ app.post("/recommendations", function (req, res) {
 			// Pick some random games to fill out the number.
 			if (recList.length < numberOfRecs) {
 				// Just pick some random games
-				recList = recList.concat(getGamesByTag(db, ""));
+				recList = recList.concat(db.getPostsByTag(db.db, ""));
 			}
 			recList = recList.slice(0, numberOfRecs + 1);
 			// TODO: format recList
