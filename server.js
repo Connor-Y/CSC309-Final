@@ -7,7 +7,6 @@ var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
 var app = express();
 
-//var datab = require("./public/js/requests");
 var db = require('./DB');
 //var User = db.User;
 
