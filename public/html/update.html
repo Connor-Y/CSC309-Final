@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
+
+</head>
+
+<body>
+<div id="sitebar">
+	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<form class="navbar-form navbar-right" role="search" >
+    	<div class="form-group">
+          <input type="text" class="form-control" placeholder ="Search Game ..."  >
+        </div>
+        <button type="button" class="btn btn-default">
+     		<span class="glyphicon glyphicon-search"></span> Search
+   		 </button>
+    </form>
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+</div>
+
+<nav class="navbar navbar-inverse navbar-static-top">
+	<div class="container-fluid">
+		<div>
+      		<ul class="nav navbar-nav">
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
+        		<li><a href="#">POintless SHit</a></li>
+        		<li><a href="#">POintless SHit</a></li> 
+        		<li><a href="#">POintless SHit</a></li> 
+        		<li><a href="#">POintless SHit</a></li> 
+				<li><a href="#">POintless SHit</a></li> 
+				<li><a href="#">POintless SHit</a></li> 
+
+      		</ul>
+     	 	<ul class="nav navbar-nav navbar-right">
+        		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+     		</ul>
+   		</div>
+	</div>
+</nav>
+
+<div id="postingBox">
+<h1 id="user">Just a Surrogate</h1> <!--the name of the user -> will be used for request -->
+
+
+<form role="form">
+  <div class="form-group">
+  	<h5>Update Password</h5>
+    <input  class="form-control" id="updatePassword">
+  </div>
+  
+<!--change name to button later? -->
+	<a id="pwdButton" class="btn btn-primary" type=submit>Update Password</a> 
+
+  	<div class="form-group">
+  	<h5>Update Username</h5>
+    <input  class="form-control" id="updateName">
+  	</div>
+  	<a id="nameButton" class="btn btn-primary" type=submit>Update Username</a> 
+
+  	
+ 	<div class="form-group">
+ 	<h5>Update Profile Picture</h5>
+
+    <input  class="form-control" id="updatePic">
+  </div>
+  	<a id="pictureButton" class="btn btn-primary" type=submit>Update Profile Picture</a> 
+
+
+   <div class="form-group">
+ 	<h5>Update Description</h5>
+
+    <textarea class = "form-control" rows = "8" id="updateDes"></textarea>
+
+    </div>
+  	<a id="desButton" class="btn btn-primary" type=submit>Update description</a> 
+
+
+
+</form>
+
+
+</div>
+
+
+</body>
+
+
+</html>
+
+<script>
+$("#pwdButton").click(function() {
+	newPassword = $("#updatePassword").val();
+	alert(newPassword);
+
+});
+
+$("#nameButton").click(function() {
+	newName = $("#updateName").val();
+	alert(newName);
+});
+
+$("#pictureButton").click(function() {
+	newPic = $("#updatePic").val();
+	alert(newPic);
+});
+
+
+$("#desButton").click(function() {
+	newName = $("#updateDes").val();
+	alert(newName);
+});
+
+
+
+
+
+
+
+</script>
