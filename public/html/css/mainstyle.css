@@ -191,7 +191,7 @@
 #login {
 	border: 1px solid black;
 	width:80%;
-	height:400px;
+	height:450px;
 	margin-left:10%;
 	position:absolute;
 	z-index:0;
@@ -206,7 +206,7 @@
 #signup {
 	border: 1px solid black;
 	width:80%;
-	height:400px;
+	height:450px;
 	margin-left:10%;
 	position:absolute;
 	z-index:1;
