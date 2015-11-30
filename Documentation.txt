@@ -1,0 +1,18 @@
+Overview:
+Our application is a game sharing site. 
+At its most fundamental level it provides a platform for users to sell or rent games
+to those interested in them. A common scenario for people playing video games, 
+known as gamers hereafter, is that they accumulate a collection of games that 
+they no longer wish to play. Typically, this is due to the fact that the gamer 
+has completed said game but it may also be due to simple dislike. Regardless of
+the reason, a gamer typically builds a significant collection of these games,
+with the most prolific gamers having collections of upwards of a hundred games. 
+At this point in time, these games hold little value to the gamer herself but may 
+represent a significant value for someone who has not played the game. In this
+fashion, our site hopes to capitalize on the unused collections of games that people
+possess by allowing said people to sell or rent these games to people who have an 
+interest in them. Our site provides a marketplace for games, allowing users to 
+quickly and easily sell, rent or purchase games.
+
+Functionality:
+ 
