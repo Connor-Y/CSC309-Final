@@ -32,6 +32,10 @@ app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
+app.get('/login', function (req, res) {
+	res.sendFile(__dirname + '/public/html/login.html');
+});
+
 app.get('/404', function () {
 	res.sendFile(__dirname + '/public/html/404.html');
 });
@@ -59,7 +63,7 @@ app.post("/recommendations", function (req, res) {
 			}
 			
 			// Strip copies of the same game
-			for (elem : recList) {
+			for (elem in recList) {
 				if (elem.title == post.title)
 					recList.splice(recList.indexOf(elem), 1);
 			}
@@ -68,7 +72,7 @@ app.post("/recommendations", function (req, res) {
 			
 			
 			// Strip copies of the same game
-			for (elem : recList) {
+			for (elem in recList) {
 				if (elem.title == post.title)
 					recList.splice(recList.indexOf(elem), 1);
 			}
@@ -79,7 +83,7 @@ app.post("/recommendations", function (req, res) {
 
 				recList = recList.concat(db.getPostsByTag(db.db, ""));
 				// Strip copies of the same game
-				for (elem : recList) {
+				for (elem in recList) {
 					if (elem.title == post.title)
 						recList.splice(recList.indexOf(elem), 1);
 				}
@@ -96,24 +100,21 @@ app.post("/recommendations", function (req, res) {
 });
 
 app.post('/searchGames', function (req, res) {
-	getAvailablePosts(db, function (posts) {
+	db.getAvailablePosts(db.db, function (posts) {
 		var results = searchPostings(req.params.query, posts);
 		
 		// TODO: Format results
-		res.send(results);
+		res.send(results)
 			
-		}
+		});
 		
 	});
-	
-	
-});
 
 function searchPostings(q, postings) {
 	var results = [];
 	var query = q.trim();
 	query = query.replace(",", " ");
-	for (elem : postings) {
+	for (elem in postings) {
 		if (elem.title == query)
 			results.push(elem);
 		// Multiple ifs to arrange results in order of priority
@@ -125,7 +126,7 @@ function searchPostings(q, postings) {
 			// TODO: set proper tag delimiter
 			var tags = elem.tags.split(" ");
 			var splitQuery = query.split(" ");
-			for (val : splitQuery) {
+			for (val in splitQuery) {
 				if (tags.indexOf(val) > -1) {
 					results.push(elem);
 					break;
@@ -146,7 +147,9 @@ function shuffleArray(array) {
 }
 
 
-
+var validPassword = function(password, storedpassword) {
+    return bcrypt.compareSync(password, storedpassword);
+};
 
 var generateHash = function (password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
@@ -182,11 +185,13 @@ app.post("/loginVerification", function (req, res) {
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
-			db.validateUser(db.db, req.body.username, generateHash(req.body.password), function (valid) {
-               if (!valid) {
+            
+            db.getUserByUsername(db.db, req.body.username, function (user) {
+                //console.log("" + user.password);
+                if (!validPassword(req.body.password, user.password)) {
                    console.log("Invalid Password");
                    res.send("Invalid Password");
-               }
+                }  
                 
                 else {
                     console.log("Successful Login");
@@ -307,6 +312,7 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 	return newReview;
 	
 }
+
 
 
 // ***** Old Code for Facebook Verification *****
