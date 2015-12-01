@@ -118,7 +118,7 @@ exports.insertUser = function(db, newUser) {
 
 //READ
 //find user <username> (does not include password in data)
-exports.getUserByUsername = function(db, username, next){
+/*exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
 		{
 			"username" : username
@@ -130,7 +130,18 @@ exports.getUserByUsername = function(db, username, next){
 			assert.equal(err, null);
 			next(user);
 		});
+};*/
+
+exports.getUserByUsername = function(db, username, next){
+	db.collection('users').findOne(
+		{
+			"username" : username
+		}, function(err, user){
+			assert.equal(err, null);
+			next(user);
+		});
 };
+
 //For logging in, checks that passwords match, sends boolean to next()
 exports.validateUser = function(db, username, password, next){
 	db.collection('users').findOne(
@@ -180,7 +191,7 @@ exports.updateUserInfo = function(db, user){
 }
 
 
-var updateUserName = function(db, user){
+exports.updateUserName = function(db, user){
 	db.collection('users').update(
 		{
 			"username" : user.username
@@ -193,7 +204,7 @@ var updateUserName = function(db, user){
 		});
 }
 
-var updateUserDescription = function(db, user){
+exports.updateUserDescription = function(db, user){
 	db.collection('users').update(
 		{
 			"username" : user.username
