@@ -1,5 +1,8 @@
 var expect = require('chai').expect;
-var db = require("../DB"); 
+var assert = require('assert');
+var MongoClient = require('mongodb').MongoClient;
+var ObjectId = require('mongodb').ObjectID;
+var databaseFile = require('../DB');
 
 // Helper Functions
 function createNoHashUser(mail, name, pass) {
@@ -21,98 +24,141 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 	return newReview;
 	
 }
-// Database Testing
+
+//console.log("Before Sleep");
+//sleep(4000);
+
+function sleep(time) {
+    var stop = new Date().getTime();
+    while(new Date().getTime() < stop + time) {
+        ;
+    }
+}
+
+
+var url = 'mongodb://localhost:27017/VGExchange';
+
+var db;
+
 describe("Database", function() {
-	var db;
-	before(function() {
-		var url = 'mongodb://localhost:27017/VGExchange';
-		MongoClient.connect(url, function(err, database) {
-			assert.equal(null, err);
-			console.log("Connected to DB");
-			db = database;
-		});
-		
-	});
-	
+	this.timeout(10000);
 	describe("Database check", function () {
 		// Check that the database exists
-		it("db connection", function () {
-			assert.isNotNull(db);
+		it("db connection", function (done) {
+			databaseFile.connect(function () {
+				db = databaseFile.db;
+				expect(db).to.not.be.null;
+				expect(db).to.not.be.undefined;
+				done();
+			});
 		});
 	});
 	
 	describe("User Functions", function () {	
-		before("Create Users", function () {
-			var email1 = "a@test.com";
-			var name1 = "Alice";
-			var pass1 = "aPass";
-			
-			var email2 = "b@test.com";
-			var name2 = "Bob";
-			var pass2 = "bpass";
-			
-			var email3 = "e@test.com";
-			var name3 = "Eve";
-			var pass3 = "epass";
-			
-			var user1 = createNoHashUser(email1, name1, pass1);
-			var user2 = createNoHashUser(email2, name2, pass2);
-			var user3 = createNoHashUser(email3, name3, pass3);
-			insertUser(db, user1);
-			insertUser(db, user2);
-			insertUser(db, user3);
+		var email1 = "a@test.com";
+		var name1 = "Alice";
+		var pass1 = "aPass";
+		
+		var email2 = "b@test.com";
+		var name2 = "Bob";
+		var pass2 = "bpass";
+		
+		var email3 = "e@test.com";
+		var name3 = "Eve";
+		var pass3 = "epass";
+		
+		var user1 = createNoHashUser(email1, name1, pass1);
+		var user2 = createNoHashUser(email2, name2, pass2);
+		var user3 = createNoHashUser(email3, name3, pass3);
+		
+		before("Create Users", function (done) {
+				databaseFile.insertUser(db, user1);
+				databaseFile.insertUser(db, user2);
+				databaseFile.insertUser(db, user3);
+				sleep(400);
+				done();
 		});
 		
 		describe("Verify Users", function () {
-			before("getUsers", function () {
-				var userA = getUserByUsername(name1);
-				var userB = getUserByUsername(name2);
-				var userC = getUserByUsername(name3);
+			var userA;
+			var userB;
+			var userC;
+			before("getUsers", function (done) {
+				databaseFile.getUserByUsername(db, name1, function(usera) {
+					userA = usera;
+					databaseFile.getUserByUsername(db, name2, function(userb) {
+						userB = userb;
+						databaseFile.getUserByUsername(db, name3, function(userc) {
+							userC = userc;
+							done();
+						});
+					});
+				});
 			});
 
-			it('user1 check', function() {
+			it('user1 check', function(done) {
 				expect(userA.username).to.equal(name1);
 				expect(userA.email).to.equal(email1);
+				done();
 			});
 			
-			it('user2 check', function() {
+			it('user2 check', function(done) {
 				expect(userB.username).to.equal(name2);
 				expect(userB.email).to.equal(email2);
+				done();
 			});
 			
-			it('user3 check', function() {
+			it('user3 check', function(done) {
 				expect(userC.username).to.equal(name3);
 				expect(userC.email).to.equal(email3);
+				done();
 			});
 		});	
 		
+	
 		describe("Update User", function () {	
-			before("Create Temp User", function () {
-				var gen = Math.floor((Math.random() * 10000)).toString();
-				var newUser = createNoHashUser(gen, gen, "pass");
-				insertUser(db, newUser)
+			var newUser;
+			var gen;
+			before("Create Temp User", function (done) {
+				gen = Math.floor((Math.random() * 10000)).toString();
+				newUser = createNoHashUser(gen, gen, "pass");
+				databaseFile.insertUser(db, newUser);
+				sleep(400);
+				done();
 			});
 			
-			it('Update name', function () {
-				var newName = Math.floor((Math.random() * 10000)).toString();
-				var updatedUser = getUserByUsername(gen);
-				updatedUser.name = newName;
-				updateUserInfo(db, updatedUser);
-				expect(getUserByUsername(gen).name.to.equal(newName));
+			it('Update name', function (done) {
+				databaseFile.getUserByUsername(db, gen, function (user) {
+					var newName = Math.floor((Math.random() * 10000)).toString(); 
+					user.name = newName;
+					databaseFile.updateUserInfo(db, user);
+					sleep(400);
+					databaseFile.getUserByUsername(db, user.username, function (updatedUser) {
+						expect(updatedUser.name).to.equal(newName);
+						done();
+					});
+				});
+				
 			});
 			
 			
-			it('Update Description', function () {
+			it('Update Description', function (done) {
 				var newDesc = Math.floor((Math.random() * 10000)).toString();
-				var updatedUser = getUserByUsername(gen);
-				updatedUser.description = newDesc;
-				updateUserInfo(db, updatedUser);
-				expect(getUserByUsername(gen).description.to.equal(newDesc));
-
+				databaseFile.getUserByUsername(db, gen, function (user) {
+					user.description = newDesc;
+					databaseFile.updateUserInfo(db, user);
+					sleep(400);
+					databaseFile.getUserByUsername(db, user.username, function (updatedUser) {
+						expect(updatedUser.description).to.equal(newDesc);
+						done();
+					});
+				});
 			});
 			
-			after("Delete Temp User", function () {
-				deleteUser(db, gen);
+			after("Delete Temp User", function (done) {
+				databaseFile.deleteUser(db, gen);
+				sleep(400);
+				done();
 			});
 			
 			// Security?
@@ -122,23 +168,34 @@ describe("Database", function() {
 				updateUser(email, newPass, ...);
 				expect((getUser(email).pass).to.equal(newPass));
 			}); 
-			
-		});*/
+			*/
+		});
 		
 		describe("Delete User", function () {
-			before('tempUser', function () {
-				var gen = Math.floor((Math.random() * 10000)).toString();
+			var gen;
+			before('tempUser', function (done) {
+				gen = Math.floor((Math.random() * 10000)).toString();
 				var newUser = createNoHashUser(gen, gen, "pass");
-				insertUser(db, newUser)
+				databaseFile.insertUser(db, newUser)
+				sleep(400);
+				done();
 			});
 			// What does getUserByUsername return if not existent?
-			it('Delete user', function () {
-				deleteUser(db, gen);
-				expect(db.getUserByUsername(gen).to.be.null);
+			it('Delete user', function (done) {
+				databaseFile.deleteUser(db, gen);
+				sleep(400);
+				databaseFile.getUserByUsername(db, gen, function (user) {
+					expect(user).to.be.null;
+					done();
+				});
 			});
 		});
 	});
-	
+});		
+// === In Progress Below ===
+
+		
+	/* 
 	describe('Posting Functions', function () {
 		before('Create Posting', function() {
 			var u1 = createNoHashUser("A", "A", "A");
@@ -338,7 +395,7 @@ describe("Database", function() {
 					expect(review.to.deep.equal(tempReview));
 				});
 			});
-		});
+		}); */
 		/*
 		decribe('Verify Games', function () {
 			it('Game 1, Comment 3', function () {
@@ -402,6 +459,8 @@ describe("Database", function() {
 		// See above for tests
 	});
 	*/
-	});
+//	});
 	
-});
+//});
+
+	
