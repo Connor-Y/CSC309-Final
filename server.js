@@ -5,10 +5,12 @@ var PORT = 3000;
 var express = require('express');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
+
+var sanitizeHtml = require('sanitize-html');
+
 var app = express();
 
 var db = require('./DB');
-//var User = db.User;
 
 // How similar recommendations should be by
 // number of tags
@@ -101,7 +103,7 @@ app.post("/recommendations", function (req, res) {
 
 app.post('/searchGames', function (req, res) {
 	db.getAvailablePosts(db.db, function (posts) {
-		var results = searchPostings(req.params.query, posts);
+		var results = searchPostings(sanitizeHtml(req.params.query), posts);
 		
 		// TODO: Format results
 		res.send(results)
@@ -157,15 +159,26 @@ var generateHash = function (password) {
 
 app.post("/registration", function (req, res) {
 	console.log("Registration Request Received");
-    db.userExists(db.db, req.body.username, req.body.mail, function (result) {
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
         
+        //get rid of possible script in all fields
+        req.body.password = sanitizeHtml(req.body.password);
+        req.body.username = sanitizeHtml(req.body.username);
+        req.body.email = sanitizeHtml(req.body.email);
+        
+        if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
+            console.log("script detected!");
+            res.send("Script Found");
+        }
+            
         //a user was found when the email and username queried
-        if (result) {
+        else if (result) {
             console.log("User already exists");
 			res.send("User Exists");
         }
 
         else {
+            
             req.body.password = generateHash(req.body.password);
             console.log("New User");
             db.insertUser(db.db, req.body);
@@ -178,24 +191,26 @@ app.post("/registration", function (req, res) {
 
 app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
-	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
+	db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.mail), function (result) {
 		
         console.log("" + req.body.username);
+        console.log("" + sanitizeHtml(req.body.username));
         console.log("" + req.body.password);
+        console.log("" + sanitizeHtml(req.body.password));
+        
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
             
-            db.getUserByUsername(db.db, req.body.username, function (user) {
+            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
                 //console.log("" + user.password);
-                if (!validPassword(req.body.password, user.password)) {
+                if (!validPassword(sanitizeHtml(req.body.password), user.password)) {
                    console.log("Invalid Password");
                    res.send("Invalid Password");
                 }  
                 
                 else {
                     console.log("Successful Login");
-                    //res.sendFile(__dirname + '/mainpage.html');
                     res.send("Success");
                 }
                 
@@ -212,7 +227,7 @@ app.post("/loginVerification", function (req, res) {
 //searching by user
 app.post("/searchuser", function (req, res) {
 	console.log("search request received");
-	db.getPostsFrom(db.db, req.body.username, function (posts) {
+	db.getPostsFrom(db.db, sanitizeHtml(req.body.username), function (posts) {
 		
         //a user was found when the email was queried
         if (posts) {
@@ -231,7 +246,7 @@ app.post("/searchuser", function (req, res) {
 app.post("/profile", function (req, res) {
     console.log("profile view request received");
     
-    db.getUserByUsername(db.db, req.body.username, function (user) {
+    db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
         if (user) {
             res.json(user);
         }
@@ -245,14 +260,14 @@ app.post("/profile", function (req, res) {
 
 app.post("/updateUserInfo", function (req, res) {
 	if (req.params.name !== "")
-		updateUserName(db, {username: req.params.username, name: req.params.name});
+        db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
 	if (req.params.description !== "")
-		updateUserDescription(db, {username: req.params.username, description: req.params.description});
+		db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
 	
 });
 
 app.post("/postingsByUser", function (req, res) {
-	getPostsFrom(db, req.params.username, function (posts) {
+	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
 		if (post) {
 			// TODO: format return value
 			res.send(post);
@@ -267,7 +282,7 @@ app.post("/postingsByUser", function (req, res) {
 app.get("/post:id", function (req, res) {
     console.log("post retrieval request received");
     
-    db.getPostByID(db.db, req.params.id, function(post) {
+    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
         if (post) {
             res.json(post);   
         }
@@ -281,21 +296,45 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-	var posting = createPosting(req.params.username, req.params.id, req.params.date,
-		req.params.content, req.params.tags);
-	insertPost(db, posting);
-	res.send("Success");
+	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date,
+		sanitizeHtml(req.params.content), sanitizeHtml(req.params.tags));
+	
+    if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
+        res.send("Failure");
+    }
+    
+    else {
+        db.insertPost(db.db, posting);
+        res.send("Success");  
+    }
+    
+  
+});
+
+app.post("/createReview", function (req, res) {
+	var review = createReview(sanatizeHtml(req.params.reviewer), sanatizeHtml(req.params.reviewee), req.params.id, 
+	req.params.date, req.params.rating, sanatizeHtml(req.params.comment));
+    
+    
+    if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
+        res.send("Failure");
+    }
+    
+    else {
+	   db.insertReview(db.db, review);
+	   res.send("Success");    
+    }
 });
 
 app.post("/deleteUser", function (req, res) {
-	deletePost(db, req.params.id);
+	db.deletePost(db.db, req.params.id);
 	res.send("Success");
 	
 });
 
 app.post("/makeUnavailable", function (req, res) {
 	// id refers to the posting's id
-	makeUnavailable(db, req.params.id, req.params.buyerUsername);
+	db.makeUnavailable(db.db, req.params.id, req.params.buyerUsername);
 	res.send("Success");
 	
 });
