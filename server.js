@@ -7,16 +7,6 @@ var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
 
 var sanitizeHtml = require('sanitize-html');
-//usage of sanitizeHtml 
-/*
-clean = sanitizeHtml(dirty, {
-  allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
-  allowedAttributes: {
-    'a': [ 'href' ]
-  }
-});
-*/
-
 
 var app = express();
 
@@ -171,18 +161,25 @@ app.post("/registration", function (req, res) {
 	console.log("Registration Request Received");
     db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
         
+        //get rid of possible script in all fields
+        req.body.password = sanitizeHtml(req.body.password);
+        req.body.username = sanitizeHtml(req.body.username);
+        req.body.email = sanitizeHtml(req.body.email);
+        
+        if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
+            console.log("script detected!");
+            res.send("Script Found");
+        }
+            
         //a user was found when the email and username queried
-        if (result) {
+        else if (result) {
             console.log("User already exists");
 			res.send("User Exists");
         }
 
         else {
-            //get rid of possible script in all fields
-            req.body.password = generateHash(sanitizeHtml(req.body.password));
-            req.body.username = sanitizeHtml(req.body.username);
-            req.body.mail = sanitizeHtml(req.body.email);
             
+            req.body.password = generateHash(req.body.password);
             console.log("New User");
             db.insertUser(db.db, req.body);
             res.send("Success");
@@ -199,6 +196,8 @@ app.post("/loginVerification", function (req, res) {
         console.log("" + req.body.username);
         console.log("" + sanitizeHtml(req.body.username));
         console.log("" + req.body.password);
+        console.log("" + sanitizeHtml(req.body.password));
+        
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
@@ -299,15 +298,32 @@ app.get("/post:id", function (req, res) {
 app.post("/createPosting", function (req, res) {
 	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date,
 		sanitizeHtml(req.params.content), sanitizeHtml(req.params.tags));
-	db.insertPost(db.db, posting);
-	res.send("Success");
+	
+    if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
+        res.send("Failure");
+    }
+    
+    else {
+        db.insertPost(db.db, posting);
+        res.send("Success");  
+    }
+    
+  
 });
 
 app.post("/createReview", function (req, res) {
 	var review = createReview(sanatizeHtml(req.params.reviewer), sanatizeHtml(req.params.reviewee), req.params.id, 
 	req.params.date, req.params.rating, sanatizeHtml(req.params.comment));
-	db.insertReview(db.db, review);
-	res.send("Success");
+    
+    
+    if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
+        res.send("Failure");
+    }
+    
+    else {
+	   db.insertReview(db.db, review);
+	   res.send("Success");    
+    }
 });
 
 app.post("/deleteUser", function (req, res) {
