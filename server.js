@@ -5,6 +5,21 @@ var PORT = 3000;
 var express = require('express');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
+
+var sanitizeHtml = require('sanitizie-html');
+//usage of sanitizeHtml 
+// var clean = sanitizeHtml(DirtyHtml);
+
+/*
+clean = sanitizeHtml(dirty, {
+  allowedTags: [ 'b', 'i', 'em', 'strong', 'a' ],
+  allowedAttributes: {
+    'a': [ 'href' ]
+  }
+});
+*/
+
+
 var app = express();
 
 var db = require('./DB');
