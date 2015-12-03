@@ -273,7 +273,7 @@
 	z-index:0;
 	padding:10%;
 	opacity:0;
-	background-color:#cce5ff;
+	background-color:white;
 
 
 
@@ -358,12 +358,13 @@
 	vertical-align:middle;
 	}
 
-#userproducts {
+#userproducts, #usercheckedout {
 	border:1px solid black;
-	width:100%;
+	width:80%;
 	height: 300px;
 	margin-top:30px;
 	margin-bottom: 30px;
+	margin-left:10%;
 	/* horizonatal overflow for related products*/
  	overflow: scroll;
 	padding:10px;
@@ -487,7 +488,7 @@
 	margin-top:20px;
 	margin-left:25%;
 	text-align:center;
-	height:300px;
+	height:200px;
 }
 
 

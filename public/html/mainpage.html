@@ -127,7 +127,9 @@
 
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -136,25 +138,26 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
@@ -175,12 +178,10 @@
      				<div class="description">
      					<p>Metal Gear Solid 5: The Phantom pain</p>
     					<p> Avg Price per week $10</p>
-     					<p>metacritic: 91%</p>
-          
+     					<p>metacritic rating: 91%</p>       
      				</div>
 				</div>
 
-<!--Want to add a link to take us to that page-->
 			</td>
 
 			<td>
@@ -191,7 +192,7 @@
      				<div class="description">
      					<p>Rise of the Tomb Raider</p>
     					<p>Avg Price per week $5</p>
-    					<p>metacritic :88%</p>
+    					<p>metacritic rating: 88%</p>
 
      				</div>
 				</div>
@@ -205,11 +206,10 @@
      				<div class="description">
      					<p>Fallout 4</p>
     					<p>Avg Price per week $7</p>
-   	 					<p>metacritic rating:4.56/5</p>
+   	 					<p>metacritic rating: 93%</p>
 
      				</div>
 				</div>
-<!--Want to add a link to take us to that page-->
 			</td>
 			<td>
     			<div class="container">
@@ -217,16 +217,13 @@
         				<img src="http://assets1.ignimgs.com/2015/09/09/halo5jpg-8bb70a_1280w.jpg" class="img-thumbnail" alt="Cinque Terre" > 
       				</div>
      			<div class="description">
-     				<p>ShooterBro</p>
+     				<p>Halo 5</p>
     				<p>Price $5 per week </p>
-    				<p>metacritic rating:3/5</p>
+    				<p>metacritic rating: 83%</p>
 
      			</div>
 				</div>
-<!--Want to add a link to take us to that page-->
 			</td>
-
-
 
 
 		</tr>
@@ -294,7 +291,7 @@
     <td>
     <div class="container">
      <div class="item"> 
-        <img src="https://cdn4.iconfinder.com/data/icons/fashion-icons/154/hipster-512.png" class="img-thumbnail" alt="Cinque Terre" > 
+        <img src="https://cdn4.iconfinder.com/data/icons/fashion-icons/154/hipster-512.png" class="img-thumbnail" alt="alt" > 
       </div>
      <div class="description">
      <p>HeWhoHasMustache</p>
@@ -309,7 +306,7 @@
  <td>
     <div class="container">
      <div class="item"> 
-        <img src="https://s3.amazonaws.com/37assets/svn/1065-IMG_2529.jpg" class="img-thumbnail" alt="Cinque Terre" > 
+        <img src="https://s3.amazonaws.com/37assets/svn/1065-IMG_2529.jpg" class="img-thumbnail" alt="alt" > 
       </div>
      <div class="description">
      <p>AManWithAMustache</p>
@@ -324,7 +321,7 @@
  <td>
     <div class="container">
      <div class="item"> 
-        <img src="https://pmcdeadline2.files.wordpress.com/2014/12/benedict.jpg?w=446&h=299&crop=1" class="img-thumbnail" alt="Cinque Terre" > 
+        <img src="https://pmcdeadline2.files.wordpress.com/2014/12/benedict.jpg?w=446&h=299&crop=1" class="img-thumbnail" alt="Cumberbatch" > 
       </div>
      <div class="description">
      <p>EggsBenedict</p>
@@ -338,7 +335,7 @@
  <td>
     <div class="container">
      <div class="item"> 
-        <img src="http://cache4.asset-cache.net/gc/467022262-molly-rankin-of-alvvays-performs-at-the-gettyimages.jpg?v=1&c=IWSAsset&k=2&d=GkZZ8bf5zL1ZiijUmxa7QQzetD%2FuYsoYyi8yeGDMS2wrgUVtxIhk3HohXbC%2BHHJQQWpG7y%2BWQ%2BgbIoU0SoSSRA%3D%3D" class="img-thumbnail" alt="Cinque Terre" > 
+        <img src="http://slatethedisco.com/wp-content/uploads/2014/10/Alvvays-6.jpg" class="img-thumbnail" alt="Molly Rankin" > 
       </div>
      <div class="description">
      <p>MollyRankinator</p>

@@ -18,7 +18,9 @@
 <body>
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -27,29 +29,31 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
 </nav>
+
 
 <!--poster, 
 date
@@ -66,35 +70,35 @@ image url
 <p>Post from: </p>
 <p id="poster">Just a Surrogate</p> <!-- this will be where handle bars puts the name of the user -->
 
-<form role="form">
+<form role="form" method="post" action="create posting path">
   <div class="form-group">
   	<h5>Title</h5>
-    <input  class="form-control" id="posttitle">
+    <input  class="form-control" id="posttitle" name="title">
   </div>
   <div class="form-group">
   	<h5>Tags: comma seperated list (no spaces) </h5>
-    <input  class="form-control" id="tags">
+    <input  class="form-control" id="tags" name="tags">
   </div>
  <div class="form-group">
  	<h5>Price Per Week (digits only)</h5>
 
-    <input  class="form-control" id="price">
+    <input  class="form-control" id="price" name="price">
   </div>
  <div class="form-group">
  	<h5>Image Url</h5>
 
-    <input  class="form-control" id="image">
+    <input  class="form-control" id="image" name="image">
   </div>
 
   
  	<div class = "form-group">
     	<h5>Description of Content</h5>
-    	<textarea class = "form-control" rows = "8" id="content"></textarea>
+    	<textarea class = "form-control" rows = "8" id="content" name="content"></textarea>
   	 </div>
 
 
 <!--change name to button later? -->
-	<a id="loginbutton" class="btn btn-primary" type=submit>Upload New Posting</a> 
+	<button id="loginbutton" class="btn btn-primary" type=submit>Upload New Posting</button> 
 
 
 </form>
@@ -111,7 +115,7 @@ image url
 
 </html>
 
-<script>
+<script> //put this in server
 function getDate() {
 	var today = new Date();
 	var dd = today.getDate();
@@ -153,6 +157,7 @@ function commaList (s) {
 
 <script>
 //just named login button since it borrows the styling make sure to change this later
+/*
 $("#loginbutton").click(function() {
 	var date = getDate();
 	var poster = document.getElementById("poster").innerHTML;
@@ -166,6 +171,7 @@ $("#loginbutton").click(function() {
 		alert("Price field must be a digit number!");
 		return;
 	}
+	*/
 	/*
 	if ( comaList(tags)) { //the input tags is not a comma deliminated string
 		alert("incorrect tag input");
@@ -183,23 +189,8 @@ $("#loginbutton").click(function() {
 
 	
 
-});
+//});
 
-
-</script>
-
-<script>
-
-function Requestlogin(requestString, path) {
-	
-	var xmlhttp = new XMLHttpRequest();
-	url =  "http://127.0.0.1:3000/";
-	url += path;
-	xmlhttp.open("POST",url, true); 
-	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
- 	xmlhttp.send(requestString);
-}
 
 </script>
 

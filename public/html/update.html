@@ -16,9 +16,12 @@
 </head>
 
 <body>
+
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -27,29 +30,33 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
 </nav>
+
+
+
 
 <div id="postingBox">
 <h1 id="user">Just a Surrogate</h1> <!--the name of the user -> will be used for request -->
@@ -62,13 +69,15 @@
   </div>
   
 <!--change name to button later? -->
-	<a id="pwdButton" class="btn btn-primary" type=submit>Update Password</a> 
+	<button type="button" id="pwdButton" class="btn btn-primary">Log-In!</button>
+
+<!--	<a id="pwdButton" class="btn btn-primary">Update Password</a> -->
 
   	<div class="form-group">
   	<h5>Update Username</h5>
     <input  class="form-control" id="updateName">
   	</div>
-  	<a id="nameButton" class="btn btn-primary" type=submit>Update Username</a> 
+  	<button type="button" id="nameButton" class="btn btn-primary">Update Username</button> 
 
   	
  	<div class="form-group">
@@ -76,7 +85,7 @@
 
     <input  class="form-control" id="updatePic">
   </div>
-  	<a id="pictureButton" class="btn btn-primary" type=submit>Update Profile Picture</a> 
+  	<button type="button" id="pictureButton" class="btn btn-primary" >Update Profile Picture</button> 
 
 
    <div class="form-group">
@@ -85,7 +94,7 @@
     <textarea class = "form-control" rows = "8" id="updateDes"></textarea>
 
     </div>
-  	<a id="desButton" class="btn btn-primary" type=submit>Update description</a> 
+  	<button type="button" id="desButton" class="btn btn-primary">Update description</button> 
 
 
 
@@ -103,24 +112,62 @@
 <script>
 $("#pwdButton").click(function() {
 	newPassword = $("#updatePassword").val();
-	alert(newPassword);
+	//alert(newPassword);
+	
+	$.post("placehoder",{password: newPassword} function(data) {
+		if (data =="Success") {
+			alert("Password successfully changed!");
+		}
+		else {
+			alert("Could not change password, try again");
+			}
+	});
+	
 
 });
 
 $("#nameButton").click(function() {
 	newName = $("#updateName").val();
-	alert(newName);
+	//	alert(newName);
+	$.post("placeholder",{name: newName}, function(data) {
+		if (data == "Success") {
+			alert("Name successfully changed!");
+
+		}
+		else {
+			alert("Could not change name, try again");
+		}
+
+	});
 });
 
 $("#pictureButton").click(function() {
 	newPic = $("#updatePic").val();
-	alert(newPic);
+	//alert(newPic);
+	$.post("placeholder",{pic: newPic}, function(data) {
+		if (data == "Success") {
+			alert("Picture successfuly changed!");
+		}
+		else {
+			alert("Picture could not be changed, try again");
+		}
+
+	});
 });
 
 
 $("#desButton").click(function() {
-	newName = $("#updateDes").val();
-	alert(newName);
+	newDes = $("#updateDes").val();
+	//alert(newName);
+	$.post("placeholder",{description: newDes}, function(data) {
+		if (data == "Success") {
+			alert("Description successfuly changed!");
+		}
+		else {
+			alert("Cescription could not be changed, try again");
+		}
+
+	});
 });
 
 
