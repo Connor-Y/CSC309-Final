@@ -88,7 +88,7 @@ app.post("/registration", function (req, res) {
     
     if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
             console.log("script detected!");
-            res.send("Failure");
+            res.send("Invalid");
     }
     
     else {
@@ -102,7 +102,7 @@ app.post("/registration", function (req, res) {
         //a user was found when the email and username queried
            if (result) {
                 console.log("User already exists");
-                res.send("Failure");
+                res.send("Invalid");
             }
 
             else {
@@ -188,7 +188,7 @@ app.post("/updateUserRating", function (req, res) {
 
 app.post("/updateUserInfo", function (req, res) {
 	if (sess.username != req.params.username)
-		res.send("Bad Permissions");
+		res.send("Invalid");
 	else {
 		if (req.params.name !== "")
 			db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
