@@ -120,7 +120,7 @@ app.post("/recommendations", function (req, res) {
 			// TODO: format recList
 			res.send(recList);
 		} else { 
-			res.redirect('/404');
+			res.send('Not Found');
 		}	
 	});
 });
@@ -191,7 +191,7 @@ app.post("/registration", function (req, res) {
     
     if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
             console.log("script detected!");
-            res.send("Script Found");
+            res.send("Failure");
     }
     
     else {
@@ -205,7 +205,7 @@ app.post("/registration", function (req, res) {
         //a user was found when the email and username queried
            if (result) {
                 console.log("User already exists");
-                res.send("User Exists");
+                res.send("Failure");
             }
 
             else {
@@ -255,11 +255,9 @@ app.post("/loginVerification", function (req, res) {
                 }
                 
             });
-        }
-
-        else {
-            console.log("Invalid User");
-            res.send("Invalid User");
+        } else {
+            console.log("Not Found");
+            res.send("Not Found");
         }
     });
 });
@@ -282,11 +280,9 @@ app.post("/searchuser", function (req, res) {
         if (posts) {
             console.log("Matching posts found");
 			res.json(posts);
-        }
-
-        else {
-            console.log("No match");
-            res.send("No match");
+        } else {
+            console.log("Not Found");
+            res.send("Not Found");
         }
     });
 });
@@ -301,27 +297,29 @@ app.post("/profile", function (req, res) {
         }
         
         else {
-            res.send("Cannot find user in database");
+            res.send("Not Found");
         }
     }); 
 });
 
 
 app.post("/updateUserInfo", function (req, res) {
-	if (req.params.name !== "")
-        db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
-	if (req.params.description !== "")
-		db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
-	
+	if (sess.username != req.params.username)
+		res.send("Bad Permissions");
+	else {
+		if (req.params.name !== "")
+			db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
+		if (req.params.description !== "")
+			db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
+	}
 });
 
-app.post("/postingsByUser", function (req, res) {
+app.post("/getPostsFrom", function (req, res) {
 	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
 		if (post) {
-			// TODO: format return value
 			res.send(post);
 		} else
-			res.redirect('/404');
+			res.send("Not Found");
 		
 	});
 	
@@ -337,7 +335,7 @@ app.get("/post:id", function (req, res) {
         }
         
         else {
-            res.send("No post with this ID");
+            res.send("Not Found");
         }
         
     });
@@ -356,8 +354,6 @@ app.post("/createPosting", function (req, res) {
         db.insertPost(db.db, posting);
         res.send("Success");  
     }
-    
-  
 });
 
 app.post("/createReview", function (req, res) {
@@ -387,6 +383,30 @@ app.post("/makeUnavailable", function (req, res) {
 	res.send("Success");
 	
 });
+
+app.post("/getRentedGames", function (req, res) {
+	db.getPostsBoughtBy(db.db, sess.username, function (posts) {
+		res.send(posts);
+	});	
+});
+
+
+app.post("/updateRating", function (req, res) {
+	db.updateUserRating(db.db, req.params.username, req.params.rating);
+	res.send("Success");
+});
+
+app.post("/getGameReviews", function (req, res) {
+	db.getReviewsByID(db.db, req.params.postID, function (reviews) {
+		res.send(reviews);
+	});
+});
+
+app.post("/getUserReviews", function (req, res) {
+	db.getReviewsFrom(db.db, req.params.username, function (reviews) {
+		res.send(reviews);
+	});
+});
 function createPosting(username, id, date, title, content, tags) {
 	var newPost = {username: username, id: id, date: date, title: title,
 					postContent: content, tags: tags};
@@ -398,7 +418,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 	date: date, rating: rating, comment: comment};
 	
 	return newReview;
-	
 }
 
 
