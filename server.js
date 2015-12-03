@@ -5,8 +5,8 @@ var PORT = 3000;
 var express = require('express');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
-
 var sanitizeHtml = require('sanitize-html');
+var sess = require('client-sessions');
 
 var app = express();
 
@@ -22,6 +22,17 @@ app.use(express.static(__dirname + '/public'));
 //app.use(express.static( __dirname + '/public/html'));
 //app.use(express.static( __dirname + '/public/css'));
 //app.use(express.static( __dirname + '/public/javascript'));
+
+app.use(sess({
+  cookieName: 'sess',
+  secret: 'kauKoG0TtFB2LxpLRXMH',
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
+}));
+
+//default
+sess.username = '';
+sess.email = '';
 
 app.use(bodyParser.urlencoded({
         extended: true
@@ -45,6 +56,19 @@ app.get('/404', function () {
 app.listen(PORT);
 
 // ====
+
+
+app.post("/getSession", function (req, res) {
+	console.log("Session Request");
+	if ((sess.username == '') || (sess.email == '')) {
+		res.send(JSON.stringify({result: "Invalid"}));
+    }
+	else {
+		var temp = {sessmail: sess.email, sessusername: sess.username};
+		res.send(JSON.stringify(temp));
+    }
+});
+        
 
 app.post("/recommendations", function (req, res) {
 	console.log("Generate and Send Recommendations");
@@ -158,40 +182,53 @@ var generateHash = function (password) {
 };
 
 app.post("/registration", function (req, res) {
-	console.log("Registration Request Received");
-    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
-        
-        //get rid of possible script in all fields
-        req.body.password = sanitizeHtml(req.body.password);
-        req.body.username = sanitizeHtml(req.body.username);
-        req.body.email = sanitizeHtml(req.body.email);
-        
-        if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
+    
+    console.log("Registration Request Received");
+    //get rid of possible script in all fields
+    req.body.password = sanitizeHtml(req.body.password);
+    req.body.username = sanitizeHtml(req.body.username);
+    req.body.email = sanitizeHtml(req.body.email);
+    
+    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
             console.log("script detected!");
             res.send("Script Found");
-        }
-            
+    }
+    
+    else {
+        
+        
+        //console.log("" + req.body.username);
+        //console.log("" + req.body.email);
+        //console.log("" + req.body.password);
+        
+        db.userExists(db.db, req.body.username, req.body.email, function (result) {
         //a user was found when the email and username queried
-        else if (result) {
-            console.log("User already exists");
-			res.send("User Exists");
-        }
+           if (result) {
+                console.log("User already exists");
+                res.send("User Exists");
+            }
 
-        else {
+            else {
             
-            req.body.password = generateHash(req.body.password);
-            console.log("New User");
-            db.insertUser(db.db, req.body);
-            res.send("Success");
-        }
-    });
+                req.body.password = generateHash(req.body.password);
+                console.log("New User");
+                db.insertUser(db.db, req.body);
+                res.send("Success");
+            
+                //ADD STUFF TO SESSION AS NEEDED
+                sess.email = req.body.email;
+                sess.username = req.body.username;
+            }
+        });
+    }
+ 
 });
 
 
 
 app.post("/loginVerification", function (req, res) {
 	console.log("Login Request Received");
-	db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.mail), function (result) {
+	db.userExists(db.db, req.body.username, req.body.email, function (result) {
 		
         console.log("" + req.body.username);
         console.log("" + sanitizeHtml(req.body.username));
@@ -202,9 +239,9 @@ app.post("/loginVerification", function (req, res) {
         if (result) {
             console.log("User exists");
             
-            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+            db.getUserByUsername(db.db, req.body.username, function (user) {
                 //console.log("" + user.password);
-                if (!validPassword(sanitizeHtml(req.body.password), user.password)) {
+                if (!validPassword(req.body.password, user.password)) {
                    console.log("Invalid Password");
                    res.send("Invalid Password");
                 }  
@@ -212,6 +249,9 @@ app.post("/loginVerification", function (req, res) {
                 else {
                     console.log("Successful Login");
                     res.send("Success");
+                    
+                    sess.email = user.email;
+                    sess.username = req.body.username;
                 }
                 
             });
@@ -222,6 +262,15 @@ app.post("/loginVerification", function (req, res) {
             res.send("Invalid User");
         }
     });
+});
+        
+app.post("/logout", function (req, res) {
+    sess.username = '';
+    sess.email = '';
+    
+    console.log("logout successful");
+    res.send("Success");
+    
 });
 
 //searching by user

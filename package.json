@@ -8,6 +8,7 @@
     "bcrypt-nodejs": "latest",
     "body-parser": "^1.14.1",
     "chai": "^3.4.1",
+    "client-sessions": "^0.7.0",
     "express": "^4.13.3",
     "fs": "0.0.2",
     "mocha": "^2.3.4",
