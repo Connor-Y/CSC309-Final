@@ -99,7 +99,16 @@ app.get("/usersearch", function(req, res) {
 	console.log("got to the user search page");
 	res.render('usersearchView', {username: sess.username, layout: 'usersearch'});
 });
-
+/*
+app.get("/userpage", function(req, res) {
+	
+});
+*/
+/*
+app.get("/getall", function(req, res) {
+	console.log("trying to get all 
+});
+*/
 app.get("/userupdate", function(req, res) {
 	console.log("got to the user update page");
 	res.render('userupdateView', {username: sess.username, layout: 'userupdate'});
@@ -195,7 +204,7 @@ app.post("/loginVerification", function (req, res) {
             console.log("User exists");
             
             db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
-                //console.log("" + user.password);
+                console.log("the password is" + user.password);
                 if (!validPassword(req.body.password, user.password)) {
                    console.log("Invalid Password");
                    res.send("Invalid");
@@ -233,11 +242,12 @@ app.post("/profile", function (req, res) {
     
     db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
         if (user) {
-            res.json(user);
+            //res.json(user);
+            res.render("userpageView", {user: user, layout: "userpage"});
         }
         
         else {
-            res.send("Not Found");
+            res.send("Not Found, try again!");
         }
     }); 
 });
@@ -259,6 +269,8 @@ app.post("/updateUserInfo", function (req, res) {
 			db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
 	}
 });
+
+//password must be hashed first generateHash(req.body.password)
 
 
 app.post("/getPostsFromUsername", function (req, res) {
@@ -288,8 +300,9 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date,
-		sanitizeHtml(req.params.content), sanitizeHtml(req.params.tags));
+	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date, sanitizeHtml(req.params.title),
+		sanitizeHtml(req.params.price)
+		sanitizeHtml(req.params.content), sanitizeHtml(req.params.image), sanitizeHtml(req.params.tags));
 	
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
@@ -409,6 +422,24 @@ app.post("/getRecommendations", function (req, res) {
 		}	
 	});
 });
+
+function getDate() {
+	var today = new Date();
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+
+	if(dd<10) {
+  	  dd='0'+dd
+	} 
+
+	if(mm<10) {
+  	  mm='0'+mm
+	} 
+
+	today = mm+'/'+dd+'/'+yyyy;
+	return today;
+}
 
 
 
