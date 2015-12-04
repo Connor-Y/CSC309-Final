@@ -364,6 +364,7 @@ function searchPostings(q, postings) {
 			// TODO: set proper tag delimiter
 			var tags = elem.tags.split(" ");
 			var splitQuery = query.split(" ");
+			// TODO: Check that this actually works...
 			for (val in splitQuery) {
 				if (tags.indexOf(val) > -1) {
 					results.push(elem);
