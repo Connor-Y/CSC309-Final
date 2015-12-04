@@ -82,8 +82,12 @@ app.get("/myuserpage", function(req, res) {
 	db.getUserByUsername(db.db, sess.username, function (user) {
         if (user) {
             //res.json(user);
-            res.render('myPageView', {username: sess.username, rating: user.rating , email: user.email , description: user.description, layout:'mypage'});
+            db.getPostsBoughtBy(db.db, sess.username, function (posts) {
+				 res.render('myPageView', {user: user,posts:posts,  layout:'mypage'});
 
+			});	
+
+            
         }
         
         else {
@@ -211,7 +215,9 @@ app.post("/loginVerification", function (req, res) {
                 }  
                 
                 else {
-                    console.log("Successful Login");                           
+                    console.log("Successful Login");  
+                    console.log("logged in on " +  getDate()); 
+
                     sess.email = sanitizeHtml(user.email);
                     sess.username = sanitizeHtml(req.body.username);
 					//res.send("Success");
@@ -252,10 +258,43 @@ app.post("/profile", function (req, res) {
     }); 
 });
 
+
+
 app.post("/updateUserRating", function (req, res) {
 	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
 	res.send("Success");
 });
+
+/*User*/
+app.post("/updateDescription", function (req, res) {
+	console.log(req.body.description);
+	db.updateUserDescription(db.db, sess.username, sanitizeHtml(req.body.description));
+	res.send("Success");
+});
+
+app.post("/updateUsername", function (req, res) {
+	console.log(req.body.description);
+	db.updateUserName(db.db, sess.username, sanitizeHtml(req.body.username));
+	sess.username = req.body.username;
+	res.send("Success");
+});
+
+app.post("/updatePassword", function (req, res) {
+	console.log(req.body.description);
+	db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
+	res.send("Success");
+});
+
+app.post("/updatePic", function (req, res) {
+	console.log(req.body.description);
+	db.updateUserPic(db.db, sess.username, sanitizeHtml(req.body.pic));
+	res.send("Success");
+
+
+});
+
+
+
 
 
 
@@ -300,23 +339,29 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date, sanitizeHtml(req.params.title),
-		sanitizeHtml(req.params.price)
-		sanitizeHtml(req.params.content), sanitizeHtml(req.params.image), sanitizeHtml(req.params.tags));
+	console.log("got to create a posting");
 	
+	var id = sanitizeHtml(req.params.title) + sess.username;
+	var date = getDate();
+	var posting = createPosting(sess.username, id,  date, sanitizeHtml(req.body.title),
+		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+	
+
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
     }
     
     else {
+    	console.log("created the new posting");
         db.insertPost(db.db, posting);
         res.send("Success");  
     }
+    
 });
 
 app.post("/createReview", function (req, res) {
-	var review = createReview(sanatizeHtml(req.params.reviewer), sanatizeHtml(req.params.reviewee), req.params.id, 
-	req.params.date, req.params.rating, sanatizeHtml(req.params.comment));
+	var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id, 
+	getDate(), req.params.rating, sanatizeHtml(req.params.comment));
     
     
     if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
@@ -479,10 +524,10 @@ function shuffleArray(array) {
     return array;
 }
 
-function createPosting(username, id, date, title, content, tags) {
+function createPosting(username, id, date, title, content,image, tags) {
 	var newPost = {username: username, id: id, date: date, title: title,
-					postContent: content, tags: tags};
-	return newPost
+					postContent: content, image: image, tags: tags};
+	return newPost;
 }
 
 function createReview(reviewer, reviewee, id, date, rating, comment) {

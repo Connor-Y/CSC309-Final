@@ -1,0 +1,168 @@
+<div id="sitebar">
+	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog" >My Account</a> <!--send to get request that will load main page and current user -->
+
+
+	<form class="navbar-form navbar-right" role="search" >
+    	<div class="form-group">
+          <input type="text" class="form-control" placeholder ="Search Game ..."  >
+        </div>
+        <button type="button" class="btn btn-default">
+     		<span class="glyphicon glyphicon-search"></span> Search
+   		 </button>
+    </form>
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
+</div>
+
+<nav class="navbar navbar-inverse navbar-static-top">
+	<div class="container-fluid">
+		<div>
+      		<ul class="nav navbar-nav">
+       			<li class="active"><a href="main" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="main">Log-Out</a></li> 
+
+        	
+      		</ul>
+     	 	<ul class="nav navbar-nav navbar-right">
+        		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
+     		</ul>
+   		</div>
+	</div>
+</nav>
+
+<div class="loginbox">
+ 	
+ 	<ul class="pagination">
+   		<li><a  id="pg1">Sign-Up</a></li>
+    	<li><a  id="pg2">Log-In</a></li>
+	</ul>
+
+	<div id="login" >
+	<form role="form">
+	
+		<div class="form-group">
+   			<h5>Email address:</h5>
+    		<input type="email" class="form-control" id="email">
+  		</div>
+  		<div class="form-group">
+    		<h5>Username:</h5>
+    		<input type="username" class="form-control" id="username"> <!--need email id for auto fill-->
+  		</div>
+  		<div class="form-group">
+    		<h5>Password:</h5>
+    		<input type="password" class="form-control" id="loginpwd">
+  		</div>
+  		<div class="checkbox">
+    		<label>
+    		<input type="checkbox"> Remember me</label>
+  		</div>
+	<a id="loginbutton" class="btn btn-primary" type=submit>Log-In</a> 
+
+
+
+   	</form>
+</div>
+
+
+
+
+<div id="signup">
+
+	<form role="form">
+
+  		<div class="form-group">
+   			<h5>Email address:</h5>
+    		<input type="email" class="form-control" id="email">
+  		</div>
+
+  		<div class="form-group">
+    		<h5>Username:</h5>
+    		<input type="username" class="form-control" id="username"> <!--need email id for auto fill-->
+  		</div>
+
+  		<div class="form-group">
+    		<h5>Password:</h5>
+    		<input type="password" class="form-control" id="signInPWD">
+  		</div>
+
+  		<div class="form-group">
+    		<h5>Confirm Password:</h5>
+    		<input type="password" class="form-control" id="signInConfirm">
+  		</div>
+
+  		<div class="checkbox">
+    		<label><input type="checkbox"> Remember me</label>
+  		</div>
+  		<a id="signupbutton" class="btn btn-primary" type=submit>Sign-up</a> 
+  	
+  		
+	</form>
+
+
+</div>
+
+	 <!--google signin 
+	 	<div class="g-signin2" data-onsuccess="onSignIn"></div> -->
+	 	<div id="my-signin2" class="googleButton" data-onsuccess="onSignIn"></div>
+
+
+
+</div>
+
+<!-- Google stuff
+   <script>
+    function onSuccess(googleUser) {
+     // console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
+    	alert( googleUser.getBasicProfile().getName());
+    }
+    function onFailure(error) {
+      console.log(error);
+    }
+    function renderButton() {
+      gapi.signin2.render('my-signin2', {
+        'scope': 'https://www.googleapis.com/auth/plus.login',
+        'user': 'https://www.googleapis.com/auth/plus.me',
+        'width': 200,
+        'height': 50,
+        'longtitle': true,
+        'theme': 'dark',
+        'onsuccess': onSuccess,
+        'onfailure': onFailure
+      });
+    }
+
+    function onSignIn(googleUser) {
+
+
+	var profile = googleUser.getBasicProfile();
+
+	/*
+	console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+	console.log('Name: ' + profile.getName());
+	//set a div to show the image url using ('Image URL: ' + profile.getImageUrl());
+	console.log('Email: ' + profile.getEmail());
+	*/
+	}
+
+	function signOut() {
+	var auth2 = gapi.auth2.getAuthInstance();
+	auth2.signOut().then(function () {
+		console.log('User signed out.');
+	});
+	}
+  </script>
+
+  <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
+
+
+-->
+
+
+
+
