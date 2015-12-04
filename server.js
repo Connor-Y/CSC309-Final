@@ -45,6 +45,7 @@ app.use(sess({
 //default
 sess.username = '';
 sess.email = '';
+sess.admintype = 2;
 
 app.use(bodyParser.urlencoded({
         extended: true
@@ -141,7 +142,7 @@ app.post("/getSession", function (req, res) {
 		res.send(JSON.stringify({result: "Invalid"}));
     }
 	else {
-		var temp = {sessmail: sess.email, sessusername: sess.username};
+		var temp = {sessmail: sess.email, sessusername: sess.username, sessadmintype: sess.admintype};
 		res.send(JSON.stringify(temp));
     }
 });
@@ -160,7 +161,6 @@ app.post("/registration", function (req, res) {
     }
     
     else {
-        
         
         //console.log("" + req.body.username);
         //console.log("" + req.body.email);
@@ -183,6 +183,11 @@ app.post("/registration", function (req, res) {
                 //ADD STUFF TO SESSION AS NEEDED
                 sess.email = req.body.email;
                 sess.username = req.body.username;
+                
+                //get the admin type from the database
+                db.getUserByUsername(db.db, req.body.username, function (user) {
+                    sess.admintype = user.admintype;                
+                });
                 //bring the user to the main page logged in
                 res.redirect("main");
             }
@@ -214,9 +219,11 @@ app.post("/loginVerification", function (req, res) {
                 }  
                 
                 else {
-                    console.log("Successful Login");                           
+                    console.log("Successful Login");   
+                    
                     sess.email = sanitizeHtml(user.email);
                     sess.username = sanitizeHtml(req.body.username);
+                    sess.admintype = user.admintype;
 					//res.send("Success");
 					res.redirect("main"); //log in to the main page.
                 }
@@ -232,6 +239,10 @@ app.post("/loginVerification", function (req, res) {
 app.get("/logout", function (req, res) {
     sess.username = '';
     sess.email = '';
+    //2 is for a normal user, they get very basic control.
+    //a non logged in user should be able to view posts, but not 
+    //change profile settings or make purchases. 
+    sess.admintype = 2;
     
     console.log("logout successful");
     //res.send("Success");
@@ -273,7 +284,50 @@ app.post("/updateUserInfo", function (req, res) {
 	}
 });
 
-//password must be hashed first generateHash(req.body.password)
+app.post("/updateUserPassword", function (req, res) {
+    
+    //this may be redundant, but just makes sure user exists incase user tries to send request without
+    //using actual front end. (some app like postman)
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+           res.send("Invalid user");
+        }
+        
+        else {
+            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+            
+                //check that they entered their old password correctly
+                if (!validPassword(req.body.password, user.password)) {
+                    console.log("Invalid Password");
+                    res.send("Invalid");
+                }
+                
+                else {
+                    console.log("Correct password entered...");
+                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.newpassword));
+                    console.log("Password updated!");
+                
+                }
+            });
+        }   
+    });
+});
+
+app.post("/toggleAdmin" , function (req, res) {
+    console.log("admin toggle request received");
+    db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+        if (!user) {
+            res.send("Invalid user");
+        }
+        
+        else {
+            if user.admintype < sess.
+        }
+    
+    
+})
+
+
 
 
 app.post("/getPostsFromUsername", function (req, res) {

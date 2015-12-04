@@ -4,6 +4,8 @@ var ObjectId = require('mongodb').ObjectID;
 
 var url = 'mongodb://localhost:27017/VGExchange';
 
+//0 is superadmin, 1 is admin, 2 is normal user
+var admintype = 0;
 
 MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
@@ -107,10 +109,15 @@ exports.insertUser = function(db, newUser) {
 		"description" : "NEW USER",
 
 		"rating" : 0,
+        "admintype" : admintype, 
 		"numReviews" : 0
 
 	}, function(err, result) {
 			assert.equal(err, null);
+        
+            if (admintype == 0) {
+                admintype = 2;
+            }
 			console.log("Inserted a document into the users collection.");
 	});
 
@@ -253,6 +260,29 @@ exports.deleteUser = function(db, username){
 	}, function(err, result){
 		assert.equal(err, null);
 	});
+}
+
+exports.toggleAdmin = function (db, username) {
+    db.collection('users').findOne(
+    {
+        "username" : username
+    }, function (err, user) {
+        assert.equal(err, null);
+        
+        var updatedadmin = 2;
+        if (user.admintype == 2) {
+            updatedadmin = 1;
+        }
+        
+        db.collection('users').update(
+        {
+		  "username" : username
+		},{
+		  $set: {"admintype" : updatedadmin}
+		}, function(err, result){
+		  assert.equal(err, null);
+		});
+    });
 }
 
 ///***********************POSTS COLLECTION*******************************************
