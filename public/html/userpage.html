@@ -21,7 +21,9 @@
 <body>
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -30,39 +32,44 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
-        		<li><a href="#"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+        		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
 </nav>
 
+
+
+<div style="text-align:center">
 <div id="userpicture">
 
 <img class="img-thumbnail" src="https://intothegloss.com/wp-content/uploads3/2015/07/ellie-rowsell-wolf-alice-band-4.jpg">
 
 </div>
 <div id="userinfo">
-<h1>Name:Somthing Rating:4.5</h1><!-- Placeholder -->
-<h1>Email:</h1>
-<h1>Description: </h1>
+<h3 id="name">Placeholder</h3>
+<h3>Rating:4.5</h3>
+<h3>Email:</h3>
+<h3>Description: </h3>
 
 </div>
 
@@ -183,6 +190,7 @@
 </div>
 
 
+</div> <!--end of container div -->
 
 
 
@@ -191,29 +199,56 @@
 </html>
 
 
-<script>
-//On click for any of the class
-//get the id which was set to the database item's id
-//and send the resuest with that id
-
-</script>
 
 <script>
 //put in seperate file later
+var thisUser = $("#name").val();
+alert("something");
+
 $("#rank5").click(function() {
 	alert("I rate this 5");
+	$.post("path",{newrating: 5}, function(data) {
+		if (data =="Success") {
+			alert("Rated user");
+		}
+	});
 });
+
 $("#rank4").click(function() {
 	alert("I rate this 4");
+	$.post("path",{newrating: 4}, function(data) {
+	if (data=="Success") {
+		alert("Rated user");
+	}
+	});
+
 });
 $("#rank3").click(function() {
 	alert("I rate this 3");
+	$.post("path",{newrating: 3}, function(data) {
+		if (data=="Success") {
+			alert("Rated user");
+		}
+	});
+
 });
 $("#rank2").click(function() {
 	alert("I rate this 2");
+	$.post("path",{newrating: 2}, function(data) {
+		if (data=="Success") {
+			alert("Rated user");
+		}
+	});
+
 });
 $("#rank1").click(function() {
 	alert("I rate this 1");
+	$.post("path",{newrating: 1}, function(data) {
+		if (data=="Success") {
+			alert("Rated user");
+		}
+	});
+
 });
 
 

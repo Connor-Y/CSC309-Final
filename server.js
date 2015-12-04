@@ -26,11 +26,14 @@ var generateHash = function (password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
+var expressHbs = require('express3-handlebars');
+app.engine('hbs', expressHbs({extname:'hbs', defaultLayout:'main.hbs'}));
+app.set('view engine', 'hbs');
 
 app.use(express.static(__dirname + '/public'));
-//app.use(express.static( __dirname + '/public/html'));
-//app.use(express.static( __dirname + '/public/css'));
-//app.use(express.static( __dirname + '/public/javascript'));
+app.use(express.static( __dirname + '/public/html'));
+app.use(express.static( __dirname + '/public/css'));
+app.use(express.static( __dirname + '/public/javascript'));
 
 app.use(sess({
   cookieName: 'sess',
@@ -50,13 +53,75 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 
-app.get('/', function (req, res) {
+app.get('/', function (req, res) { //main page not logged in
 	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
-app.get('/login', function (req, res) {
-	res.sendFile(__dirname + '/public/html/login.html');
+app.get('/start', function (req, res) { //main page not logged in
+	res.sendFile(__dirname + '/public/html/mainpage.html');
 });
+
+
+app.get('/main', function (req, res) { //main page logged in
+	//res.sendFile(__dirname + '/public/html/login.html');
+	console.log("logged in to main page");
+	console.log(sess.username);
+	res.render('mainPageView', {username: sess.username, layout:'mainPage'});
+
+});
+
+app.get('/login', function(req, res) {
+	console.log("got to the login page");
+	res.sendFile(__dirname + '/public/html/login.html');
+//	res.render('loginView', {layout:'login'});
+
+});
+
+app.get("/myuserpage", function(req, res) {
+	console.log("got to my user page");
+	db.getUserByUsername(db.db, sess.username, function (user) {
+        if (user) {
+            //res.json(user);
+            res.render('myPageView', {username: sess.username, rating: user.rating , email: user.email , description: user.description, layout:'mypage'});
+
+        }
+        
+        else {
+            res.send("Not Found"); //did not find the 
+        }
+    }); 
+
+//	res.render('myPageView', {username: sess.username, layout:'mypage'});
+
+});
+
+app.get("/usersearch", function(req, res) {
+	console.log("got to the user search page");
+	res.render('usersearchView', {username: sess.username, layout: 'usersearch'});
+});
+/*
+app.get("/userpage", function(req, res) {
+	
+});
+*/
+/*
+app.get("/getall", function(req, res) {
+	console.log("trying to get all 
+});
+*/
+app.get("/userupdate", function(req, res) {
+	console.log("got to the user update page");
+	res.render('userupdateView', {username: sess.username, layout: 'userupdate'});
+
+});
+
+app.get("/userpost", function(req, res) {
+	console.log("got to the user post game page");
+	res.render('userpostView', {username: sess.username, layout: 'userpost'});
+
+});
+
+
 
 app.get('/404', function () {
 	res.sendFile(__dirname + '/public/html/404.html');
@@ -110,11 +175,13 @@ app.post("/registration", function (req, res) {
                 req.body.password = generateHash(req.body.password);
                 console.log("New User");
                 db.insertUser(db.db, req.body);
-                res.send("Success");
+                //res.send("Success");
             
                 //ADD STUFF TO SESSION AS NEEDED
                 sess.email = req.body.email;
                 sess.username = req.body.username;
+                //bring the user to the main page logged in
+                res.redirect("main");
             }
         });
     }
@@ -137,7 +204,7 @@ app.post("/loginVerification", function (req, res) {
             console.log("User exists");
             
             db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
-                //console.log("" + user.password);
+                console.log("the password is" + user.password);
                 if (!validPassword(req.body.password, user.password)) {
                    console.log("Invalid Password");
                    res.send("Invalid");
@@ -147,7 +214,8 @@ app.post("/loginVerification", function (req, res) {
                     console.log("Successful Login");                           
                     sess.email = sanitizeHtml(user.email);
                     sess.username = sanitizeHtml(req.body.username);
-					res.send("Success");
+					//res.send("Success");
+					res.redirect("main"); //log in to the main page.
                 }
                 
             });
@@ -158,12 +226,14 @@ app.post("/loginVerification", function (req, res) {
     });
 });
         
-app.post("/logout", function (req, res) {
+app.get("/logout", function (req, res) {
     sess.username = '';
     sess.email = '';
     
     console.log("logout successful");
-    res.send("Success");
+    //res.send("Success");
+    res.redirect("start");
+
     
 });
 
@@ -172,11 +242,12 @@ app.post("/profile", function (req, res) {
     
     db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
         if (user) {
-            res.json(user);
+            //res.json(user);
+            res.render("userpageView", {user: user, layout: "userpage"});
         }
         
         else {
-            res.send("Not Found");
+            res.send("Not Found, try again!");
         }
     }); 
 });
@@ -185,6 +256,8 @@ app.post("/updateUserRating", function (req, res) {
 	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
 	res.send("Success");
 });
+
+
 
 app.post("/updateUserInfo", function (req, res) {
 	if (sess.username != req.params.username)
@@ -196,6 +269,9 @@ app.post("/updateUserInfo", function (req, res) {
 			db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
 	}
 });
+
+//password must be hashed first generateHash(req.body.password)
+
 
 app.post("/getPostsFromUsername", function (req, res) {
 	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
@@ -224,8 +300,9 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date,
-		sanitizeHtml(req.params.content), sanitizeHtml(req.params.tags));
+	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date, sanitizeHtml(req.params.title),
+		sanitizeHtml(req.params.price)
+		sanitizeHtml(req.params.content), sanitizeHtml(req.params.image), sanitizeHtml(req.params.tags));
 	
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
@@ -267,7 +344,7 @@ app.post("/makeUnavailable", function (req, res) {
 
 app.post("/getRentedGamesByUsername", function (req, res) {
 	db.getPostsBoughtBy(db.db, sess.username, function (posts) {
-		res.send(posts);
+	res.send(posts);
 	});	
 });
 
@@ -345,6 +422,24 @@ app.post("/getRecommendations", function (req, res) {
 		}	
 	});
 });
+
+function getDate() {
+	var today = new Date();
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+
+	if(dd<10) {
+  	  dd='0'+dd
+	} 
+
+	if(mm<10) {
+  	  mm='0'+mm
+	} 
+
+	today = mm+'/'+dd+'/'+yyyy;
+	return today;
+}
 
 
 
