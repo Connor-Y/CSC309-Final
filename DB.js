@@ -197,20 +197,20 @@ exports.updateUserName = function(db, user){
 			"username" : user.username
 		},{
 			$set: {
-				"description" : user.description
+				"username" : user.username
 			}
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
 }
 
-exports.updateUserDescription = function(db, user){
+exports.updateUserDescription = function(db, username, description){
 	db.collection('users').update(
 		{
-			"username" : user.username
+			"username" : username
 		},{
 			$set: {
-				"description" : user.description
+				"description" : description
 			}
 		}, function(err, result) {
 			assert.equal(err, null);
