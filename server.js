@@ -52,6 +52,9 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
+app.get('/index', function (req, res) {
+	res.sendFile(__dirname + '/public/html/mainpage.html');
+});
 
 app.get('/', function (req, res) { //main page not logged in
 	res.sendFile(__dirname + '/public/html/mainpage.html');
@@ -301,7 +304,7 @@ app.get("/post:id", function (req, res) {
 
 app.post("/createPosting", function (req, res) {
 	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date, sanitizeHtml(req.params.title),
-		sanitizeHtml(req.params.price)
+		sanitizeHtml(req.params.price),
 		sanitizeHtml(req.params.content), sanitizeHtml(req.params.image), sanitizeHtml(req.params.tags));
 	
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
@@ -459,6 +462,7 @@ function searchPostings(q, postings) {
 			// TODO: set proper tag delimiter
 			var tags = elem.tags.split(" ");
 			var splitQuery = query.split(" ");
+			// TODO: Check that this actually works...
 			for (val in splitQuery) {
 				if (tags.indexOf(val) > -1) {
 					results.push(elem);
