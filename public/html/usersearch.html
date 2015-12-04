@@ -18,7 +18,9 @@
 <body>
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -27,21 +29,22 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
@@ -51,16 +54,16 @@
 	</div>
 </nav>
 
+
 <div id="searchUser"> 
-<form role="form">
+<form role="form" method="post" action="./"> <!-- send to the request will redirect to no user found or that users page (another post) -->
 
    <div class="form-group">
   	<h3>Search for User</h3>
-    <input  class="form-control" id="user">
+    <input  class="form-control" id="user" name="username">
   </div>
-  	<a id="userSearchButton" class="btn btn-primary" type=submit>Search!</a> 
-
-
+  <!--	<a id="userSearchButton" class="btn btn-primary" type=submit>Search!</a> -->
+  	<button id="userSearchButton" type="submit" id="loginbutton">Log-In!</button>
 </form>
 
 
@@ -71,7 +74,7 @@
 
 
 </html>
-
+<!--
 <script>
 //add in requests later
 $("#userSearchButton").click(function() {
@@ -81,4 +84,5 @@ $("#userSearchButton").click(function() {
 
 });
 </script>
+-->
 

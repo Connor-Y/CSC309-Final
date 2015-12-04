@@ -15,12 +15,11 @@
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
 
- <!-- BEGIN Pre-requisites -->
+ <!-- BEGIN Pre-requisites 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
   </script>
   <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer>
   </script>
-  <!-- END Pre-requisites -->
   <script>
     function start() {
       gapi.load('auth2', function() {
@@ -33,7 +32,7 @@
     }
   </script>
 
-
+  -->
 </head>
 
 <body>
@@ -41,7 +40,9 @@
 
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -50,6 +51,8 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
+ 
+ 
  	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
@@ -57,22 +60,23 @@
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
 </nav>
+
+
 
 <div class="loginbox">
  	
@@ -82,20 +86,26 @@
 	</ul>
 
 	<div id="login" >
-	<form role="form">
+	<form  method="post" action="./loginVerification">
+	
+		<div class="form-group">
+   			<h5>Email address:</h5>
+    		<input type="email" class="form-control" id="email" name="mail">
+  		</div>
   		<div class="form-group">
     		<h5>Username:</h5>
-    		<input type="username" class="form-control" id="username"> <!--need email id for auto fill-->
+    		<input type="username" class="form-control" id="username" name="username"> <!--need email id for auto fill-->
   		</div>
   		<div class="form-group">
     		<h5>Password:</h5>
-    		<input type="password" class="form-control" id="loginpwd">
+    		<input type="password" class="form-control" id="loginpwd" name="password">
   		</div>
   		<div class="checkbox">
     		<label>
     		<input type="checkbox"> Remember me</label>
   		</div>
-	<a id="loginbutton" class="btn btn-primary" type=submit>Log-In</a> 
+<!--	<a id="loginbutton" class="btn btn-primary" type=submit>Log-In</a>  -->
+		<button type="submit" id="loginbutton">Log-In!</button>
 
 
 
@@ -107,21 +117,21 @@
 
 <div id="signup">
 
-	<form role="form">
+	<form role="form" method="post" action="./registration">
 
   		<div class="form-group">
    			<h5>Email address:</h5>
-    		<input type="email" class="form-control" id="email">
+    		<input type="email" class="form-control" id="email" name="mail">
   		</div>
 
   		<div class="form-group">
     		<h5>Username:</h5>
-    		<input type="username" class="form-control" id="username"> <!--need email id for auto fill-->
+    		<input type="username" class="form-control" id="username" name="username"> <!--need email id for auto fill-->
   		</div>
 
   		<div class="form-group">
     		<h5>Password:</h5>
-    		<input type="password" class="form-control" id="signInPWD">
+    		<input type="password" class="form-control" id="signInPWD" name="password">
   		</div>
 
   		<div class="form-group">
@@ -132,7 +142,7 @@
   		<div class="checkbox">
     		<label><input type="checkbox"> Remember me</label>
   		</div>
-  		<a id="signupbutton" class="btn btn-primary" type=submit>Sign-up</a> 
+  		<button type="submit" id="signinbutton">Sign-Up!</button>
   	
   		
 	</form>
@@ -142,7 +152,7 @@
 
 	 <!--google signin 
 	 	<div class="g-signin2" data-onsuccess="onSignIn"></div> -->
-	 	<div id="my-signin2" class="googleButton" data-onsuccess="onSignIn"></div>
+	 <!--	<div id="my-signin2" class="googleButton" data-onsuccess="onSignIn"></div> -->
 
 
 
@@ -242,7 +252,7 @@ function validNum (str) {
 
 
 <script>
-//script for moving between the two pages
+//script for moving between the two pagesee
 $("#pg1").click(function() {
 	$(this).css("background-color","#e5e5ff");
 	$("#pg2").css("background-color","white");
@@ -267,77 +277,9 @@ $("#pg2").click(function() {
 
 });
 
-$("#loginbutton").click(function() {
-		
-//	var email = document.getElementById("loginemail").value;
-	var username = $("#login").find("#username").val();
-	alert(username);
-	var pwd = document.getElementById("loginpwd").value;
-	requestString = "username=" + username + "&password=" + pwd;
-//	alert(requestString);
-	Requestlogin(requestString, "loginVerification");
-
-	
-
-});
-
-$("#signupbutton").click(function() {
-		
-	var email = $("#signup").find("#email").val();
-
-	var username = $("#signup").find("#username").val();
-	alert(username);
-
-	var pwd = document.getElementById("signInPWD").value;
-	var validatepwd = document.getElementById("signInConfirm").value;
-		
-	var validateString = "";
-
-	if (pwd != validatepwd) {
-		alert("the passwords do not match!");
-		return;
-	}
-	
-	if (!validLen(pwd)) {
-		validateString += "Length must be atleast 8";
-	}
-	if (!oneUpper(pwd)) {
-		validateString += "\nNeeds at least one upper case";
-
-	}
-	if (!validNum(pwd)) {
-		validateString += "\nNeeds at least one integer";
-
-	}
-	if (validateString.length != 0) {
-		alert(validateString);
-		return;
-	}
-
-	requestString = "email=" + email + "&password=" + pwd + "&username=" + username;
-
-	Requestlogin(requestString, "registration");
-
-	
-});
-
-
-
 </script>
 
 
 
-<script>
 
-function Requestlogin(requestString, path) {
-	
-	var xmlhttp = new XMLHttpRequest();
-	url =  "http://127.0.0.1:3000/";
-	url += path;
-	xmlhttp.open("POST",url, true); 
-	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
- 	xmlhttp.send(requestString);
-}
-
-</script>

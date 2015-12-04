@@ -1,11 +1,3 @@
-<!-- Like userpage except it must also be able to request to change username
-	a div to contain all the items checked out 
-	if we are using money
-	be able to add money
-	cant rank yourself but 
-	you can see your rank
-	-->
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,14 +13,17 @@
 
 <link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
 
+
+
+
+
 </head>
-
-
 <body>
-
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog"> My Account</a>
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+
+
 	<form class="navbar-form navbar-right" role="search" >
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
@@ -37,25 +32,26 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 	<img src="http://freeiconbox.com/icon/256/28754.png" style="height:50px">
+ 
+ 
+ 	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
 </div>
 
 <nav class="navbar navbar-inverse navbar-static-top">
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home"> To Main Page</a></li>
-        		<li><a href="#">POintless SHit</a></li>
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-        		<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
-				<li><a href="#">POintless SHit</a></li> 
+       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="#">Update Info</a></li> 
+        		<li><a href="#">Post a Game</a></li> 
+        		<li><a href="./main">Log-Out</a></li> 
 
+        	
       		</ul>
      	 	<ul class="nav navbar-nav navbar-right">
         		<li><a href="login"><span class="glyphicon glyphicon-user"></span> Join The Share Network</a></li>
-       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Accounr</a></li>
+       			<li><a href="login"><span class="glyphicon glyphicon-log-in"></span> Login to Account</a></li>
      		</ul>
    		</div>
 	</div>
@@ -63,9 +59,127 @@
 
 
 
+<div style="text-align:center">
+<div id="userpicture">
+
+<img class="img-thumbnail" src="https://intothegloss.com/wp-content/uploads3/2015/07/ellie-rowsell-wolf-alice-band-4.jpg">
+
+</div>
+<div id="userinfo">
+<h1>Name:Somthing Rating:4.5</h1><!-- Placeholder -->
+<h1>Email:</h1>
+<h1>Description: </h1>
+
+</div>
+
+<h1> Checked Out: </h1>
+<div id="userproducts">
+
+<!-- place holder -->
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+<div class="postingwrapper">
+<div class="userposting">
+</div>
+<p>Game Name</p>
+<p>$7 per week</p>
+</div>
+
+
+
+<!--End of placeholder code -->
+
+
+</div>
+
+
+
+</div>
+
+
+
+</div>
 
 </body>
 
-
-
 </html>
+
+
+
