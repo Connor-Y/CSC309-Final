@@ -45,7 +45,6 @@ app.use(sess({
 //default
 sess.username = '';
 sess.email = '';
-sess.admintype = 2;
 
 app.use(bodyParser.urlencoded({
         extended: true
@@ -142,7 +141,7 @@ app.post("/getSession", function (req, res) {
 		res.send(JSON.stringify({result: "Invalid"}));
     }
 	else {
-		var temp = {sessmail: sess.email, sessusername: sess.username, sessadmintype: sess.admintype};
+		var temp = {sessmail: sess.email, sessusername: sess.username};
 		res.send(JSON.stringify(temp));
     }
 });
@@ -153,24 +152,23 @@ app.post("/registration", function (req, res) {
     //get rid of possible script in all fields
     req.body.password = sanitizeHtml(req.body.password);
     req.body.username = sanitizeHtml(req.body.username);
-    req.body.email = sanitizeHtml(req.body.email);
+    req.body.mail = sanitizeHtml(req.body.mail);
     
-    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
+    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.mail == '')) {
             console.log("script detected!");
             res.send("Invalid");
     }
     
     else {
         
-        //console.log("" + req.body.username);
-        //console.log("" + req.body.email);
-        //console.log("" + req.body.password);
-        
-        db.userExists(db.db, req.body.username, req.body.email, function (result) {
+        db.userExists(db.db, req.body.username, req.body.mail, function (result) {
         //a user was found when the email and username queried
            if (result) {
-                console.log("User already exists");
-                res.send("Invalid");
+               
+               console.log("" + req.body.username);
+               console.log("" + req.body.mail);
+               console.log("User already exists");
+               res.send("Invalid");
             }
 
             else {
@@ -181,13 +179,10 @@ app.post("/registration", function (req, res) {
                 //res.send("Success");
             
                 //ADD STUFF TO SESSION AS NEEDED
-                sess.email = req.body.email;
-                sess.username = req.body.username;
+                sess.email = req.body.mail;
+                sess.username = req.body.username;            
                 
                 //get the admin type from the database
-                db.getUserByUsername(db.db, req.body.username, function (user) {
-                    sess.admintype = user.admintype;                
-                });
                 //bring the user to the main page logged in
                 res.redirect("main");
             }
@@ -223,7 +218,7 @@ app.post("/loginVerification", function (req, res) {
                     
                     sess.email = sanitizeHtml(user.email);
                     sess.username = sanitizeHtml(req.body.username);
-                    sess.admintype = user.admintype;
+                    
 					//res.send("Success");
 					res.redirect("main"); //log in to the main page.
                 }
@@ -239,10 +234,6 @@ app.post("/loginVerification", function (req, res) {
 app.get("/logout", function (req, res) {
     sess.username = '';
     sess.email = '';
-    //2 is for a normal user, they get very basic control.
-    //a non logged in user should be able to view posts, but not 
-    //change profile settings or make purchases. 
-    sess.admintype = 2;
     
     console.log("logout successful");
     //res.send("Success");
@@ -304,8 +295,9 @@ app.post("/updateUserPassword", function (req, res) {
                 
                 else {
                     console.log("Correct password entered...");
-                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.newpassword));
+                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), generateHash(sanitizeHtml(req.body.newpassword)));
                     console.log("Password updated!");
+                    res.send("Success");
                 
                 }
             });
@@ -315,20 +307,42 @@ app.post("/updateUserPassword", function (req, res) {
 
 app.post("/toggleAdmin" , function (req, res) {
     console.log("admin toggle request received");
-    db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
-        if (!user) {
+    console.log("" + req.body.username);
+    console.log("" + req.body.email);
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+            console.log("user does not exist");
             res.send("Invalid user");
         }
         
-        else {
-            if user.admintype < sess.
-        }
+        db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+            db.getUserByUsername(db.db, sess.username, function (usersess) {
+
+                //if admintype of the user being changed is less, don't allow it
+                if (user.admintype <= usersess.admintype) {
+                    console.log("this user does not have permission to modify the admin type");
+                    res.send("Invalid permissions");
+                }
+                
+                else {
+                    db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
+                    console.log("admin status changed!");
+                    res.send("Success");
+                }
+        
+            });
+        });
+    });
+});
+
+app.get("/getcurrentadmin", function (req, res) {
+   db.getUserByUsername(db.db, sess.username, function (user) {
+       console.log("" + user.admintype);
+       var temp = {admintype: user.admintype};
+       res.send(JSON.stringify(temp));
+   })
     
-    
-})
-
-
-
+});
 
 app.post("/getPostsFromUsername", function (req, res) {
 	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {

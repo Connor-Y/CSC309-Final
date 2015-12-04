@@ -5,14 +5,13 @@ var ObjectId = require('mongodb').ObjectID;
 var url = 'mongodb://localhost:27017/VGExchange';
 
 //0 is superadmin, 1 is admin, 2 is normal user
-var admintype = 0;
 
 MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
   console.log("Connected to DB");
   exports.db = database;
 
-  console.log("testing");
+  //console.log("testing");
   /*
   var testUser = {email: "name@mail.com", username : "no1", password : "123", name: "Nam", description : "testing the database"};
   var testUser2 = {email: "name2@mail.com", username : "no1", password : "123", name: "ME", description : "ALso testing the database"};
@@ -100,28 +99,51 @@ MongoClient.connect(url, function(err, database) {
 ///***************USER COLLECTION***************************
 //Create
 exports.insertUser = function(db, newUser) {
-	db.collection('users').insertOne( 
+    
+    db.collection('users').find().toArray(function (err, users){
+        assert.equal(err, null);	
+        var admin = 2;
+        
+        if (users.length == 0) {    
+            admin = 0;
+        }
+        
+        db.collection('users').insertOne(
+        {
+            "email" : newUser.email,
+            "username": newUser.username,
+            "password": newUser.password,
+            "name": "",
+            "description" : "NEW USER",
+            "admintype" : admin,
+            "rating" : 0,
+            "numReview" : 0
+        }, function(err, result) {
+            assert.equal(err, null);
+            console.log("inserted a document into the users collection.");
+            console.log("" + admin);
+        });
+    });
+};
+    
+   /* db.collection('users').insertOne( 
 	{
 		"email" : newUser.email,
 		"username" : newUser.username,
 		"password" : newUser.password,
 		"name" : "",
 		"description" : "NEW USER",
-
+        "admintype" : admin,
 		"rating" : 0,
-        "admintype" : admintype, 
 		"numReviews" : 0
 
 	}, function(err, result) {
 			assert.equal(err, null);
-        
-            if (admintype == 0) {
-                admintype = 2;
-            }
 			console.log("Inserted a document into the users collection.");
-	});
+            console.log("admin type" + admin);
+	});*/
 
-};
+
 
 //READ
 //find user <username> (does not include password in data)
@@ -263,6 +285,7 @@ exports.deleteUser = function(db, username){
 }
 
 exports.toggleAdmin = function (db, username) {
+    
     db.collection('users').findOne(
     {
         "username" : username
@@ -270,6 +293,7 @@ exports.toggleAdmin = function (db, username) {
         assert.equal(err, null);
         
         var updatedadmin = 2;
+        
         if (user.admintype == 2) {
             updatedadmin = 1;
         }
