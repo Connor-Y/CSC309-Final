@@ -5,10 +5,12 @@ var PORT = 3000;
 var express = require('express');
 var bodyParser = require('body-parser');
 var bcrypt = require('bcrypt-nodejs');
+var sanitizeHtml = require('sanitize-html');
+var sess = require('client-sessions');
+
 var app = express();
 
 var db = require('./DB');
-//var User = db.User;
 
 // How similar recommendations should be by
 // number of tags
@@ -16,10 +18,30 @@ var recommendationSimiliarityFactor = 0.8;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
+var validPassword = function(password, storedpassword) {
+    return bcrypt.compareSync(password, storedpassword);
+};
+
+var generateHash = function (password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+
 app.use(express.static(__dirname + '/public'));
 //app.use(express.static( __dirname + '/public/html'));
 //app.use(express.static( __dirname + '/public/css'));
 //app.use(express.static( __dirname + '/public/javascript'));
+
+app.use(sess({
+  cookieName: 'sess',
+  secret: 'kauKoG0TtFB2LxpLRXMH',
+  duration: 30 * 60 * 1000,
+  activeDuration: 5 * 60 * 1000,
+}));
+
+//default
+sess.username = '';
+sess.email = '';
 
 app.use(bodyParser.urlencoded({
         extended: true
@@ -44,10 +66,235 @@ app.listen(PORT);
 
 // ====
 
-app.post("/recommendations", function (req, res) {
+
+app.post("/getSession", function (req, res) {
+	console.log("Session Request");
+	if ((sess.username == '') || (sess.email == '')) {
+		res.send(JSON.stringify({result: "Invalid"}));
+    }
+	else {
+		var temp = {sessmail: sess.email, sessusername: sess.username};
+		res.send(JSON.stringify(temp));
+    }
+});
+        
+app.post("/registration", function (req, res) {
+    
+    console.log("Registration Request Received");
+    //get rid of possible script in all fields
+    req.body.password = sanitizeHtml(req.body.password);
+    req.body.username = sanitizeHtml(req.body.username);
+    req.body.email = sanitizeHtml(req.body.email);
+    
+    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
+            console.log("script detected!");
+            res.send("Invalid");
+    }
+    
+    else {
+        
+        
+        //console.log("" + req.body.username);
+        //console.log("" + req.body.email);
+        //console.log("" + req.body.password);
+        
+        db.userExists(db.db, req.body.username, req.body.email, function (result) {
+        //a user was found when the email and username queried
+           if (result) {
+                console.log("User already exists");
+                res.send("Invalid");
+            }
+
+            else {
+            
+                req.body.password = generateHash(req.body.password);
+                console.log("New User");
+                db.insertUser(db.db, req.body);
+                res.send("Success");
+            
+                //ADD STUFF TO SESSION AS NEEDED
+                sess.email = req.body.email;
+                sess.username = req.body.username;
+            }
+        });
+    }
+ 
+});
+
+
+
+app.post("/loginVerification", function (req, res) {
+	console.log("Login Request Received");
+	db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+		
+        console.log("" + req.body.username);
+        console.log("" + sanitizeHtml(req.body.username));
+        console.log("" + req.body.password);
+        console.log("" + sanitizeHtml(req.body.password));
+        
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+            
+            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+                //console.log("" + user.password);
+                if (!validPassword(req.body.password, user.password)) {
+                   console.log("Invalid Password");
+                   res.send("Invalid");
+                }  
+                
+                else {
+                    console.log("Successful Login");                           
+                    sess.email = sanitizeHtml(user.email);
+                    sess.username = sanitizeHtml(req.body.username);
+					res.send("Success");
+                }
+                
+            });
+        } else {
+            console.log("Not Found");
+            res.send("Not Found");
+        }
+    });
+});
+        
+app.post("/logout", function (req, res) {
+    sess.username = '';
+    sess.email = '';
+    
+    console.log("logout successful");
+    res.send("Success");
+    
+});
+
+app.post("/profile", function (req, res) {
+    console.log("profile view request received");
+    
+    db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+        if (user) {
+            res.json(user);
+        }
+        
+        else {
+            res.send("Not Found");
+        }
+    }); 
+});
+
+app.post("/updateUserRating", function (req, res) {
+	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
+	res.send("Success");
+});
+
+app.post("/updateUserInfo", function (req, res) {
+	if (sess.username != req.params.username)
+		res.send("Invalid");
+	else {
+		if (req.params.name !== "")
+			db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
+		if (req.params.description !== "")
+			db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
+	}
+});
+
+app.post("/getPostsFromUsername", function (req, res) {
+	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
+		if (post) {
+			res.send(post);
+		} else
+			res.send("Not Found");
+		
+	});
+	
+});
+
+
+app.get("/post:id", function (req, res) {
+    console.log("post retrieval request received");
+    
+    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
+        if (post) {
+            res.json(post);   
+        }
+        
+        else {
+            res.send("Not Found");
+        } 
+    });
+});
+
+app.post("/createPosting", function (req, res) {
+	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date,
+		sanitizeHtml(req.params.content), sanitizeHtml(req.params.tags));
+	
+    if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
+        res.send("Invalid");
+    }
+    
+    else {
+        db.insertPost(db.db, posting);
+        res.send("Success");  
+    }
+});
+
+app.post("/createReview", function (req, res) {
+	var review = createReview(sanatizeHtml(req.params.reviewer), sanatizeHtml(req.params.reviewee), req.params.id, 
+	req.params.date, req.params.rating, sanatizeHtml(req.params.comment));
+    
+    
+    if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
+        res.send("Invalid");
+    }
+    
+    else {
+	   db.insertReview(db.db, review);
+	   res.send("Success");    
+    }
+});
+
+app.post("/deleteUserByID", function (req, res) {
+	db.deletePost(db.db, sanitizeHtml(req.params.id));
+	res.send("Success");
+	
+});
+
+app.post("/makeUnavailable", function (req, res) {
+	// id refers to the posting's id
+	db.makeUnavailable(db.db, sanitizeHtml(req.params.id), req.params.buyerUsername);
+	res.send("Success");
+	
+});
+
+app.post("/getRentedGamesByUsername", function (req, res) {
+	db.getPostsBoughtBy(db.db, sess.username, function (posts) {
+		res.send(posts);
+	});	
+});
+
+app.post("/getGameReviewsByPostID", function (req, res) {
+	db.getReviewsByID(db.db, sanitizeHtml(req.params.postID), function (reviews) {
+		res.send(reviews);
+	});
+});
+
+app.post("/getUserReviewsByUsername", function (req, res) {
+	db.getReviewsFrom(db.db, sanitizeHtml(req.params.username), function (reviews) {
+		res.send(reviews);
+	});
+});
+
+app.post('/getGamesByQuery', function (req, res) {
+	db.getAvailablePosts(db.db, function (posts) {
+		var results = searchPostings(sanitizeHtml(req.params.query), posts);
+		// TODO: Format results
+		res.send(results)
+	});
+});
+
+app.post("/getRecommendations", function (req, res) {
 	console.log("Generate and Send Recommendations");
 	// Need database code for games
-	db.getPostByID(db.db, req.params.id, function(post) {
+	db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
 		if (post) {
 			// TODO: set to actual delimiter
 			var tags = post.tags.split(" ");
@@ -94,21 +341,12 @@ app.post("/recommendations", function (req, res) {
 			// TODO: format recList
 			res.send(recList);
 		} else { 
-			res.redirect('/404');
+			res.send('Not Found');
 		}	
 	});
 });
 
-app.post('/searchGames', function (req, res) {
-	db.getAvailablePosts(db.db, function (posts) {
-		var results = searchPostings(req.params.query, posts);
-		
-		// TODO: Format results
-		res.send(results)
-			
-		});
-		
-	});
+
 
 function searchPostings(q, postings) {
 	var results = [];
@@ -146,159 +384,6 @@ function shuffleArray(array) {
     return array;
 }
 
-
-var validPassword = function(password, storedpassword) {
-    return bcrypt.compareSync(password, storedpassword);
-};
-
-var generateHash = function (password) {
-    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
-};
-
-app.post("/registration", function (req, res) {
-	console.log("Registration Request Received");
-    db.userExists(db.db, req.body.username, req.body.mail, function (result) {
-        
-        //a user was found when the email and username queried
-        if (result) {
-            console.log("User already exists");
-			res.send("User Exists");
-        }
-
-        else {
-            req.body.password = generateHash(req.body.password);
-            console.log("New User");
-            db.insertUser(db.db, req.body);
-            res.send("Success");
-        }
-    });
-});
-
-
-
-app.post("/loginVerification", function (req, res) {
-	console.log("Login Request Received");
-	db.userExists(db.db, req.body.username, req.body.mail, function (result) {
-		
-        console.log("" + req.body.username);
-        console.log("" + req.body.password);
-        //a user was found when the email was queried
-        if (result) {
-            console.log("User exists");
-            
-            db.getUserByUsername(db.db, req.body.username, function (user) {
-                //console.log("" + user.password);
-                if (!validPassword(req.body.password, user.password)) {
-                   console.log("Invalid Password");
-                   res.send("Invalid Password");
-                }  
-                
-                else {
-                    console.log("Successful Login");
-                    //res.sendFile(__dirname + '/mainpage.html');
-                    res.send("Success");
-                }
-                
-            });
-        }
-
-        else {
-            console.log("Invalid User");
-            res.send("Invalid User");
-        }
-    });
-});
-
-//searching by user
-app.post("/searchuser", function (req, res) {
-	console.log("search request received");
-	db.getPostsFrom(db.db, req.body.username, function (posts) {
-		
-        //a user was found when the email was queried
-        if (posts) {
-            console.log("Matching posts found");
-			res.json(posts);
-        }
-
-        else {
-            console.log("No match");
-            res.send("No match");
-        }
-    });
-});
-
-
-app.post("/profile", function (req, res) {
-    console.log("profile view request received");
-    
-    db.getUserByUsername(db.db, req.body.username, function (user) {
-        if (user) {
-            res.json(user);
-        }
-        
-        else {
-            res.send("Cannot find user in database");
-        }
-    }); 
-});
-
-
-app.post("/updateUserInfo", function (req, res) {
-	if (req.params.name !== "")
-		updateUserName(db, {username: req.params.username, name: req.params.name});
-	if (req.params.description !== "")
-		updateUserDescription(db, {username: req.params.username, description: req.params.description});
-	
-});
-
-app.post("/postingsByUser", function (req, res) {
-	getPostsFrom(db, req.params.username, function (posts) {
-		if (post) {
-			// TODO: format return value
-			res.send(post);
-		} else
-			res.redirect('/404');
-		
-	});
-	
-});
-
-
-app.get("/post:id", function (req, res) {
-    console.log("post retrieval request received");
-    
-    db.getPostByID(db.db, req.params.id, function(post) {
-        if (post) {
-            res.json(post);   
-        }
-        
-        else {
-            res.send("No post with this ID");
-        }
-        
-    });
-
-});
-
-app.post("/createPosting", function (req, res) {
-	var posting = createPosting(req.params.username, req.params.id, req.params.date,
-		req.params.content, req.params.tags);
-	insertPost(db, posting);
-	res.send("Success");
-});
-
-app.post("/deleteUser", function (req, res) {
-	deletePost(db, req.params.id);
-	res.send("Success");
-	
-});
-
-app.post("/makeUnavailable", function (req, res) {
-	// id refers to the posting's id
-	makeUnavailable(db, req.params.id, req.params.buyerUsername);
-	res.send("Success");
-	
-});
 function createPosting(username, id, date, title, content, tags) {
 	var newPost = {username: username, id: id, date: date, title: title,
 					postContent: content, tags: tags};
@@ -310,7 +395,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 	date: date, rating: rating, comment: comment};
 	
 	return newReview;
-	
 }
 
 
