@@ -52,6 +52,9 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
+app.get('/index', function (req, res) {
+	res.sendFile(__dirname + '/public/html/mainpage.html');
+});
 
 app.get('/', function (req, res) { //main page not logged in
 	res.sendFile(__dirname + '/public/html/mainpage.html');
@@ -339,11 +342,12 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
+
 	console.log("got to create a posting");
-	
+
 	var id = sanitizeHtml(req.params.title) + sess.username;
 	var date = getDate();
-	var posting = createPosting(sess.username, id,  date, sanitizeHtml(req.body.title),
+	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
 		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
 	
 
@@ -357,7 +361,7 @@ app.post("/createPosting", function (req, res) {
         res.send("Success");  
     }
     
-});
+}); 
 
 app.post("/createReview", function (req, res) {
 	var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id, 
@@ -504,6 +508,7 @@ function searchPostings(q, postings) {
 			// TODO: set proper tag delimiter
 			var tags = elem.tags.split(" ");
 			var splitQuery = query.split(" ");
+			// TODO: Check that this actually works...
 			for (val in splitQuery) {
 				if (tags.indexOf(val) > -1) {
 					results.push(elem);
