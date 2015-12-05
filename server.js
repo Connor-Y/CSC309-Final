@@ -1,3 +1,5 @@
+Server
+
 var fs = require('fs');
 var path = require('path');
 var PORT = 3000;
@@ -52,41 +54,42 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-app.get('/index', function (req, res) {
-	res.sendFile(__dirname + '/public/html/mainpage.html');
-});
 
 app.get('/', function (req, res) { //main page not logged in
-	res.sendFile(__dirname + '/public/html/mainpage.html');
+res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 app.get('/start', function (req, res) { //main page not logged in
-	res.sendFile(__dirname + '/public/html/mainpage.html');
+res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 
 app.get('/main', function (req, res) { //main page logged in
-	//res.sendFile(__dirname + '/public/html/login.html');
-	console.log("logged in to main page");
-	console.log(sess.username);
-	res.render('mainPageView', {username: sess.username, layout:'mainPage'});
+//res.sendFile(__dirname + '/public/html/login.html');
+console.log("logged in to main page");
+console.log(sess.username);
+res.render('mainPageView', {username: sess.username, layout:'mainPage'});
 
 });
 
 app.get('/login', function(req, res) {
-	console.log("got to the login page");
-	res.sendFile(__dirname + '/public/html/login.html');
+console.log("got to the login page");
+res.sendFile(__dirname + '/public/html/login.html');
 //	res.render('loginView', {layout:'login'});
 
 });
 
 app.get("/myuserpage", function(req, res) {
-	console.log("got to my user page");
-	db.getUserByUsername(db.db, sess.username, function (user) {
+console.log("got to my user page");
+db.getUserByUsername(db.db, sess.username, function (user) {
         if (user) {
             //res.json(user);
-            res.render('myPageView', {username: sess.username, rating: user.rating , email: user.email , description: user.description, layout:'mypage'});
+            db.getPostsBoughtBy(db.db, sess.username, function (posts) {
+res.render('myPageView', {user: user,posts:posts,  layout:'mypage'});
 
+});
+
+            
         }
         
         else {
@@ -99,35 +102,34 @@ app.get("/myuserpage", function(req, res) {
 });
 
 app.get("/usersearch", function(req, res) {
-	console.log("got to the user search page");
-	res.render('usersearchView', {username: sess.username, layout: 'usersearch'});
+console.log("got to the user search page");
+res.render('usersearchView', {username: sess.username, layout: 'usersearch'});
 });
 /*
 app.get("/userpage", function(req, res) {
-	
 });
 */
 /*
 app.get("/getall", function(req, res) {
-	console.log("trying to get all 
+console.log("trying to get all 
 });
 */
 app.get("/userupdate", function(req, res) {
-	console.log("got to the user update page");
-	res.render('userupdateView', {username: sess.username, layout: 'userupdate'});
+console.log("got to the user update page");
+res.render('userupdateView', {username: sess.username, layout: 'userupdate'});
 
 });
 
 app.get("/userpost", function(req, res) {
-	console.log("got to the user post game page");
-	res.render('userpostView', {username: sess.username, layout: 'userpost'});
+console.log("got to the user post game page");
+res.render('userpostView', {username: sess.username, layout: 'userpost'});
 
 });
 
 
 
 app.get('/404', function () {
-	res.sendFile(__dirname + '/public/html/404.html');
+res.sendFile(__dirname + '/public/html/404.html');
 });
 
 app.listen(PORT);
@@ -136,13 +138,13 @@ app.listen(PORT);
 
 
 app.post("/getSession", function (req, res) {
-	console.log("Session Request");
-	if ((sess.username == '') || (sess.email == '')) {
-		res.send(JSON.stringify({result: "Invalid"}));
+console.log("Session Request");
+if ((sess.username == '') || (sess.email == '')) {
+res.send(JSON.stringify({result: "Invalid"}));
     }
-	else {
-		var temp = {sessmail: sess.email, sessusername: sess.username};
-		res.send(JSON.stringify(temp));
+else {
+var temp = {sessmail: sess.email, sessusername: sess.username};
+res.send(JSON.stringify(temp));
     }
 });
         
@@ -152,23 +154,25 @@ app.post("/registration", function (req, res) {
     //get rid of possible script in all fields
     req.body.password = sanitizeHtml(req.body.password);
     req.body.username = sanitizeHtml(req.body.username);
-    req.body.mail = sanitizeHtml(req.body.mail);
+    req.body.email = sanitizeHtml(req.body.email);
     
-    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.mail == '')) {
+    if ((req.body.password == '' ) || (req.body.username == '') || (req.body.email == '')) {
             console.log("script detected!");
             res.send("Invalid");
     }
     
     else {
         
-        db.userExists(db.db, req.body.username, req.body.mail, function (result) {
+        
+        //console.log("" + req.body.username);
+        //console.log("" + req.body.email);
+        //console.log("" + req.body.password);
+        
+        db.userExists(db.db, req.body.username, req.body.email, function (result) {
         //a user was found when the email and username queried
            if (result) {
-               
-               console.log("" + req.body.username);
-               console.log("" + req.body.mail);
-               console.log("User already exists");
-               res.send("Invalid");
+                console.log("User already exists");
+                res.send("Invalid");
             }
 
             else {
@@ -179,10 +183,8 @@ app.post("/registration", function (req, res) {
                 //res.send("Success");
             
                 //ADD STUFF TO SESSION AS NEEDED
-                sess.email = req.body.mail;
-                sess.username = req.body.username;            
-                
-                //get the admin type from the database
+                sess.email = req.body.email;
+                sess.username = req.body.username;
                 //bring the user to the main page logged in
                 res.redirect("main");
             }
@@ -194,9 +196,8 @@ app.post("/registration", function (req, res) {
 
 
 app.post("/loginVerification", function (req, res) {
-	console.log("Login Request Received");
-	db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
-		
+console.log("Login Request Received");
+db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
         console.log("" + req.body.username);
         console.log("" + sanitizeHtml(req.body.username));
         console.log("" + req.body.password);
@@ -214,13 +215,13 @@ app.post("/loginVerification", function (req, res) {
                 }  
                 
                 else {
-                    console.log("Successful Login");   
-                    
+                    console.log("Successful Login");  
+                    console.log("logged in on " +  getDate()); 
+
                     sess.email = sanitizeHtml(user.email);
                     sess.username = sanitizeHtml(req.body.username);
-                    
-					//res.send("Success");
-					res.redirect("main"); //log in to the main page.
+//res.send("Success");
+res.redirect("main"); //log in to the main page.
                 }
                 
             });
@@ -257,102 +258,67 @@ app.post("/profile", function (req, res) {
     }); 
 });
 
+
+
 app.post("/updateUserRating", function (req, res) {
-	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
-	res.send("Success");
+db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
+res.send("Success");
 });
+
+/*User*/
+app.post("/updateDescription", function (req, res) {
+console.log(req.body.description);
+db.updateUserDescription(db.db, sess.username, sanitizeHtml(req.body.description));
+res.send("Success");
+});
+
+app.post("/updateUsername", function (req, res) {
+console.log(req.body.description);
+db.updateUserName(db.db, sess.username, sanitizeHtml(req.body.username));
+sess.username = req.body.username;
+res.send("Success");
+});
+
+app.post("/updatePassword", function (req, res) {
+console.log(req.body.description);
+db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
+res.send("Success");
+});
+
+app.post("/updatePic", function (req, res) {
+console.log(req.body.description);
+db.updateUserPic(db.db, sess.username, sanitizeHtml(req.body.pic));
+res.send("Success");
+
+
+});
+
+
+
 
 
 
 app.post("/updateUserInfo", function (req, res) {
-	if (sess.username != req.params.username)
-		res.send("Invalid");
-	else {
-		if (req.params.name !== "")
-			db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
-		if (req.params.description !== "")
-			db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
-	}
+if (sess.username != req.params.username)
+res.send("Invalid");
+else {
+if (req.params.name !== "")
+db.updateUserName(db.db, {username: sanitizeHtml(req.params.username), name: sanitizeHtml(req.params.name)});
+if (req.params.description !== "")
+db.updateUserDescription(db.db, {username: sanitizeHtml(req.params.username), description: sanitizeHtml(req.params.description)});
+}
 });
 
-app.post("/updateUserPassword", function (req, res) {
-    
-    //this may be redundant, but just makes sure user exists incase user tries to send request without
-    //using actual front end. (some app like postman)
-    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
-        if (!result) {
-           res.send("Invalid user");
-        }
-        
-        else {
-            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
-            
-                //check that they entered their old password correctly
-                if (!validPassword(req.body.password, user.password)) {
-                    console.log("Invalid Password");
-                    res.send("Invalid");
-                }
-                
-                else {
-                    console.log("Correct password entered...");
-                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), generateHash(sanitizeHtml(req.body.newpassword)));
-                    console.log("Password updated!");
-                    res.send("Success");
-                
-                }
-            });
-        }   
-    });
-});
+//password must be hashed first generateHash(req.body.password)
 
-app.post("/toggleAdmin" , function (req, res) {
-    console.log("admin toggle request received");
-    console.log("" + req.body.username);
-    console.log("" + req.body.email);
-    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
-        if (!result) {
-            console.log("user does not exist");
-            res.send("Invalid user");
-        }
-        
-        db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
-            db.getUserByUsername(db.db, sess.username, function (usersess) {
-
-                //if admintype of the user being changed is less, don't allow it
-                if (user.admintype <= usersess.admintype) {
-                    console.log("this user does not have permission to modify the admin type");
-                    res.send("Invalid permissions");
-                }
-                
-                else {
-                    db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
-                    console.log("admin status changed!");
-                    res.send("Success");
-                }
-        
-            });
-        });
-    });
-});
-
-app.get("/getcurrentadmin", function (req, res) {
-   db.getUserByUsername(db.db, sess.username, function (user) {
-       console.log("" + user.admintype);
-       var temp = {admintype: user.admintype};
-       res.send(JSON.stringify(temp));
-   })
-    
-});
 
 app.post("/getPostsFromUsername", function (req, res) {
-	db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
-		if (post) {
-			res.send(post);
-		} else
-			res.send("Not Found");
-		
-	});
-	
+db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function (posts) {
+if (post) {
+res.send(post);
+} else
+res.send("Not Found");
+});
 });
 
 
@@ -371,23 +337,27 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-	var posting = createPosting(sanitizeHtml(req.params.username), req.params.id, req.params.date, sanitizeHtml(req.params.title),
-		sanitizeHtml(req.params.price),
-		sanitizeHtml(req.params.content), sanitizeHtml(req.params.image), sanitizeHtml(req.params.tags));
-	
+console.log("got to create a posting");
+var id = sanitizeHtml(req.params.title) + sess.username;
+var date = getDate();
+var posting = createPosting(sess.username, id,  date, sanitizeHtml(req.body.title),
+sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
     }
     
     else {
+    console.log("created the new posting");
         db.insertPost(db.db, posting);
         res.send("Success");  
     }
+    
 });
 
 app.post("/createReview", function (req, res) {
-	var review = createReview(sanatizeHtml(req.params.reviewer), sanatizeHtml(req.params.reviewee), req.params.id, 
-	req.params.date, req.params.rating, sanatizeHtml(req.params.comment));
+var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id, 
+getDate(), req.params.rating, sanatizeHtml(req.params.comment));
     
     
     if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
@@ -395,150 +365,142 @@ app.post("/createReview", function (req, res) {
     }
     
     else {
-	   db.insertReview(db.db, review);
-	   res.send("Success");    
+  db.insertReview(db.db, review);
+  res.send("Success");    
     }
 });
 
 app.post("/deleteUserByID", function (req, res) {
-	db.deletePost(db.db, sanitizeHtml(req.params.id));
-	res.send("Success");
-	
+db.deletePost(db.db, sanitizeHtml(req.params.id));
+res.send("Success");
 });
 
 app.post("/makeUnavailable", function (req, res) {
-	// id refers to the posting's id
-	db.makeUnavailable(db.db, sanitizeHtml(req.params.id), req.params.buyerUsername);
-	res.send("Success");
-	
+// id refers to the posting's id
+db.makeUnavailable(db.db, sanitizeHtml(req.params.id), req.params.buyerUsername);
+res.send("Success");
 });
 
 app.post("/getRentedGamesByUsername", function (req, res) {
-	db.getPostsBoughtBy(db.db, sess.username, function (posts) {
-	res.send(posts);
-	});	
+db.getPostsBoughtBy(db.db, sess.username, function (posts) {
+res.send(posts);
+});
 });
 
 app.post("/getGameReviewsByPostID", function (req, res) {
-	db.getReviewsByID(db.db, sanitizeHtml(req.params.postID), function (reviews) {
-		res.send(reviews);
-	});
+db.getReviewsByID(db.db, sanitizeHtml(req.params.postID), function (reviews) {
+res.send(reviews);
+});
 });
 
 app.post("/getUserReviewsByUsername", function (req, res) {
-	db.getReviewsFrom(db.db, sanitizeHtml(req.params.username), function (reviews) {
-		res.send(reviews);
-	});
+db.getReviewsFrom(db.db, sanitizeHtml(req.params.username), function (reviews) {
+res.send(reviews);
+});
 });
 
 app.post('/getGamesByQuery', function (req, res) {
-	db.getAvailablePosts(db.db, function (posts) {
-		var results = searchPostings(sanitizeHtml(req.params.query), posts);
-		// TODO: Format results
-		res.send(results)
-	});
+db.getAvailablePosts(db.db, function (posts) {
+var results = searchPostings(sanitizeHtml(req.params.query), posts);
+// TODO: Format results
+res.send(results)
+});
 });
 
 app.post("/getRecommendations", function (req, res) {
-	console.log("Generate and Send Recommendations");
-	// Need database code for games
-	db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
-		if (post) {
-			// TODO: set to actual delimiter
-			var tags = post.tags.split(" ");
-			var lowSimTags = tags.slice();
-			tags = shuffleArray(tags);
-			tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-			
-			var recList = db.getPostsByTag(db.db, tags);
-			// If we don't have enough recommendations, relax the similarity
-			if (recList.length < numberOfRecs) {
-				lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
-				recList = recList.concat(db.getPostsByTag(db.db, tags));
-			}
-			
-			// Strip copies of the same game
-			for (elem in recList) {
-				if (elem.title == post.title)
-					recList.splice(recList.indexOf(elem), 1);
-			}
-			// Shuffle the recommendations we have
-			recList = shuffleArray(recList);
-			
-			
-			// Strip copies of the same game
-			for (elem in recList) {
-				if (elem.title == post.title)
-					recList.splice(recList.indexOf(elem), 1);
-			}
-			// If we still don't have enough recommendations
-			// Pick some random games to fill out the number.
-			if (recList.length < numberOfRecs) {
-				// Just pick some random games
+console.log("Generate and Send Recommendations");
+// Need database code for games
+db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
+if (post) {
+// TODO: set to actual delimiter
+var tags = post.tags.split(" ");
+var lowSimTags = tags.slice();
+tags = shuffleArray(tags);
+tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
+var recList = db.getPostsByTag(db.db, tags);
+// If we don't have enough recommendations, relax the similarity
+if (recList.length < numberOfRecs) {
+lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
+recList = recList.concat(db.getPostsByTag(db.db, tags));
+}
+// Strip copies of the same game
+for (elem in recList) {
+if (elem.title == post.title)
+recList.splice(recList.indexOf(elem), 1);
+}
+// Shuffle the recommendations we have
+recList = shuffleArray(recList);
+// Strip copies of the same game
+for (elem in recList) {
+if (elem.title == post.title)
+recList.splice(recList.indexOf(elem), 1);
+}
+// If we still don't have enough recommendations
+// Pick some random games to fill out the number.
+if (recList.length < numberOfRecs) {
+// Just pick some random games
 
-				recList = recList.concat(db.getPostsByTag(db.db, ""));
-				// Strip copies of the same game
-				for (elem in recList) {
-					if (elem.title == post.title)
-						recList.splice(recList.indexOf(elem), 1);
-				}
+recList = recList.concat(db.getPostsByTag(db.db, ""));
+// Strip copies of the same game
+for (elem in recList) {
+if (elem.title == post.title)
+recList.splice(recList.indexOf(elem), 1);
+}
 
-			}
-	
-			recList = recList.slice(0, numberOfRecs + 1);
-			// TODO: format recList
-			res.send(recList);
-		} else { 
-			res.send('Not Found');
-		}	
-	});
+}
+recList = recList.slice(0, numberOfRecs + 1);
+// TODO: format recList
+res.send(recList);
+} else { 
+res.send('Not Found');
+}
+});
 });
 
 function getDate() {
-	var today = new Date();
-	var dd = today.getDate();
-	var mm = today.getMonth()+1; //January is 0!
-	var yyyy = today.getFullYear();
+var today = new Date();
+var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+var yyyy = today.getFullYear();
 
-	if(dd<10) {
-  	  dd='0'+dd
-	} 
+if(dd<10) {
+   dd='0'+dd
+} 
 
-	if(mm<10) {
-  	  mm='0'+mm
-	} 
+if(mm<10) {
+   mm='0'+mm
+} 
 
-	today = mm+'/'+dd+'/'+yyyy;
-	return today;
+today = mm+'/'+dd+'/'+yyyy;
+return today;
 }
 
 
 
 function searchPostings(q, postings) {
-	var results = [];
-	var query = q.trim();
-	query = query.replace(",", " ");
-	for (elem in postings) {
-		if (elem.title == query)
-			results.push(elem);
-		// Multiple ifs to arrange results in order of priority
-		else if (elem.username == query) 
-			results.push(elem);
-		else if (elem.id == query)
-			results.push(elem);
-		else {
-			// TODO: set proper tag delimiter
-			var tags = elem.tags.split(" ");
-			var splitQuery = query.split(" ");
-			// TODO: Check that this actually works...
-			for (val in splitQuery) {
-				if (tags.indexOf(val) > -1) {
-					results.push(elem);
-					break;
-				}
-			}
-		}
-	}
+var results = [];
+var query = q.trim();
+query = query.replace(",", " ");
+for (elem in postings) {
+if (elem.title == query)
+results.push(elem);
+// Multiple ifs to arrange results in order of priority
+else if (elem.username == query) 
+results.push(elem);
+else if (elem.id == query)
+results.push(elem);
+else {
+// TODO: set proper tag delimiter
+var tags = elem.tags.split(" ");
+var splitQuery = query.split(" ");
+for (val in splitQuery) {
+if (tags.indexOf(val) > -1) {
+results.push(elem);
+break;
+}
+}
+}
+}
 }
 
 function shuffleArray(array) {
@@ -551,17 +513,16 @@ function shuffleArray(array) {
     return array;
 }
 
-function createPosting(username, id, date, title, content, tags) {
-	var newPost = {username: username, id: id, date: date, title: title,
-					postContent: content, tags: tags};
-	return newPost
+function createPosting(username, id, date, title, content,image, tags) {
+var newPost = {username: username, id: id, date: date, title: title,
+postContent: content, image: image, tags: tags};
+return newPost;
 }
 
 function createReview(reviewer, reviewee, id, date, rating, comment) {
-	var newReview = {reviewer: reviewer, reviewee: reviewee, postID: id, 
-	date: date, rating: rating, comment: comment};
-	
-	return newReview;
+var newReview = {reviewer: reviewer, reviewee: reviewee, postID: id, 
+date: date, rating: rating, comment: comment};
+return newReview;
 }
 
 
@@ -581,9 +542,9 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     // for FB.getLoginStatus().
     if (response.status === 'connected') {
       // Logged into your app and Facebook.
-	  $("#main").load("landing.php");
+ $("#main").load("landing.php");
     } else {
-		moveTo('/');
+moveTo('/');
     }
   }
   
@@ -593,7 +554,7 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
   function checkLoginState() {
     FB.getLoginStatus(function(response) {
       //statusChangeCallback(response);
-	return response.status;
+return response.status;
     });
   }
 
@@ -642,199 +603,197 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 // Code from A4
 
 app.post("/loadTable", function (req, res) {
-	console.log("Load Table");
-	User.find( function (err, users) {
-		if (err) {
-			console.log("Load Table Error");
-		} else {
-			res.send(users);
-		}
-	});
+console.log("Load Table");
+User.find( function (err, users) {
+if (err) {
+console.log("Load Table Error");
+} else {
+res.send(users);
+}
 });
-			
+});
 app.post("/registration", function (req, res) {
-	console.log("Registration Request Received");
-	User.findOne({ email: req.body.mail }, function (err, user) {
-		if (err) {
-			console.log(err);
-			res.send("Error");
-		}
-		if (req.body.mail == undefined || req.body.pass == undefined){
-			res.send("Invalid");
-			return false;
-		}
-		if (user == null) {
-			console.log("New User");
-			var firstUser = false;
-			User.findOne({}, function (err, result) {
-				console.log("Result: " + result);
-				if (err) {
-					console.log(err);
-					res.redirect('/');
-				}
-				if (result == null)
-					firstUser = true;	
-				
-				var newUser;
-				console.log("first: " + firstUser)
-				if (firstUser === true)
-					newUser = new User({username: req.body.mail, password: req.body.pass, type:"super", email:req.body.mail, image: "default.png", desc: ""});
-				else
-					newUser = new User({username: req.body.mail, password: req.body.pass, type:"user", email:req.body.mail, image: "default.png", desc: ""});
-				newUser.save();
-				res.send("Success");
-			});	
-		}
-		else {
-			console.log("User already exists");
-			res.send("User Exists");
-		}
-	});
+console.log("Registration Request Received");
+User.findOne({ email: req.body.mail }, function (err, user) {
+if (err) {
+console.log(err);
+res.send("Error");
+}
+if (req.body.mail == undefined || req.body.pass == undefined){
+res.send("Invalid");
+return false;
+}
+if (user == null) {
+console.log("New User");
+var firstUser = false;
+User.findOne({}, function (err, result) {
+console.log("Result: " + result);
+if (err) {
+console.log(err);
+res.redirect('/');
+}
+if (result == null)
+firstUser = true;
+var newUser;
+console.log("first: " + firstUser)
+if (firstUser === true)
+newUser = new User({username: req.body.mail, password: req.body.pass, type:"super", email:req.body.mail, image: "default.png", desc: ""});
+else
+newUser = new User({username: req.body.mail, password: req.body.pass, type:"user", email:req.body.mail, image: "default.png", desc: ""});
+newUser.save();
+res.send("Success");
+});
+}
+else {
+console.log("User already exists");
+res.send("User Exists");
+}
+});
 });
 
 app.post("/setView", function (req, res) {
-	console.log("setView");
-	if (sess != undefined) {
-		sess.view = req.body.mail;
-		User.findOne({email: req.body.mail}, function (err, user) {
-			if (err) {
-				console.log("Error: " + err)
-				sess.targetType = null;
-			} else {
-				sess.targetType = user.type;
-				addLog(sess.view);
-			}
-		});
-	}
+console.log("setView");
+if (sess != undefined) {
+sess.view = req.body.mail;
+User.findOne({email: req.body.mail}, function (err, user) {
+if (err) {
+console.log("Error: " + err)
+sess.targetType = null;
+} else {
+sess.targetType = user.type;
+addLog(sess.view);
+}
+});
+}
 });
 
 app.post("/profile", function (req, res) {
-	console.log("Profile Request Received");
-	console.log("Goto: " + req.body.sessView); 
-	User.findOne({ email: req.body.sessView }, function (err, user) {
-		if (err) {
-			console.log(err);
-			res.send("Error");
-		}
-		if (user == undefined) {
-			console.log("User doesn't exist error");
-			res.send("Error");
-		} else {
-			console.log("Success");
-			res.send(user);
-		}		
-	});
+console.log("Profile Request Received");
+console.log("Goto: " + req.body.sessView); 
+User.findOne({ email: req.body.sessView }, function (err, user) {
+if (err) {
+console.log(err);
+res.send("Error");
+}
+if (user == undefined) {
+console.log("User doesn't exist error");
+res.send("Error");
+} else {
+console.log("Success");
+res.send(user);
+}
+});
 });
 
 app.post("/getSession", function (req, res) {
-	console.log("Session Request");
-	if (sess == undefined)
-		res.send(JSON.stringify({result: "Invalid"}));
-	else {
-		var temp = {sessMail: sess.email, sessType: sess.type, sessView: sess.view, sessTargetType: sess.targetType};
-		res.send(JSON.stringify(temp));
-	}
+console.log("Session Request");
+if (sess == undefined)
+res.send(JSON.stringify({result: "Invalid"}));
+else {
+var temp = {sessMail: sess.email, sessType: sess.type, sessView: sess.view, sessTargetType: sess.targetType};
+res.send(JSON.stringify(temp));
+}
 });
 
 app.post("/saveProfile", function (req, res) {
-	console.log("Save Profile Request");
-	//console.log(req.body);
-	if (req.body.username != '')
-		userUpdate(req.body.mail, 'username', req.body.username);
-	if (req.body.desc != '')
-		userUpdate(req.body.mail, 'desc', req.body.desc);
-	res.redirect('profile');	
+console.log("Save Profile Request");
+//console.log(req.body);
+if (req.body.username != '')
+userUpdate(req.body.mail, 'username', req.body.username);
+if (req.body.desc != '')
+userUpdate(req.body.mail, 'desc', req.body.desc);
+res.redirect('profile');
 });
 
 app.post("/deleteProfile", function (req, res) {
-	console.log("Delete Profile Request");
-	console.log(req.body);
-	User.findOneAndRemove({ email: req.body.sessView}, function (err) {
-		if (err) {
-			console.log("Error: " + err);
-			res.send("Error");
-			return false;
-		}
-	});
-	if (req.body.sessView == req.body.sessMail)
-		sess.email = "";
-	sess.view = "index";
-	res.send("Success");
+console.log("Delete Profile Request");
+console.log(req.body);
+User.findOneAndRemove({ email: req.body.sessView}, function (err) {
+if (err) {
+console.log("Error: " + err);
+res.send("Error");
+return false;
+}
+});
+if (req.body.sessView == req.body.sessMail)
+sess.email = "";
+sess.view = "index";
+res.send("Success");
 });
 
 app.post("/changePassword", function (req, res) {
-	console.log("Change Password");
-	User.findOne({ "email": req.body.sessView }, 
-	function (err, user) {
-		if (err) {
-			console.log("changePass Error " + err);
-			res.send("Error"); 
-			return false;
-		}
-		if (user == undefined) {
-			res.send("Error");
-		}
-		if (req.body.oldPass === user.password) { 
-			var ret = userUpdate(req.body.sessView, 'password', req.body.newPass);
-			if (ret !== false)
-				res.send("Success");
-			else {
-				res.send("Error");
-				return false;
-			}
-		}
-		else {
-			res.send("Invalid"); 
-		}	
-	});
+console.log("Change Password");
+User.findOne({ "email": req.body.sessView }, 
+function (err, user) {
+if (err) {
+console.log("changePass Error " + err);
+res.send("Error"); 
+return false;
+}
+if (user == undefined) {
+res.send("Error");
+}
+if (req.body.oldPass === user.password) { 
+var ret = userUpdate(req.body.sessView, 'password', req.body.newPass);
+if (ret !== false)
+res.send("Success");
+else {
+res.send("Error");
+return false;
+}
+}
+else {
+res.send("Invalid"); 
+}
+});
 });
 
 app.post("/toggleAdmin", function (req, res) {
-	if (req.body.sessTargetType == 'admin') {
-		userUpdate(req.body.sessView, 'type', 'user');
-		sess.targetType = 'user';
-		res.send(req.body.sessView + " is now an User");
-	}
-	else {
-		userUpdate(req.body.sessView, 'type', 'admin');
-		sess.targetType = 'admin';
-		res.send(req.body.sessView + " is now an Admin");
-	}
+if (req.body.sessTargetType == 'admin') {
+userUpdate(req.body.sessView, 'type', 'user');
+sess.targetType = 'user';
+res.send(req.body.sessView + " is now an User");
+}
+else {
+userUpdate(req.body.sessView, 'type', 'admin');
+sess.targetType = 'admin';
+res.send(req.body.sessView + " is now an Admin");
+}
 });
 
 app.post("/logInfo", function (req, res) {
-	addLog(req.body);
-	res.send("Success");
+addLog(req.body);
+res.send("Success");
 });
 
 app.post("/loadMetrics", function (req, res) {
-	console.log("Load Metrics");
-	if (sess == undefined || sess.type == 'user') {
-		res.send("Invalid");
-	}
-	else {
-		console.log("find");
-		Metric.find({}, function (err, metrics) {
-			if (err)
-				res.send("Error");
-			else {
-				res.send(JSON.stringify(metrics));
-			}
-		});
-	}
+console.log("Load Metrics");
+if (sess == undefined || sess.type == 'user') {
+res.send("Invalid");
+}
+else {
+console.log("find");
+Metric.find({}, function (err, metrics) {
+if (err)
+res.send("Error");
+else {
+res.send(JSON.stringify(metrics));
+}
+});
+}
 });
 
 app.post("/logout", function (req, res) {
-	if (sess == undefined)
-		res.send("Invalid");
-	else {
-		sess = undefined;
-		res.send("Success");
-	}
+if (sess == undefined)
+res.send("Invalid");
+else {
+sess = undefined;
+res.send("Success");
+}
 });
 
 app.get("*", function (req, res) {
-	res.redirect('/');	
+res.redirect('/');
 });
 
 app.listen(PORT);
@@ -847,42 +806,42 @@ app.listen(PORT);
 // Database code below
 
 function userUpdate (target, field, newInfo) {
-	console.log("User Update");
-	if (target == undefined)
-		return false;
-	if (newInfo == '')
-		return false;
-	var updatedField = {};
-	updatedField[field] = newInfo;
-	console.log(updatedField);
-	User.findOneAndUpdate({ email: target }, { $set: updatedField },
-	function (err) {
-		if (err) {
-			console.log("Error: " + err);
-			return false;
-		}
-	});				
+console.log("User Update");
+if (target == undefined)
+return false;
+if (newInfo == '')
+return false;
+var updatedField = {};
+updatedField[field] = newInfo;
+console.log(updatedField);
+User.findOneAndUpdate({ email: target }, { $set: updatedField },
+function (err) {
+if (err) {
+console.log("Error: " + err);
+return false;
+}
+});
 }
 
 function addLog (data) {
-	var curUser;
-	if (sess == undefined || sess.email == undefined)
-		curUser = "";
-	else
-		curUser = sess.email;
-	// TODO: get ip
-	var curIP = '0';
-	var curLat = data.lati;
-	var curLong = data.longi;
-	var curOS = data.os;
-	var curBrowser = data.browser;
-	var curPage;
-	if (data.pg == "profile" || data.pg == "editProfile")
-		curPage = data.pg + "/" + sess.view;
-	else
-		curPage = data.pg;
-	var newLog = new Metric({user: curUser, ip: curIP, latitude: curLat, longitude: curLong, os: curOS, browser: curBrowser, page: curPage});
-	newLog.save();
+var curUser;
+if (sess == undefined || sess.email == undefined)
+curUser = "";
+else
+curUser = sess.email;
+// TODO: get ip
+var curIP = '0';
+var curLat = data.lati;
+var curLong = data.longi;
+var curOS = data.os;
+var curBrowser = data.browser;
+var curPage;
+if (data.pg == "profile" || data.pg == "editProfile")
+curPage = data.pg + "/" + sess.view;
+else
+curPage = data.pg;
+var newLog = new Metric({user: curUser, ip: curIP, latitude: curLat, longitude: curLong, os: curOS, browser: curBrowser, page: curPage});
+newLog.save();
 }
 
 
@@ -891,24 +850,23 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, "Connection error:"));
 db.once('open', function (callback) {
 console.log.bind("Database Loaded"); });
-	
 var userSchema = mongoose.Schema({
-	username: { type: String, required: true },
-	password: { type: String, required: true },
-	type: { type: String, required: true },
-	email: { type: String, required: true, unique: true },
-	image: String,
-	desc: String,
+username: { type: String, required: true },
+password: { type: String, required: true },
+type: { type: String, required: true },
+email: { type: String, required: true, unique: true },
+image: String,
+desc: String,
 });
 
 var metricSchema = mongoose.Schema({
-	user: String,
-	ip: String,
-	latitude: String,
-	longitude: String,
-	os: String,
-	browser: String,
-	page: String
+user: String,
+ip: String,
+latitude: String,
+longitude: String,
+os: String,
+browser: String,
+page: String
 });
 
 
@@ -919,5 +877,3 @@ var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 */
-
-
