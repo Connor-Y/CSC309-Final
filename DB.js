@@ -117,7 +117,9 @@ exports.insertUser = function(db, newUser) {
             "description" : "NEW USER",
             "admintype" : admin,
             "rating" : 0,
-            "numReview" : 0
+            "numReview" : 0,
+            "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png"
+
         }, function(err, result) {
             assert.equal(err, null);
             console.log("inserted a document into the users collection.");
@@ -125,6 +127,17 @@ exports.insertUser = function(db, newUser) {
         });
     });
 };
+
+exports.getAllUsers = function (db, next) {
+	db.collection('users').find(
+		{}).toArray(function (err, users) {
+			assert.equal(err, null);
+			next(users);
+		});
+};
+
+    
+   
 
 
 exports.getUserByUsername = function(db, username, next){
@@ -152,7 +165,7 @@ exports.validateUser = function(db, username, password, next){
 				next(false);
 			}
 		});
-}
+};
 //Check if newUser's email or username is already in database,
 //sends boolean to next()
 exports.userExists = function(db, username, email, next){
@@ -324,12 +337,18 @@ exports.insertPost = function(db, newPost){
 	});
 };
 
+exports.removeall = function(db, next) {
+	db.collection('posts').remove({});
+};
 //READ
 //Finds a post by it's unique id
 exports.getPostByID = function(db, postID, next){
-	db.collection('posts').findOne(
+		console.log("the by id is " + postID);
+
+	db.collection('posts').findOne(//find one?
+	
 		{
-			"id" : postID
+			"_id" : ObjectId(postID)
 		}, function (err, post){
 			assert.equal(err, null);
 			next(post);
@@ -387,16 +406,7 @@ exports.getPostsByTag = function(db, tag, next){
 		});
 };
 
-exports.getPostsByTitle = function(db, title, next){
-	db.collection('posts').find(
-		{
-			"title" : title
-		}).toArray(function (err, posts){
-			assert.equal(err, null);
-			next(posts);
-		});
-};
-
+//UPDATE change later
 
 //UPDATE
 //Updates the title, postContent, and tags
@@ -420,7 +430,8 @@ exports.updatePost = function(db, post){
 exports.makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
-			"id" : postID
+			"_id" : ObjectId(postID)
+
 		}, {
 			$set: {
 				"available" : false,
@@ -462,6 +473,15 @@ exports.insertReview = function(db, newReview){
 			    console.log("Inserted a review into the review collection");
 	});
 };
+
+exports.getAllReviews = function (db, next) {
+	db.collection('review').find(
+		{}).toArray(function (err, users) {
+			assert.equal(err, null);
+			next(users);
+		});
+};
+
 
 //READ
 //Finds the review by <reviewer> related to the post with id <POSTID>
