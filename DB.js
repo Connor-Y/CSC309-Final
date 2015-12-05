@@ -366,7 +366,7 @@ exports.getAvailablePosts = function(db, next){
 		});
 };
 
-exposts.getAllTags = function (db, next) {
+exports.getAllTags = function (db, next) {
 	db.collection('posts').find(
 		{
 			"available" : true,

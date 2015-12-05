@@ -14,7 +14,7 @@ var db = require('./DB');
 
 // How similar recommendations should be by
 // number of tags
-var recommendationSimiliarityFactor = 0.8;
+var recommendationSimiliarityFactor = 0.6;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
@@ -531,88 +531,105 @@ app.post("/getUserReviewsByUsername", function(req, res) {
 app.post('/getGamesByQuery', function(req, res) {
     db.getAvailablePosts(db.db, function(posts) {
         var results = searchPostings(sanitizeHtml(req.params.query), posts);
-        // TODO: Format results
         res.send(results)
     });
 });
 
 app.post("/getRecommendations", function(req, res) {
     console.log("Generate and Send Recommendations");
-    // Need database code for games
-    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
-        if (post) {
-            var tags = post.tags.split(", ");
-            var lowSimTags = tags.slice();
-                        var recList = [];
-            tags = shuffleArray(tags);
-            tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            db.getAvailablePosts(db.db, function (posts) {
-                                for (var i = 0; i < posts.length; i++) {
-                                        if (recList.length >= numberOfRecs) {
-                                                res.send(recList);
-                                                break;
-                                        }
-                                        if (posts[i].title == post.title)
-                                       
-                                        // For each game, check if tags are a subset
-                                        if (isSubset(tags, posts[i].tags.split(", ")))
-                                           recList.push(posts[i]);
-                                       
-                                         // Strip copies of the same game
-                                        for (var j = 0; j < recList.length; j++) {
-                                                if (recList[j].title == post.title)
-                                                        recList.splice(recList.indexOf(recList[j]), 1);
-                                        }
-                                }
-                                res.send(recList);
-                        });
-        } else {
-            res.send('Not Found');
-        }
+    gertRec(req.body.id, function (results) {
+		console.log("Results: " + results);
+		res.send(results);
     });
 });
 
 
 app.get("/getrec", function(req, res) {
-	var results = getRec("pokemon blueHerRedHairedRetail");
-	console.log(results);
-	res.send(results);
-
+	getRec("ca", function (results) {
+		console.log("Results: " + results);
+		res.send(results);
+	});
 });
-
-function getRec(id) {
+app.get("/allAvailable", function (req, res) {
+	db.getAvailablePosts(db.db, function (posts) {
+		res.send(posts)
+	});
+});
+function getRec(id, next) {
 	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
         if (post) {
+			console.log("Current Post: "+ JSON.stringify(post));
             var tags = post.tags.split(", ");
             var lowSimTags = tags.slice();
                         var recList = [];
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            db.getAvailablePosts(db.db, function (posts) {
-                                for (var i = 0; i < posts.length; i++) {
-                                        if (recList.length >= numberOfRecs) {
-                                                return recList;
-                                                break;
-                                        }
-                                        if (posts[i].title == post.title)
-                                       
-                                        // For each game, check if tags are a subset
-                                        if (isSubset(tags, posts[i].tags.split(", ")))
-                                           recList.push(posts[i]);
-                                       
-                                         // Strip copies of the same game
-                                        for (var j = 0; j < recList.length; j++) {
-                                                if (recList[j].title == post.title)
-                                                        recList.splice(recList.indexOf(recList[j]), 1);
-                                        }
-                                }
-                                return recList;
-                        });
+			lowSimTags = tags.slice(0, 1);
+            console.log("Tags: " + tags);
+			db.getAvailablePosts(db.db, function (posts) {
+				for (var i = 0; i < posts.length; i++) {
+						if (recList.length >= numberOfRecs) {
+								console.log("Found enough recs: " + recList);
+								next(recList);
+								break;
+						}
+						// Don't recommend the same game
+						if (posts[i].title == post.title) {
+							continue;
+						}
+						// If we have already recommend a game, don't recommend it again
+						/* var skipFlag = false;
+						for (var j = 0; j < recList.length; j++) {
+								if (recList[j].title == post.title)
+									skipFlag = true;
+						}
+						if (skipFlag) {
+							skipFlag = false;
+							continue;
+						} */
+						// For each game, check if tags are a subset
+						if (isSubset(tags, posts[i].tags.split(", ")))
+						   recList.push(posts[i]);
+						
+				}
+				
+				//Searching for less similar games - Too slow	
+				if (recList.length >= numberOfRecs)
+					next(recList);
+				else {
+					for (var i = 0; i < 10; i++) {
+						if (recList.length >= numberOfRecs) {
+								console.log("Found enough recs: " + recList);
+								next(recList);
+								break;
+						}
+						// Don't recommend the same game
+						if (posts[i].title == post.title)
+							continue;
+						
+						
+						// If we have already recommend a game, don't recommend it again
+						var skipFlag = false;
+						for (var j = 0; j < recList.length; j++) {
+								if (recList[j].title == post.title)
+									skipFlag = true;
+						}
+						if (skipFlag) {
+							continue;
+						}
+						
+						// For each game, check if tags are a subset
+						if (isSubset(lowSimTags, posts[i].tags.split(", ")))
+						   recList.push(posts[i]);
+					}
+				}
+				next(recList);
+				
+			});
         } else {
-            return "False"
-            }
+            next("Not Found");
+        }
     });
-
 }
 
 
@@ -635,6 +652,13 @@ function getDate() {
     return today;
 }
 
+app.get("/searchTest", function (req, res) {
+	    db.getAvailablePosts(db.db, function(posts) {
+        var results = searchPostings("c", posts);
+        // TODO: Format results
+        res.send(results)
+    });
+});
 
 
 function searchPostings(q, postings) {
@@ -653,11 +677,19 @@ function searchPostings(q, postings) {
                 var splitQuery = query.split(" ");
                 for (var i = 0; i < splitQuery.length; i++ ) {
                         if (tags.indexOf(splitQuery[i]) > -1) {
-                                results.push(posting[j]);
+                                results.push(postings[j]);
                                 break;
                         }
         }
     }
+	
+	// Strip copies of the same game
+	for (var i = 0; i < results.length; i++) {
+		for (var j = i + 1; j < results.length; j++) {
+			if (results[i].id == results[j].id)
+					results.splice(results.indexOf(results[j]), 1);
+		}
+	}
     return results;
 } 
 function isSubset(sub, master) {
@@ -1068,7 +1100,4 @@ console.log("Model Created");
 <<<<<<< HEAD
 <<<<<<< HEAD
 */
-=======
-*/
 
->>>>>>> ea7f9d2033161af883e0489c76ebccc518f08cac
