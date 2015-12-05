@@ -680,7 +680,7 @@ app.post('/getGamesByQuery', function(req, res) {
 
 app.post("/getRecommendations", function(req, res) {
     console.log("Generate and Send Recommendations");
-    gertRec(req.body.id, function (results) {
+    getRec(req.body.id, function (results) {
 		console.log("Results: " + results);
 		res.send(results);
     });
@@ -823,6 +823,7 @@ function searchPostings(q, postings) {
                                 results.push(postings[j]);
                                 break;
                         }
+
         }
         
     }
@@ -1245,4 +1246,3 @@ var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 
 */
-
