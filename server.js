@@ -1,4 +1,3 @@
-
 var fs = require('fs');
 var path = require('path');
 var PORT = 3000;
@@ -97,8 +96,6 @@ app.get("/myuserpage", function(req, res) {
 
             	});
 			});
-
-
 
         } else {
             res.send("Not Found"); //did not find the 
@@ -204,11 +201,6 @@ app.post("/registration", function(req, res) {
         console.log("script detected!");
         res.send("Invalid");
     } else {
-
-
-        //console.log("" + req.body.username);
-        //console.log("" + req.body.email);
-        //console.log("" + req.body.password);
 
         db.userExists(db.db, req.body.username, req.body.email, function(result) {
             //a user was found when the email and username queried
@@ -374,6 +366,36 @@ app.post("/updateUsername", function(req, res) {
     //res.redirect(req.get('referer'));   		
 });
 
+
+
+//should validate old password on server side
+app.post("/updateUserPassword", function (req, res) {
+    
+    //this may be redundant, but just makes sure user exists incase user tries to send request without
+    //using actual front end. (some app like postman)
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+           res.send("Invalid user");
+        }
+        
+        else {
+            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+                //check that they entered their old password correctly
+                if (!validPassword(req.body.password, user.password)) {
+                    console.log("Invalid Password");
+                    res.send("Invalid");
+                }
+                
+                else {
+                    console.log("Correct password entered...");
+                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), generateHash(sanitizeHtml(req.body.newpassword)));
+                    console.log("Password updated!");
+                    res.send("Success");
+                }
+            });
+        }   
+    });
+
 app.post("/updatePassword", function(req, res) {
     console.log(req.body.password);
     db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
@@ -444,6 +466,46 @@ app.post("/updateUserInfo", function(req, res) {
     }
 });
 
+
+app.post("/toggleAdmin" , function (req, res) {
+    
+    console.log("admin toggle request received");
+    //console.log("" + req.body.username);
+    //console.log("" + req.body.email);
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+            console.log("user does not exist");
+            res.send("Invalid user");
+        }
+        db.getUserByUsername(db.db, sess.username, function (usersess) {
+
+                //if admintype of the user being changed is less, don't allow it
+            if (usersess.admintype != 0) {
+                console.log("this user does not have permission to modify the admin type");
+                res.send("Invalid permissions");
+            }
+                
+            else {
+                db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
+                console.log("admin status changed!");
+                res.send("Success");
+            }
+        
+        });
+    });
+});
+
+
+app.get("/getcurrentadmin", function (req, res) {
+    if (sess.username != '') {
+        db.getUserByUsername(db.db, sess.username, function (user) {
+            console.log("" + user.admintype);
+            var temp = {admintype: user.admintype};
+            res.send(JSON.stringify(temp));
+        });
+    }  
+});
+
 //password must be hashed first generateHash(req.body.password)
 
 app.post("/getPostsFromUsername", function(req, res) {
@@ -496,7 +558,6 @@ app.post("/createPosting", function (req, res) {
 	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
 		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), tags);
 	
-
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
     }
@@ -1103,6 +1164,7 @@ console.log("Schema built");
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
+<<<<<<< HEAD
 <<<<<<< HEAD
 */
 
