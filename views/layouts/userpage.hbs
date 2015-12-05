@@ -29,10 +29,12 @@
 
 <script>
 //put in seperate file later
-var thisUser = $("#name").val();
 
 $("#rank5").click(function() {
 	alert("I rate this 5");
+	var thisUser = $("#name").text();
+	alert(thisUser);
+
 	$.post("/updateUserRating",{username: thisUser, rating: 5}, function(data) {
 		if (data =="Success") {
 			alert("Rated user");
@@ -42,7 +44,9 @@ $("#rank5").click(function() {
 
 $("#rank4").click(function() {
 	alert("I rate this 4");
-	$.post("path",{username: thisUser, rating: 4}, function(data) {
+	var thisUser = $("#name").text();
+
+	$.post("/updateUserRating",{username: thisUser, rating: 4}, function(data) {
 	if (data=="Success") {
 		alert("Rated user");
 	}
@@ -51,7 +55,9 @@ $("#rank4").click(function() {
 });
 $("#rank3").click(function() {
 	alert("I rate this 3");
-	$.post("path",{username: thisUser, rating: 3}, function(data) {
+	var thisUser = $("#name").text();
+
+	$.post("/updateUserRating",{username: thisUser, rating: 3}, function(data) {
 		if (data=="Success") {
 			alert("Rated user");
 		}
@@ -60,7 +66,9 @@ $("#rank3").click(function() {
 });
 $("#rank2").click(function() {
 	alert("I rate this 2");
-	$.post("path",{username: thisUser, rating: 2}, function(data) {
+	var thisUser = $("#name").text();
+
+	$.post("/updateUserRating",{username: thisUser, rating: 2}, function(data) {
 		if (data=="Success") {
 			alert("Rated user");
 		}
@@ -69,7 +77,9 @@ $("#rank2").click(function() {
 });
 $("#rank1").click(function() {
 	alert("I rate this 1");
-	$.post("path",{username: thisUser, rating: 1}, function(data) {
+	var thisUser = $("#name").text();
+
+	$.post("/updateUserRating",{username: thisUser, rating: 1}, function(data) {
 		if (data=="Success") {
 			alert("Rated user");
 		}
