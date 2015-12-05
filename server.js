@@ -395,6 +395,7 @@ app.post("/updateUserPassword", function (req, res) {
             });
         }   
     });
+});
 
 app.post("/updatePassword", function(req, res) {
     console.log(req.body.password);
@@ -642,18 +643,19 @@ app.post("/getRecommendations", function(req, res) {
     });
 });
 
-
 app.get("/getrec", function(req, res) {
 	getRec("ca", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
 	});
 });
+
 app.get("/allAvailable", function (req, res) {
 	db.getAvailablePosts(db.db, function (posts) {
 		res.send(posts)
 	});
 });
+
 function getRec(id, next) {
 	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
         if (post) {
@@ -677,7 +679,7 @@ function getRec(id, next) {
 							continue;
 						}
 						// If we have already recommend a game, don't recommend it again
-						/* var skipFlag = false;
+						var skipFlag = false;
 						for (var j = 0; j < recList.length; j++) {
 								if (recList[j].title == post.title)
 									skipFlag = true;
@@ -685,7 +687,7 @@ function getRec(id, next) {
 						if (skipFlag) {
 							skipFlag = false;
 							continue;
-						} */
+						} 
 						// For each game, check if tags are a subset
 						if (isSubset(tags, posts[i].tags.split(", ")))
 						   recList.push(posts[i]);
@@ -790,7 +792,8 @@ function searchPostings(q, postings) {
 		}
 	}
     return results;
-} 
+}
+ 
 function isSubset(sub, master) {
         var found = false;
         for (var i = 0; i < sub.length; i++) {
@@ -844,6 +847,7 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     };
     return newReview;
 }
+
 
 
 
@@ -1196,7 +1200,6 @@ console.log("Schema built");
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 */
 
