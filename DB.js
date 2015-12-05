@@ -248,7 +248,17 @@ exports.updateUserRating = function(db, username, newRating){
 			"username" : username
 		},function(err, user) {
 			assert.equal(err, null);
-			var updatedRating = ((user.rating*user.numReviews) + newRating)/(user.numReviews+1)
+			console.log("user rating + num reviews is: " + user.rating * user.numReviews);
+			/*
+			console.log("the new rating is " + newRating);
+			console.log("the num of reviews is" + user.numReviews);
+			console.log("user rating is " + user.rating);
+			*/
+		//	var updatedRating = ((user.rating * user.numReviews) + newRating) / (user.numReviews+1)
+			var updatedRating = ((Number(user.rating) * Number(user.numReviews) + Number(newRating)) / (Number(user.numReviews) + 1));
+		//	console.log("num reviews plus 1 " + user.numReviews + 1);
+		//	console.log("formulae " + ((user.rating * user.numReviews + newRating) / (user.numReviews + 1)));
+		//	console.log("updated rating" + updatedRating);
 			db.collection('users').update(
 			{
 				"username" : username
