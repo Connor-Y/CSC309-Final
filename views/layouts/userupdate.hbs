@@ -28,25 +28,23 @@ $("#pwdButton").click(function() {
 	newPassword = $("#updatePassword").val();
 	//alert(newPassword);
 	
-	$.post("updatepassword",{password: newPassword}, function(data) {
-		alert("changed password");
-	});
-		/*
+	$.post("/updatepassword",{password: newPassword}, function(data) {
+		//alert("changed password");
+	
+		
 		if (data =="Success") {
 			alert("Password successfully changed!");
 		}
 		else {
 			alert("Could not change password, try again");
 			}
-			*/
-//	});
+				});
 	
 
 });
 
 $("#nameButton").click(function() {
 	newName = $("#updateName").val();
-	//	alert(newName);
 	$.post("/updateUsername",{username: newName}, function(data) {
 		if (data == "Success") {
 			alert("Name successfully changed!");

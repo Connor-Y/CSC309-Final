@@ -48,6 +48,7 @@ app.use(sess({
 //default
 sess.username = '';
 sess.email = '';
+sess.game = '';
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -60,9 +61,6 @@ app.get('/', function(req, res) { //main page not logged in
     res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
-app.get('/start', function(req, res) { //main page not logged in
-    res.sendFile(__dirname + '/public/html/mainpage.html');
-});
 
 
 app.get('/main', function(req, res) { //main page logged in
@@ -86,14 +84,18 @@ app.get("/myuserpage", function(req, res) {
     db.getUserByUsername(db.db, sess.username, function(user) {
         if (user) {
             //res.json(user);
-            db.getPostsBoughtBy(db.db, sess.username, function(posts) {
+            db.getPostsBoughtBy(db.db, sess.username, function(bought) {
+            	db.getPostsFrom(db.db, sess.username, function(posts) {
+
                 res.render('myPageView', {
                     user: user,
+                    bought: bought,
                     posts: posts,
                     layout: 'mypage'
                 });
 
-            });
+            	});
+			});
 
         } else {
             res.send("Not Found"); //did not find the 
@@ -109,15 +111,6 @@ app.get("/usersearch", function(req, res) {
         layout: 'usersearch'
     });
 });
-/*
-app.get("/userpage", function(req, res) {
-});
-*/
-/*
-app.get("/getall", function(req, res) {
-console.log("trying to get all 
-});
-*/
 app.get("/userupdate", function(req, res) {
     console.log("got to the user update page");
     res.render('userupdateView', {
@@ -135,26 +128,6 @@ app.get("/userpost", function(req, res) {
 });
 
 
-//the product page, click on link to 
-
-app.get("/product/*@*", function (req, res) {
-	gameId = req.path.slice(7);	
-	console.log(gameId);
-
-	console.log("got to the product page");
-
-	
-    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
-        if (post) {
-            res.render("productView", {game: post, layout:"product"});
-
-        } else {
-            res.send("Not Found");
-        }
-    });
-
-	
-});
 
 /*
 app.post('/getGamesByQuery', function (req, res) {
@@ -171,13 +144,24 @@ app.post("/list", function (req, res) {
 	console.log(req.body.query);
 
 	db.getAvailablePosts(db.db, function (posts) { 
-		var games = searchPostings(sanitizeHtml(req.body.query), posts);
+	//	var games = searchPostings(sanitizeHtml(req.body.query), posts);
 		//res.send(results)
 		//res.render("searchView", {games: games, layout:"search"});
-		res.send(games);
+		db.getPostsByTag(db.db, req.body.query, function(games) {
+			res.render("searchView", {games: games, username:sess.username, layout:"search"});
+
+		//res.send(games);
+
+		});
 	});
 });
 
+//testing
+app.get("/remove", function() {
+	db.removeall(db.db, function () {
+		res.send("removed all posts");
+	});
+});
 
 
 app.get('/404', function() {
@@ -242,6 +226,7 @@ app.post("/registration", function(req, res) {
 });
 
 app.post("/loginVerification", function(req, res) {
+	
     console.log("Login Request Received");
     db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function(result) {
         console.log("" + req.body.username);
@@ -274,7 +259,10 @@ app.post("/loginVerification", function(req, res) {
             res.send("Not Found");
         }
     });
-});
+
+    
+
+  });
 
 app.get("/logout", function(req, res) {
     sess.username = '';
@@ -282,15 +270,46 @@ app.get("/logout", function(req, res) {
 
     console.log("logout successful");
     //res.send("Success");
-    res.redirect("start");
+    res.redirect("/");
 
 
 });
+
 
 app.post("/profile", function(req, res) {
     console.log("profile view request received");
 
     db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function(user) {
+        if (user) {
+        	db.getPostsFrom(db.db, sanitizeHtml(req.body.username), function(posts) {
+        		 db.getPostsBoughtBy(db.db, sess.username, function(bought) {
+
+
+            	//res.json(user);
+           	 		res.render("userpageView", {
+            	    user: user,
+            	    bought: bought,
+                	posts: posts,
+                	layout: "userpage"
+					});
+        		});
+        	});
+		}
+        else {
+            res.send("Not Found, try again!");
+        }
+    });
+});
+
+app.get("/users", function(req, res) {
+	console.log("hi");
+	
+	username = 	req.query.username;	
+	console.log(username);
+
+    console.log("profile view request received");
+
+    db.getUserByUsername(db.db, username, function(user) {
         if (user) {
             //res.json(user);
             res.render("userpageView", {
@@ -301,7 +320,34 @@ app.post("/profile", function(req, res) {
             res.send("Not Found, try again!");
         }
     });
+    
+    
 });
+
+//the product page, click on link to 
+app.get("/product", function (req, res) {
+	gameId = req.query.productid;	
+	console.log(gameId);
+
+	console.log("got to the product page");
+
+    db.getPostByID(db.db, gameId, function(post) {
+        if (post) {
+        	db.getReviewsByID(db.db, sess.game, function(reviews) {
+
+        		sess.game = post._id;
+
+            	res.render("productView", {game: post,reviews:reviews, layout:"product"});
+			});
+
+        } else {
+            res.send("Not Found");
+        }
+    });
+	
+});
+
+
 
 
 /*User*/
@@ -309,20 +355,18 @@ app.post("/updateDescription", function(req, res) {
     console.log(req.body.description);
     db.updateUserDescription(db.db, sess.username, sanitizeHtml(req.body.description));
     res.send("Success");
+    //res.redirect(req.get('referer'));   		
 });
 
 app.post("/updateUsername", function(req, res) {
-    console.log(req.body.description);
+    console.log(req.body.username);
     db.updateUserName(db.db, sess.username, sanitizeHtml(req.body.username));
     sess.username = req.body.username;
     res.send("Success");
+    //res.redirect(req.get('referer'));   		
 });
 
-/*app.post("/updatePassword", function(req, res) {
-    console.log(req.body.description);
-    db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
-    res.send("Success");
-});*/
+
 
 //should validate old password on server side
 app.post("/updateUserPassword", function (req, res) {
@@ -351,13 +395,36 @@ app.post("/updateUserPassword", function (req, res) {
             });
         }   
     });
+
+app.post("/updatePassword", function(req, res) {
+    console.log(req.body.password);
+    db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
+    res.send("Success");
+    //res.redirect(req.get('referer'));   		
 });
 
 app.post("/updatePic", function(req, res) {
-    console.log(req.body.description);
+    console.log(req.body.pic);
     db.updateUserPic(db.db, sess.username, sanitizeHtml(req.body.pic));
     res.send("Success");
+    //res.redirect(req.get('referer'));   		
 });
+
+//Post update
+
+
+//Admin Update functions
+
+
+
+
+
+
+
+
+
+
+
 
 app.post("/updateUserRating", function (req, res) {
 	console.log("updating the user rank");
@@ -469,13 +536,27 @@ app.get("/allposts", function(req, res) {
 	});
 });
 
+app.get("/allusers", function(req, res) {
+	db.getAllUsers(db.db, function(users) {
+		res.send(users);
+	});
+});
+
+
+
+
 app.post("/createPosting", function (req, res) {
 	console.log("got to create a posting");
 
 	var id = sanitizeHtml(req.body.title) + sess.username;
+	var tags = sanitizeHtml(req.body.tags).split(",");
+	for (var i = 0; i < tags.length; i++)
+   		 tags[i] = tags[i].trim();
+   	console.log(tags[0]);
+   	tags.push(sanitizeHtml(req.body.title));
 	var date = getDate();//username, id, date, title, price, content, image, tags
 	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
-		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), tags);
 	
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
@@ -486,18 +567,34 @@ app.post("/createPosting", function (req, res) {
         res.send("Success");
     }
 });
-
+//format is reviewer, reviewee, id, date, rating, comment
 app.post("/createReview", function(req, res) {
-    var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id,
-        getDate(), req.params.rating, sanatizeHtml(req.params.comment));
-		
-    if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
-        res.send("Invalid");
-    } else {
-        db.insertReview(db.db, review);
-        res.send("Success");
-    }
+	console.log("got to the create review");
+	db.getPostByID(db.db, sess.game, function(game) {
+		if (game) {																//the games id will be linked to the review
+			 var review = createReview(sess.username, sanitizeHtml(game.username), (game._id),
+       					 getDate(), req.body.rating, sanitizeHtml(req.body.comment));
+		}
+		else {
+			res.send("could not find the game");
+		}
+       		 		
+    	if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
+        	res.send("Invalid");
+    	} else {
+        	db.insertReview(db.db, review);
+        	res.redirect(req.get('referer'));   		
+        	}
+		});
+
+	});
+app.get("/allreviews", function(req, res) {
+	db.getAllReviews(db.db, function(users) {
+		res.send(users);
+	});
 });
+
+  		
 
 app.post("/deleteUserByID", function(req, res) {
     db.deletePost(db.db, sanitizeHtml(req.params.id));
@@ -505,10 +602,12 @@ app.post("/deleteUserByID", function(req, res) {
 });
 
 app.post("/makeUnavailable", function(req, res) {
+	console.log("made posting unavailable");
     // id refers to the posting's id
-    db.makeUnavailable(db.db, sanitizeHtml(req.params.id), req.params.buyerUsername);
-    res.send("Success");
-});
+    console.log(sess.game);
+    db.makeUnavailable(db.db, sess.game, sess.username);//req.params.buyerUsername);
+	res.redirect("myuserpage");//check to see if working
+    });
 
 app.post("/getRentedGamesByUsername", function(req, res) {
     db.getPostsBoughtBy(db.db, sess.username, function(posts) {
@@ -1068,7 +1167,4 @@ console.log("Model Created");
 <<<<<<< HEAD
 <<<<<<< HEAD
 */
-=======
-*/
 
->>>>>>> ea7f9d2033161af883e0489c76ebccc518f08cac

@@ -55,6 +55,7 @@
 	background-color:#2C2D2F;
 	color:white;
 	text-align:center;
+	margin-top:15px;
 }
 
 /*wrpper class for the games/users items */
@@ -359,7 +360,7 @@
 	vertical-align:middle;
 	}
 
-#userproducts, #usercheckedout {
+.userproducts {
 	border:1px solid black;
 	width:80%;
 	height: 300px;
@@ -406,6 +407,13 @@
 
 	
 }
+.userbought {
+	border:1px solid black;
+	width: 200px;
+	height:200px;
+
+
+}
 
 .review {
 	margin-top:20px;
@@ -414,6 +422,7 @@
 	margin-left:10%;
 	height:150px;
 	overflow:scroll;
+	margin-bottom:15px;
 
 }
 
@@ -490,6 +499,7 @@
 	margin-left:25%;
 	text-align:center;
 	height:200px;
+	margin-bottom:180px;
 }
 
 

@@ -4,14 +4,15 @@
 	<a class="navbar-form navbar-right glyphicon glyphicon-cog" href="myuserpage">{{username}}</a> <!--send to get request that will load main page and current user -->
 
 
-	<form class="navbar-form navbar-right" role="search" >
+	<form class="navbar-form navbar-right" role="search" method="post" action="./list">
     	<div class="form-group">
-          <input type="text" class="form-control" placeholder ="Search Game ..."  >
+          <input type="text" class="form-control" placeholder ="Search Game ..." name="query" >
         </div>
-        <button type="button" class="btn btn-default">
+        <button type="submit" class="btn btn-default">
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
+ 
  
  
  	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
@@ -83,6 +84,15 @@
 </form>
 
 
+</div>
+
+
+
+<div id="bottomdiv">
+<p> About: The Great Game Share is not liable for any problems that may arise in your life</p>
+<p> Terms and conditions, don't be a jerk</p>
+<p> Privacy Policy, don't steal, or we will find you</p>
+<p> Even more other useless and pointless stuff </p>
 </div>
 
 
