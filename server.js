@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-Server
-=======
->>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5
 
 var fs = require('fs');
 var path = require('path');
@@ -81,14 +77,12 @@ app.get('/main', function(req, res) { //main page logged in
 });
 
 app.get('/login', function(req, res) {
-<<<<<<< HEAD
     console.log("got to the login page");
     res.sendFile(__dirname + '/public/html/login.html');
     //	res.render('loginView', {layout:'login'});
 });
 
 app.get("/myuserpage", function(req, res) {
-<<<<<<< HEAD
     console.log("got to my user page");
     db.getUserByUsername(db.db, sess.username, function(user) {
         if (user) {
@@ -144,18 +138,26 @@ app.get("/userpost", function(req, res) {
 
 
 //the product page, click on link to 
-/*
+
 app.get("/product/*@*", function (req, res) {
 	gameId = req.path.slice(7);	
 	console.log(gameId);
-	var game = searchPostings(sanitizeHtml(req.params.query), posts);
 
-	db.getPostByID(db.db, 
 	console.log("got to the product page");
-	res.render("productView", {game: game, layout:"product"});
+
+	
+    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
+        if (post) {
+            res.render("productView", {game: post, layout:"product"});
+
+        } else {
+            res.send("Not Found");
+        }
+    });
+
 	
 });
-*/
+
 /*
 app.post('/getGamesByQuery', function (req, res) {
 db.getAvailablePosts(db.db, function (posts) {
@@ -167,10 +169,14 @@ res.send(results)
 
 */
 app.post("/list", function (req, res) {
-	db.getAvailablePosts(db.db, function (posts) {
-	var games = searchPostings(sanitizeHtml(req.params.query), posts);
-	//res.send(results)
-	res.render("searchView", {games: games, layout:"search"});
+	console.log("got to the /list path");
+	console.log(req.body.query);
+
+	db.getAvailablePosts(db.db, function (posts) { 
+		var games = searchPostings(sanitizeHtml(req.body.query), posts);
+		//res.send(results)
+		//res.render("searchView", {games: games, layout:"search"});
+		res.send(games);
 	});
 });
 
@@ -395,11 +401,17 @@ app.post("/post:id", function(req, res) {
     });
 });
 
+app.get("/allposts", function(req, res) {
+	db.getAvailablePosts(db.db, function(posts) {
+		res.send(posts);
+	});
+});
+
 app.post("/createPosting", function (req, res) {
 	console.log("got to create a posting");
 
-	var id = sanitizeHtml(req.params.title) + sess.username;
-	var date = getDate();
+	var id = sanitizeHtml(req.body.title) + sess.username;
+	var date = getDate();//username, id, date, title, price, content, image, tags
 	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
 		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
 	
@@ -424,7 +436,6 @@ app.post("/createReview", function(req, res) {
         db.insertReview(db.db, review);
         res.send("Success");
     }
-<<<<<<< HEAD
 });
 
 app.post("/deleteUserByID", function(req, res) {
@@ -469,50 +480,81 @@ app.post("/getRecommendations", function(req, res) {
     // Need database code for games
     db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
         if (post) {
-            // TODO: set to actual delimiter
             var tags = post.tags.split(", ");
             var lowSimTags = tags.slice();
+                        var recList = [];
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            var tagList = db.getAllTags(db.db, );
-            // If we don't have enough recommendations, relax the similarity
-            if (recList.length < numberOfRecs) {
-                lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
-                recList = recList.concat(db.getPostsByTag(db.db, tags));
-            }
-            // Strip copies of the same game
-            for (elem in recList) {
-                if (elem.title == post.title)
-                    recList.splice(recList.indexOf(elem), 1);
-            }
-            // Shuffle the recommendations we have
-            recList = shuffleArray(recList);
-            // Strip copies of the same game
-            for (elem in recList) {
-                if (elem.title == post.title)
-                    recList.splice(recList.indexOf(elem), 1);
-            }
-            // If we still don't have enough recommendations
-            // Pick some random games to fill out the number.
-            if (recList.length < numberOfRecs) {
-                // Just pick some random games
-
-                recList = recList.concat(db.getPostsByTag(db.db, ""));
-                // Strip copies of the same game
-                for (elem in recList) {
-                    if (elem.title == post.title)
-                        recList.splice(recList.indexOf(elem), 1);
-                }
-
-            }
-            recList = recList.slice(0, numberOfRecs + 1);
-            // TODO: format recList
-            res.send(recList);
+            db.getAvailablePosts(db.db, function (posts) {
+                                for (var i = 0; i < posts.length; i++) {
+                                        if (recList.length >= numberOfRecs) {
+                                                res.send(recList);
+                                                break;
+                                        }
+                                        if (posts[i].title == post.title)
+                                       
+                                        // For each game, check if tags are a subset
+                                        if (isSubset(tags, posts[i].tags.split(", ")))
+                                           recList.push(posts[i]);
+                                       
+                                         // Strip copies of the same game
+                                        for (var j = 0; j < recList.length; j++) {
+                                                if (recList[j].title == post.title)
+                                                        recList.splice(recList.indexOf(recList[j]), 1);
+                                        }
+                                }
+                                res.send(recList);
+                        });
         } else {
             res.send('Not Found');
         }
     });
 });
+
+
+app.get("/getrec", function(req, res) {
+	var results = getRec("pokemon blueHerRedHairedRetail");
+	console.log(results);
+	res.send(results);
+
+});
+
+function getRec(id) {
+	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
+        if (post) {
+            var tags = post.tags.split(", ");
+            var lowSimTags = tags.slice();
+                        var recList = [];
+            tags = shuffleArray(tags);
+            tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
+            db.getAvailablePosts(db.db, function (posts) {
+                                for (var i = 0; i < posts.length; i++) {
+                                        if (recList.length >= numberOfRecs) {
+                                                return recList;
+                                                break;
+                                        }
+                                        if (posts[i].title == post.title)
+                                       
+                                        // For each game, check if tags are a subset
+                                        if (isSubset(tags, posts[i].tags.split(", ")))
+                                           recList.push(posts[i]);
+                                       
+                                         // Strip copies of the same game
+                                        for (var j = 0; j < recList.length; j++) {
+                                                if (recList[j].title == post.title)
+                                                        recList.splice(recList.indexOf(recList[j]), 1);
+                                        }
+                                }
+                                return recList;
+                        });
+        } else {
+            return "False"
+            }
+    });
+
+}
+
+
 
 function getDate() {
     var today = new Date();
@@ -521,11 +563,11 @@ function getDate() {
     var yyyy = today.getFullYear();
 
     if (dd < 10) {
-        dd = '0' + dd
+        dd = '0' + dd;
     }
 
     if (mm < 10) {
-        mm = '0' + mm
+        mm = '0' + mm;
     }
 
     today = mm + '/' + dd + '/' + yyyy;
@@ -537,27 +579,43 @@ function getDate() {
 function searchPostings(q, postings) {
     var results = [];
     var query = q.trim();
-    query = query.replace(",", " ");
-    for (elem in postings) {
-        if (elem.title == query)
-            results.push(elem);
+    for (var j = 0; j < postings.length; j++) {
+        if (postings[j].title == query)
+            results.push(postings[j]);
         // Multiple ifs to arrange results in order of priority
-        if (elem.username == query)
-            results.push(elem);
-        if (elem.id == query)
-            results.push(elem);
-
-		var tags = elem.tags.split(", ");
-		var splitQuery = query.split(", ");
-		for (val in splitQuery) {
-			if (tags.indexOf(val) > -1) {
-				results.push(elem);
-				break;
-			}
-            }
+        else if (postings[j].username == query)
+            results.push(postings[j]);
+        else if (postings[j].id == query)
+            results.push(postings[j]);
+ 
+                var tags = postings[j].tags.split(", ");
+                var splitQuery = query.split(" ");
+                for (var i = 0; i < splitQuery.length; i++ ) {
+                        if (tags.indexOf(splitQuery[i]) > -1) {
+                                results.push(posting[j]);
+                                break;
+                        }
         }
     }
+    return results;
+} 
+function isSubset(sub, master) {
+        var found = false;
+        for (var i = 0; i < sub.length; i++) {
+                for (var j = 0; j < master.length; j++) {
+                if (sub[i] == master[j]) {
+                                found = true;
+                                break;
+                        }
+            }
+                if (!found) {
+                        return false;
+                }
+                found = false;
+        }
+        return true;
 }
+
 
 function shuffleArray(array) {
     for (var i = array.length - 1; i > 0; i--) {
@@ -569,14 +627,15 @@ function shuffleArray(array) {
     return array;
 }
 
-function createPosting(username, id, date, title, content, image, tags) {
+function createPosting(username, id, date, title, price, content, image, tags) {
     var newPost = {
         username: username,
         id: id,
         date: date,
         title: title,
+        price: price,
         postContent: content,
-        image: image,
+        image:image,
         tags: tags
     };
     return newPost;
@@ -947,6 +1006,4 @@ var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 <<<<<<< HEAD
 */
-=======
-*/
->>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5
+
