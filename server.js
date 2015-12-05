@@ -688,6 +688,7 @@ app.post("/getRecommendations", function(req, res) {
                         var recList = [];
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
+
             db.getAvailablePosts(db.db, function (posts) {
                                 for (var i = 0; i < posts.length; i++) {
                                         if (recList.length >= numberOfRecs) {
@@ -696,10 +697,13 @@ app.post("/getRecommendations", function(req, res) {
                                         }
                                         if (posts[i].title == post.title)
                                        
+
                                         // For each game, check if tags are a subset
-                                        if (isSubset(tags, posts[i].tags.split(", ")))
-                                           recList.push(posts[i]);
+                                        
+                        if (isSubset(tags, posts[i].tags.split(", ")))               
+                            recList.push(posts[i]);
                                        
+
                                          // Strip copies of the same game
                                         for (var j = 0; j < recList.length; j++) {
                                                 if (recList[j].title == post.title)
@@ -796,6 +800,7 @@ function searchPostings(q, postings) {
                                 results.push(posting[j]);
                                 break;
                         }
+
         }
         
     }
@@ -1209,4 +1214,3 @@ console.log("Model Created");
 <<<<<<< HEAD
 <<<<<<< HEAD
 */
-
