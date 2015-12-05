@@ -422,6 +422,17 @@ exports.getPostsByTag = function(db, tag, next){
 		});
 };
 
+exports.getPostsByTitle = function(db, title, next){
+	db.collection('posts').find(
+		{
+			"title" : title
+		}).toArray(function (err, posts){
+			assert.equal(err, null);
+			next(posts);
+		});
+};
+
+
 //UPDATE
 //Updates the title, postContent, and tags
 exports.updatePost = function(db, post){
