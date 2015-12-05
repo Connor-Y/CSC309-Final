@@ -3,11 +3,11 @@
 	<a class="navbar-form navbar-right glyphicon glyphicon-cog" href="myuserpage">{{username}}</a> <!--send to get request that will load main page and current user -->
 
 
-	<form class="navbar-form navbar-right" role="search" >
+	<form class="navbar-form navbar-right" role="search" method="post" action="./list">
     	<div class="form-group">
-          <input type="text" class="form-control" placeholder ="Search Game ..."  >
+          <input type="text" class="form-control" placeholder ="Search Game ..." name="query" >
         </div>
-        <button type="button" class="btn btn-default">
+        <button type="submit" class="btn btn-default">
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
@@ -82,7 +82,7 @@
      				<div class="description">
      					<p>Fallout 4</p>
     					<p>Avg Price per week $7</p>
-   	 					<p>metacritic rating:4.56/5</p>
+   	 					<p>metacritic rating:93%</p>
 
      				</div>
 				</div>
@@ -96,7 +96,7 @@
      			<div class="description">
      				<p>ShooterBro</p>
     				<p>Price $5 per week </p>
-    				<p>metacritic rating:3/5</p>
+    				<p>metacritic rating:83%</p>
 
      			</div>
 				</div>
@@ -131,9 +131,7 @@
 	<div class="ad" style="background-image:url(http://wallpapercave.com/wp/dpov2AL.png); color:white; z-index:3">
 	<h1 style="font-size:30px">The Evolution of Games Sharing</p>
 	<h1 style="font-size:25px"> Join the fastest growing network of online peer to peer games renting/buying and lending!</h1>
-	<button type="button" class="btn btn-default">
-	<span class="glyphicon glyphicon-triangle-right"></span> JOIN FOR FREE
-	</button>
+	<a href="login">Join for Free </a>	
 	</div>
 
 	<div  class="ad" style="position=absolute; z-index:2">
@@ -141,10 +139,7 @@
 	<p style="font-size:30px">Get Connected with FaceBook!<p>
 	<p style="font-size:30px">Connect your account with facebook, register for monthly deals<p>
 	<p style="font-size:30px">Subscribe for weekly newsletters, and premium content<p>
-	<button type="button" class="btn btn-default">
-	<span class="glyphicon glyphicon-triangle-right"></span> Login with Facebook
-	</button>
-
+	<a href="login">Login with Facebook</a>
 
 	</div>
 
@@ -245,10 +240,10 @@
 -->
 
 <div id="bottomdiv">
-<p> About: etc.</p>
-<p> Terms and conditions</p>
-<p> Privacy Policy</p>
-<p> Even more other useless and pointless shite</p>
+<p> About: The Great Game Share is not liable for any problems that may arise in your life</p>
+<p> Terms and conditions, don't be a jerk</p>
+<p> Privacy Policy, don't steal, or we will find you</p>
+<p> Even more other useless and pointless stuff </p>
 </div>
 
 

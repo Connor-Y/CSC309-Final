@@ -125,6 +125,15 @@ exports.insertUser = function(db, newUser) {
         });
     });
 };
+
+exports.getAllUsers = function (db, next) {
+	db.collection('users').find(
+		{}).toArray(function (err, users) {
+			assert.equal(err, null);
+			next(users);
+		});
+};
+
     
    /* db.collection('users').insertOne( 
 	{
@@ -359,12 +368,18 @@ exports.insertPost = function(db, newPost){
 	});
 };
 
+exports.removeall = function(db, next) {
+	db.collection('posts').remove({});
+};
 //READ
 //Finds a post by it's unique id
 exports.getPostByID = function(db, postID, next){
-	db.collection('posts').findOne(
+		console.log("the by id is " + postID);
+
+	db.collection('posts').findOne(//find one?
+	
 		{
-			"id" : postID
+			"_id" : ObjectId(postID)
 		}, function (err, post){
 			assert.equal(err, null);
 			next(post);
@@ -401,7 +416,7 @@ exports.getAvailablePosts = function(db, next){
 		});
 };
 
-exposts.getAllTags = function (db, next) {
+exports.getAllTags = function (db, next) {
 	db.collection('posts').find(
 		{
 			"available" : true,
@@ -422,7 +437,7 @@ exports.getPostsByTag = function(db, tag, next){
 		});
 };
 
-//UPDATE
+//UPDATE change later
 //Updates the title, postContent, and tags
 exports.updatePost = function(db, post){
 	db.collection('posts').update(
@@ -444,7 +459,8 @@ exports.updatePost = function(db, post){
 exports.makeUnavailable = function(db, postID, secUsername){
 	db.collection('posts').update(
 		{
-			"id" : postID
+			"_id" : ObjectId(postID)
+
 		}, {
 			$set: {
 				"available" : false,
@@ -486,6 +502,15 @@ exports.insertReview = function(db, newReview){
 			    console.log("Inserted a review into the review collection");
 	});
 };
+
+exports.getAllReviews = function (db, next) {
+	db.collection('review').find(
+		{}).toArray(function (err, users) {
+			assert.equal(err, null);
+			next(users);
+		});
+};
+
 
 //READ
 //Finds the review by <reviewer> related to the post with id <POSTID>

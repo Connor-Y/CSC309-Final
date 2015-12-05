@@ -40,14 +40,14 @@
 
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog" href="login">My Account</a> <!--send to get request that will load main page and current user -->
 
 
-	<form class="navbar-form navbar-right" role="search" >
+	<form class="navbar-form navbar-right" role="search"  method="get" action="./login">
     	<div class="form-group">
           <input type="text" class="form-control" placeholder ="Search Game ..."  >
         </div>
-        <button type="button" class="btn btn-default">
+        <button type="submit" class="btn btn-default">
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
@@ -60,11 +60,11 @@
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
-        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
-        		<li><a href="#">Update Info</a></li> 
-        		<li><a href="#">Post a Game</a></li> 
-        		<li><a href="#">Log-Out</a></li> 
+       			<li class="active"><a href="/" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="login">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="login">Update Info</a></li> 
+        		<li><a href="login">Post a Game</a></li> 
+        		<li><a href="/">Log-Out</a></li> 
 
         	
       		</ul>
@@ -100,10 +100,6 @@
     		<h5>Password:</h5>
     		<input type="password" class="form-control" id="loginpwd" name="password">
   		</div>
-  		<div class="checkbox">
-    		<label>
-    		<input type="checkbox"> Remember me</label>
-  		</div>
 <!--	<a id="loginbutton" class="btn btn-primary" type=submit>Log-In</a>  -->
 		<button type="submit" id="loginbutton">Log-In!</button>
 
@@ -137,10 +133,6 @@
   		<div class="form-group">
     		<h5>Confirm Password:</h5>
     		<input type="password" class="form-control" id="signInConfirm">
-  		</div>
-
-  		<div class="checkbox">
-    		<label><input type="checkbox"> Remember me</label>
   		</div>
   		<button type="submit" id="signinbutton">Sign-Up!</button>
   	
@@ -205,6 +197,13 @@
 
 
 -->
+
+<div id="bottomdiv">
+<p> About: The Great Game Share is not liable for any problems that may arise in your life</p>
+<p> Terms and conditions, don't be a jerk</p>
+<p> Privacy Policy, don't steal, or we will find you</p>
+<p> Even more other useless and pointless stuff </p>
+</div>
 
 
 
