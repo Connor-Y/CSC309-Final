@@ -342,7 +342,7 @@ app.post("/getPostsFromUsername", function(req, res) {
 });
 
 
-app.get("/post:id", function(req, res) {
+app.post("/post:id", function(req, res) {
     console.log("post retrieval request received");
 
     db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
@@ -427,11 +427,11 @@ app.post("/getRecommendations", function(req, res) {
     db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
         if (post) {
             // TODO: set to actual delimiter
-            var tags = post.tags.split(" ");
+            var tags = post.tags.split(", ");
             var lowSimTags = tags.slice();
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            var recList = db.getPostsByTag(db.db, tags);
+            var tagList = db.getAllTags(db.db, );
             // If we don't have enough recommendations, relax the similarity
             if (recList.length < numberOfRecs) {
                 lowSimTags = lowSimTags.slice(0, Math.ceil(lowSimTags.length * recommendationSimiliarityFactor * 0.5) + 1);
@@ -499,19 +499,18 @@ function searchPostings(q, postings) {
         if (elem.title == query)
             results.push(elem);
         // Multiple ifs to arrange results in order of priority
-        else if (elem.username == query)
+        if (elem.username == query)
             results.push(elem);
-        else if (elem.id == query)
+        if (elem.id == query)
             results.push(elem);
-        else {
-            // TODO: set proper tag delimiter
-            var tags = elem.tags.split(" ");
-            var splitQuery = query.split(" ");
-            for (val in splitQuery) {
-                if (tags.indexOf(val) > -1) {
-                    results.push(elem);
-                    break;
-                }
+
+		var tags = elem.tags.split(", ");
+		var splitQuery = query.split(", ");
+		for (val in splitQuery) {
+			if (tags.indexOf(val) > -1) {
+				results.push(elem);
+				break;
+			}
             }
         }
     }

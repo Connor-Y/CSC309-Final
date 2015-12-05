@@ -376,6 +376,16 @@ exports.getAvailablePosts = function(db, next){
 		});
 };
 
+exposts.getAllTags = function (db, next) {
+	db.collection('posts').find(
+		{
+			"available" : true,
+		}).toArray(function (err, posts) {
+			assert.equal(err, null);
+			next(posts);
+		});
+};
+
 exports.getPostsByTag = function(db, tag, next){
 	db.collection('posts').find(
 		{
