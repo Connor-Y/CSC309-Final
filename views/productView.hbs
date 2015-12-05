@@ -1,13 +1,13 @@
 <div id="sitebar">
 	<h1 id="title" style="font-family:impact">The Great Game Share</h1>
-	<a class="navbar-form navbar-right glyphicon glyphicon-cog">My Account</a> <!--send to get request that will load main page and current user -->
+	<a class="navbar-form navbar-right glyphicon glyphicon-cog" href="myuserpage">{{username}}</a> <!--send to get request that will load main page and current user -->
 
 
-	<form class="navbar-form navbar-right" role="search" >
+	<form class="navbar-form navbar-right" role="search" method="post" action="./list">
     	<div class="form-group">
-          <input type="text" class="form-control" placeholder ="Search Game ..."  >
+          <input type="text" class="form-control" placeholder ="Search Game ..." name="query" >
         </div>
-        <button type="button" class="btn btn-default">
+        <button type="submit" class="btn btn-default">
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
@@ -20,11 +20,11 @@
 	<div class="container-fluid">
 		<div>
       		<ul class="nav navbar-nav">
-       			<li class="active"><a href="#" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
-        		<li><a href="#">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
-        		<li><a href="#">Update Info</a></li> 
-        		<li><a href="#">Post a Game</a></li> 
-        		<li><a href="./main">Log-Out</a></li> 
+       			<li class="active"><a href="main" class="glyphicon glyphicon-home" id="toMain">To Main Page</a></li>
+        		<li><a href="usersearch">Search Users</a></li> <!-- each of these will send to the get that will load based on who is logged in-->
+        		<li><a href="userupdate">Update Info</a></li> 
+        		<li><a href="userpost">Post a Game</a></li> 
+        		<li><a href="logout">Log-Out</a></li> 
 
         	
       		</ul>
@@ -41,31 +41,36 @@
 
 <div style="text-align:center"> <!-- start of page div -->
 <div id="productdiv">
-<img src="clickarrow.png" id="arrowleft">
+	<img src="clickarrow.png" id="arrowleft">
 
-<img src="clickarrow.png" id="arrowright" >
-<div id="productContent">
-<p>hehehehe<p>
-</div> 
+	<img src="clickarrow.png" id="arrowright" >
+	<div id="productContent">
+		<p>{{game.postContent}}<p>
+	</div> 
+
 
 <div id="productPicDiv">
-<img id="productPicture" src="http://masterherald.com/wp-content/uploads/2015/04/Metal-Gear-Solid-5.jpg">
+<img id="productPicture" src="{{game.image}}">
 </div>
 
 
-</div>
+	</div>
 
-<div id="productinfo">
-<h1>Metal Gear Solid V:the Phantom Pain</h1>
-<p>posted by:</p>
-<!-- the user who posted this, will take them to the user's page -->
-<a>The suer who poseted this info</a>
-<br>
-<br>
-<p> Price per Week:</p>
-<p>surrogate</p>
-<br>
- <button type="button" id="checkOut" class="btn btn-primary">Check Out Game</button> 
+		<div id="productinfo">
+		<h1>{{game.title}}</h1>
+		<p>posted by:</p>
+		<!-- the user who posted this, will take them to the user's page -->
+		<a href="users?username={{game.username}}">{{game.username}}</a>
+		<br>
+		<br>
+		<p> Price per Week: </p>
+		<p>${{game.price}}</p>
+		<br>
+
+<form method="post" action="./makeUnavailable">
+
+<button type="submit" id="checkOut" class="btn btn-primary" >Check Out Game</button> 
+</form>
 
 
 
@@ -99,37 +104,40 @@
 	<!-- information for the review, date, rating, comment, reviewer, reviewee -->
 	<h4>Leave Review </h4>
 	
-	<form method="post" action="placeholder rent game">
-	<select id="rating" name="rating">
-  	<option value="1">1 (poor condition)</option>
-  	<option value="2">2 (adequete)</option>
-  	<option value="3">3 (good)</option>
-  	<option value="4">4 (great)</option>
-  	<option value="5">5 (excellent)</option>
+	<form method="post" action="./createReview">
+		<select id="rating" name="rating">
+  		<option value="1">1 (poor condition)</option>
+  		<option value="2">2 (adequete)</option>
+  		<option value="3">3 (good)</option>
+  		<option value="4">4 (great)</option>
+  		<option value="5">5 (excellent)</option>
 
-	</select>
+		</select>
 	
-	<div class="form-group">
- 	<h5>description</h5>
-    <textarea class = "form-control" rows = "8" id="leaveComment" name="comment"></textarea>
-    </div>
+		<div class="form-group">
+ 		<h5>description</h5>
+    	<textarea class = "form-control" rows = "8" id="leaveComment" name="comment"></textarea>
+    	</div>
 
-    <button id="reviewButton" class="btn btn-primary" type=submit>Submit Review</button> 
+    	<button id="reviewButton" class="btn btn-primary" type="submit">Submit Review</button> 
 
 	</form>
 
 
 	<h4>What Users think of this product </h4>
-	
+	{{#each reviews}}
 	<div class="review">
-	<h4>Date:</h4>
-	<h5>User:</h5>
+	<h4>Date: {{this.date}}</h4>
+	<h5>Reviewer:{{this.reviewer}} </h5>
+	<h5>Reviewee:{{this.reviewee}} </h5>
+	<h5>Rating {{this.rating}} </h5>
 	<h6>Review:</h6>
-	<p>Blahahahahahdh dhd dhddhdhdhdh</p>
+	<p>{{comment}}</p>
 	</div>
 
 
 	<!-- end of placeholder -->
+	{{/each}}
 
 
 	</div> <!-- end of review div-->
@@ -137,7 +145,13 @@
 
 
 
-
 </div><!-- end of page div -->
+
+<div id="bottomdiv">
+<p> About: The Great Game Share is not liable for any problems that may arise in your life</p>
+<p> Terms and conditions, don't be a jerk</p>
+<p> Privacy Policy, don't steal, or we will find you</p>
+<p> Even more other useless and pointless stuff </p>
+</div>
 
 
