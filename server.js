@@ -388,11 +388,13 @@ app.get("/post:id", function (req, res) {
 });
 
 app.post("/createPosting", function (req, res) {
-console.log("got to create a posting");
+	console.log("got to create a posting");
+
 	var id = sanitizeHtml(req.params.title) + sess.username;
 	var date = getDate();
-	var posting = createPosting(sess.username, id,  date, sanitizeHtml(req.body.title),
-	sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
+		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+	
 
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
@@ -404,7 +406,7 @@ console.log("got to create a posting");
         res.send("Success");  
     }
     
-});
+}); 
 
 app.post("/createReview", function (req, res) {
 var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id, 
