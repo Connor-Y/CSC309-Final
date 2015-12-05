@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 Server
+=======
+>>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5
 
 var fs = require('fs');
 var path = require('path');
@@ -75,17 +78,17 @@ app.get('/main', function(req, res) { //main page logged in
         username: sess.username,
         layout: 'mainPage'
     });
-
 });
 
 app.get('/login', function(req, res) {
+<<<<<<< HEAD
     console.log("got to the login page");
     res.sendFile(__dirname + '/public/html/login.html');
     //	res.render('loginView', {layout:'login'});
-
 });
 
 app.get("/myuserpage", function(req, res) {
+<<<<<<< HEAD
     console.log("got to my user page");
     db.getUserByUsername(db.db, sess.username, function(user) {
         if (user) {
@@ -104,9 +107,7 @@ app.get("/myuserpage", function(req, res) {
             res.send("Not Found"); //did not find the 
         }
     });
-
     //	res.render('myPageView', {username: sess.username, layout:'mypage'});
-
 });
 
 app.get("/usersearch", function(req, res) {
@@ -131,7 +132,6 @@ app.get("/userupdate", function(req, res) {
         username: sess.username,
         layout: 'userupdate'
     });
-
 });
 
 app.get("/userpost", function(req, res) {
@@ -140,7 +140,38 @@ app.get("/userpost", function(req, res) {
         username: sess.username,
         layout: 'userpost'
     });
+});
 
+
+//the product page, click on link to 
+/*
+app.get("/product/*@*", function (req, res) {
+	gameId = req.path.slice(7);	
+	console.log(gameId);
+	var game = searchPostings(sanitizeHtml(req.params.query), posts);
+
+	db.getPostByID(db.db, 
+	console.log("got to the product page");
+	res.render("productView", {game: game, layout:"product"});
+	
+});
+*/
+/*
+app.post('/getGamesByQuery', function (req, res) {
+db.getAvailablePosts(db.db, function (posts) {
+var results = searchPostings(sanitizeHtml(req.params.query), posts);
+// TODO: Format results
+res.send(results)
+});
+});
+
+*/
+app.post("/list", function (req, res) {
+	db.getAvailablePosts(db.db, function (posts) {
+	var games = searchPostings(sanitizeHtml(req.params.query), posts);
+	//res.send(results)
+	res.render("searchView", {games: games, layout:"search"});
+	});
 });
 
 
@@ -152,6 +183,7 @@ app.get('/404', function() {
 app.listen(PORT);
 
 // ====
+
 
 
 app.post("/getSession", function(req, res) {
@@ -209,8 +241,6 @@ app.post("/registration", function(req, res) {
     }
 
 });
-
-
 
 app.post("/loginVerification", function(req, res) {
     console.log("Login Request Received");
@@ -275,12 +305,6 @@ app.post("/profile", function(req, res) {
 });
 
 
-
-app.post("/updateUserRating", function(req, res) {
-    db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
-    res.send("Success");
-});
-
 /*User*/
 app.post("/updateDescription", function(req, res) {
     console.log(req.body.description);
@@ -305,12 +329,30 @@ app.post("/updatePic", function(req, res) {
     console.log(req.body.description);
     db.updateUserPic(db.db, sess.username, sanitizeHtml(req.body.pic));
     res.send("Success");
-
-
 });
 
+app.post("/updateUserRating", function (req, res) {
+	console.log("updating the user rank");
+//	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
+//	res.send("Success");
 
+ 	 db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+        if (user) {
+            //res.json(user);
+            console.log("found")
+            console.log(sanitizeHtml(req.body.rating));
+            db.updateUserRating(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.rating));
 
+            res.send("Success");
+        }
+        
+        else {
+        	console.log("cannot find")
+
+            res.send("Not Found, try again!");
+        }
+    }); 
+});
 
 app.post("/updateUserInfo", function(req, res) {
     if (sess.username != req.params.username)
@@ -330,7 +372,6 @@ app.post("/updateUserInfo", function(req, res) {
 });
 
 //password must be hashed first generateHash(req.body.password)
-
 
 app.post("/getPostsFromUsername", function(req, res) {
     db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function(posts) {
@@ -354,34 +395,36 @@ app.post("/post:id", function(req, res) {
     });
 });
 
-app.post("/createPosting", function(req, res) {
-    console.log("got to create a posting");
-    var id = sanitizeHtml(req.params.title) + sess.username;
-    var date = getDate();
-    var posting = createPosting(sess.username, id, date, sanitizeHtml(req.body.title),
-        sanitizeHtml(req.body.price), sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+app.post("/createPosting", function (req, res) {
+	console.log("got to create a posting");
+
+	var id = sanitizeHtml(req.params.title) + sess.username;
+	var date = getDate();
+	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
+		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
+	
 
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
-    } else {
-        console.log("created the new posting");
+    }
+    else {
+    console.log("created the new posting");
         db.insertPost(db.db, posting);
         res.send("Success");
     }
-
 });
 
 app.post("/createReview", function(req, res) {
     var review = createReview(sess.username, sanatizeHtml(req.params.reviewee), req.params.id,
         getDate(), req.params.rating, sanatizeHtml(req.params.comment));
-
-
+		
     if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
         res.send("Invalid");
     } else {
         db.insertReview(db.db, review);
         res.send("Success");
     }
+<<<<<<< HEAD
 });
 
 app.post("/deleteUserByID", function(req, res) {
@@ -902,4 +945,8 @@ console.log("Schema built");
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
+<<<<<<< HEAD
 */
+=======
+*/
+>>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5

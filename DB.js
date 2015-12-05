@@ -135,7 +135,8 @@ exports.insertUser = function(db, newUser) {
 		"description" : "NEW USER",
         "admintype" : admin,
 		"rating" : 0,
-		"numReviews" : 0
+		"numReviews" : 0,
+		"pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png"
 
 	}, function(err, result) {
 			assert.equal(err, null);
@@ -220,18 +221,32 @@ exports.updateUserInfo = function(db, user){
 }
 
 
-exports.updateUserName = function(db, user){
+exports.updateUserName = function(db, username, newname){
 	db.collection('users').update(
 		{
-			"username" : user.username
+			"username" : username
 		},{
 			$set: {
-				"username" : user.username
-			}
+				"username" : newname			
+				}
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
 }
+
+exports.updateUserPic = function(db, username, newpic){
+	db.collection('users').update(
+		{
+			"username" : username
+		},{
+			$set: {
+				"pic" : newpic		
+				}
+		}, function(err, result) {
+			assert.equal(err, null);
+		});
+}
+
 
 exports.updateUserDescription = function(db, username, description){
 	db.collection('users').update(

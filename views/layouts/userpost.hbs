@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
+
+</head>
+
+<body>
+{{{body}}}
+</body>
+
+</html>
+
+<script>
+//just named login button since it borrows the styling make sure to change this later
+
+$("#postGame").click(function() {
+	
+	var title = $("#posttitle").val();
+	var content = $("#content").val();
+	var price = $("#price").val();
+	var tags =  $("#tags").val();
+	var image = $("#image").val();
+	
+	$.post("/createPosting", {title: title , price: price , content: content, image: image , tags: tags }, function(data) {
+		if(data == "Success") {
+			alert("created new game post");
+		}
+		else {
+			alert("failed to post game, please try again!");
+		}
+	});
+	
+
+
+});
+
+
+</script>
+
+
