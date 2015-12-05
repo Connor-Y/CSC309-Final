@@ -125,42 +125,7 @@ exports.insertUser = function(db, newUser) {
         });
     });
 };
-    
-   /* db.collection('users').insertOne( 
-	{
-		"email" : newUser.email,
-		"username" : newUser.username,
-		"password" : newUser.password,
-		"name" : "",
-		"description" : "NEW USER",
-        "admintype" : admin,
-		"rating" : 0,
-		"numReviews" : 0,
-		"pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png"
 
-	}, function(err, result) {
-			assert.equal(err, null);
-			console.log("Inserted a document into the users collection.");
-            console.log("admin type" + admin);
-	});*/
-
-
-
-//READ
-//find user <username> (does not include password in data)
-/*exports.getUserByUsername = function(db, username, next){
-	db.collection('users').findOne(
-		{
-			"username" : username
-		},
-		{
-			password : 0     //does not include password field in result
-
-		}, function(err, user){
-			assert.equal(err, null);
-			next(user);
-		});
-};*/
 
 exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
