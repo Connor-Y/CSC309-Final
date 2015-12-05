@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-Server
-=======
->>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5
-
 var fs = require('fs');
 var path = require('path');
 var PORT = 3000;
@@ -81,14 +76,12 @@ app.get('/main', function(req, res) { //main page logged in
 });
 
 app.get('/login', function(req, res) {
-<<<<<<< HEAD
     console.log("got to the login page");
     res.sendFile(__dirname + '/public/html/login.html');
     //	res.render('loginView', {layout:'login'});
 });
 
 app.get("/myuserpage", function(req, res) {
-<<<<<<< HEAD
     console.log("got to my user page");
     db.getUserByUsername(db.db, sess.username, function(user) {
         if (user) {
@@ -101,7 +94,6 @@ app.get("/myuserpage", function(req, res) {
                 });
 
             });
-
 
         } else {
             res.send("Not Found"); //did not find the 
@@ -214,11 +206,6 @@ app.post("/registration", function(req, res) {
         res.send("Invalid");
     } else {
 
-
-        //console.log("" + req.body.username);
-        //console.log("" + req.body.email);
-        //console.log("" + req.body.password);
-
         db.userExists(db.db, req.body.username, req.body.email, function(result) {
             //a user was found when the email and username queried
             if (result) {
@@ -319,10 +306,39 @@ app.post("/updateUsername", function(req, res) {
     res.send("Success");
 });
 
-app.post("/updatePassword", function(req, res) {
+/*app.post("/updatePassword", function(req, res) {
     console.log(req.body.description);
     db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
     res.send("Success");
+});*/
+
+//should validate old password on server side
+app.post("/updateUserPassword", function (req, res) {
+    
+    //this may be redundant, but just makes sure user exists incase user tries to send request without
+    //using actual front end. (some app like postman)
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+           res.send("Invalid user");
+        }
+        
+        else {
+            db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
+                //check that they entered their old password correctly
+                if (!validPassword(req.body.password, user.password)) {
+                    console.log("Invalid Password");
+                    res.send("Invalid");
+                }
+                
+                else {
+                    console.log("Correct password entered...");
+                    db.updateUserPassword(db.db, sanitizeHtml(req.body.username), generateHash(sanitizeHtml(req.body.newpassword)));
+                    console.log("Password updated!");
+                    res.send("Success");
+                }
+            });
+        }   
+    });
 });
 
 app.post("/updatePic", function(req, res) {
@@ -371,6 +387,46 @@ app.post("/updateUserInfo", function(req, res) {
     }
 });
 
+
+app.post("/toggleAdmin" , function (req, res) {
+    
+    console.log("admin toggle request received");
+    //console.log("" + req.body.username);
+    //console.log("" + req.body.email);
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
+        if (!result) {
+            console.log("user does not exist");
+            res.send("Invalid user");
+        }
+        db.getUserByUsername(db.db, sess.username, function (usersess) {
+
+                //if admintype of the user being changed is less, don't allow it
+            if (usersess.admintype != 0) {
+                console.log("this user does not have permission to modify the admin type");
+                res.send("Invalid permissions");
+            }
+                
+            else {
+                db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
+                console.log("admin status changed!");
+                res.send("Success");
+            }
+        
+        });
+    });
+});
+
+
+app.get("/getcurrentadmin", function (req, res) {
+    if (sess.username != '') {
+        db.getUserByUsername(db.db, sess.username, function (user) {
+            console.log("" + user.admintype);
+            var temp = {admintype: user.admintype};
+            res.send(JSON.stringify(temp));
+        });
+    }  
+});
+
 //password must be hashed first generateHash(req.body.password)
 
 app.post("/getPostsFromUsername", function(req, res) {
@@ -403,7 +459,6 @@ app.post("/createPosting", function (req, res) {
 	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
 		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), sanitizeHtml(req.body.tags));
 	
-
     if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
         res.send("Invalid");
     }
@@ -424,7 +479,6 @@ app.post("/createReview", function(req, res) {
         db.insertReview(db.db, review);
         res.send("Success");
     }
-<<<<<<< HEAD
 });
 
 app.post("/deleteUserByID", function(req, res) {
@@ -947,6 +1001,3 @@ var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 <<<<<<< HEAD
 */
-=======
-*/
->>>>>>> 25fa22c04cd4eac71a5ed17f0a922ef92741f2c5
