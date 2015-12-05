@@ -176,7 +176,7 @@ app.listen(PORT);
 
 app.post("/getSession", function(req, res) {
     console.log("Session Request");
-    if ((sess.username == '') || (sess.email == '')) {
+    if (sess.email == '') {
         res.send(JSON.stringify({
             result: "Invalid"
         }));
@@ -211,7 +211,7 @@ app.post("/registration", function(req, res) {
 
                 req.body.password = generateHash(req.body.password);
                 console.log("New User");
-                db.insertUser(db.db, req.body);
+                db.insertUser(db.db, req.body, false);
                 //res.send("Success");
 
                 //ADD STUFF TO SESSION AS NEEDED
@@ -237,13 +237,13 @@ app.post("/loginVerification", function(req, res) {
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
-
+            
             db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function(user) {
                 console.log("the password is" + user.password);
                 if (!validPassword(req.body.password, user.password)) {
                     console.log("Invalid Password");
                     res.send("Invalid");
-                } else {
+                } else if (!user.facebook) {
                     console.log("Successful Login");
                     console.log("logged in on " + getDate());
 
@@ -252,7 +252,10 @@ app.post("/loginVerification", function(req, res) {
                     //res.send("Success");
                     res.redirect("main"); //log in to the main page.
                 }
-
+                else {
+                    console.log("Trying to login a fb user with regular login");
+                    res.send("Invalid");
+                }
             });
         } else {
             console.log("Not Found");
@@ -263,6 +266,46 @@ app.post("/loginVerification", function(req, res) {
     
 
   });
+
+app.post("/fbLogin", function(req, res) {
+    console.log("Facebook Login Request Received");
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function(result) {
+        
+        console.log("" + req.body.username);
+        console.log("" + req.body.password);        
+        
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+            console.log("" + req.body.email);
+            db.getUserByEmail(db.db, sanitizeHtml(req.body.email), function(user) {
+                console.log("the password is" + user.password);
+                if (!validPassword(req.body.password, user.password)) {
+                    console.log("Invalid Password");
+                    res.send("Invalid");
+                } else {
+                    console.log("Successful Login");
+                    console.log("logged in on " + getDate());
+
+                    sess.email = sanitizeHtml(req.body.email);
+                    sess.username = sanitizeHtml(req.body.username);
+                    //res.send("Success");
+                    res.redirect("main"); //log in to the main page.
+                }
+
+            });
+        } else {
+            console.log("New User");
+            
+            req.body.password = generateHash(req.body.email);
+            db.insertUser(db.db, req.body, true);
+            
+            sess.email = req.body.email;
+            sess.username = req.body.username;
+            res.redirect("main");
+        }
+    });
+});
 
 app.get("/logout", function(req, res) {
     sess.username = '';
@@ -761,7 +804,6 @@ app.get("/searchTest", function (req, res) {
     });
 });
 
-
 function searchPostings(q, postings) {
     var results = [];
     var query = q.trim();
@@ -782,6 +824,7 @@ function searchPostings(q, postings) {
                                 break;
                         }
         }
+        
     }
 	
 	// Strip copies of the same game
