@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
+
+
+
+
+
+<style>
+.star {
+	display:inline; 
+	height:60px;
+}
+</style>
+
+</head>
+<body>
+{{{body}}}
+
+</body>
+
+
+</html>
+
+<script>
+$("#arrowleft").click(function() {
+	$("#productContent").css("opacity",0);
+	$("#productContent").css("z-index",0);
+	$("#productPicDiv").css("opcaity", 1);
+	$("#productPicDiv").css("z-index", 1);
+
+});
+
+$("#arrowright").click(function() {
+	$("#productContent").css("opacity",1);
+	$("#productContent").css("z-index",1);
+	$("#productPicDiv").css("opcaity", 0);
+	$("#productPicDiv").css("z-index", 0);
+
+});
+
+$("#reviewButton").click(function() {
+	comment= $("#leaveComment").val();
+	rating= $("#rating").val();
+	alert(rating);
+	//and other info?
+});
+
+
+
+
+
+</script>
+
+
