@@ -430,14 +430,16 @@ app.get("/users", function(req, res) {
 app.get("/product", function (req, res) {
 	gameId = req.query.productid;	
 	console.log(gameId);
-	var posts = getRec(gameId);
+	//var recposts = getRec(gameId);
 	console.log(gameId);
+	//console.log(recposts);
 
 	console.log("got to the product page");
 
     db.getPostByID(db.db, gameId, function(post) {
         if (post) {
-        	db.getPostsByTag(db.db, post.tags[0], function(posts) {
+        //	db.getPostsByTag(db.db, post.tags[0], function(posts) {
+        	getRec(gameId, function(posts) {
         		db.getReviewsByID(db.db, sess.game, function(reviews) {
 					
         			sess.game = post._id;
@@ -554,6 +556,9 @@ app.post("/updateUsernameA", function(req, res) {
     db.updateUserName(db.db,sanitizeHtml(req.body.username), sanitizeHtml(req.body.newname));
     res.send("Success");
  });
+
+
+
 
 app.post("/updateUserRating", function (req, res) {
 	console.log("updating the user rank");
@@ -884,7 +889,7 @@ function getRec(id, next) {
             next("Not Found");
         }
     });
-	}
+}
 
 function getR(id) {
 	db.getPostById(db.db, id, function(game) {
