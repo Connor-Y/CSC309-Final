@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="./css/mainstyle.css">
+
+</head>
+
+<body>
+
+{{{body}}}
+
+</body>
+
+
+</html>
+
+<script>
+
+
+
+$("#delButton").click(function() {
+	name =  $("#username").val();
+
+	$.post("/deleteUser", {username:name}, function(data) {
+		if (data =="Success") {
+			alert("User successfully deleted!");
+		}
+		else {
+			alert("Could not delete user, try again");
+			}
+	});
+
+});
+
+
+$("#pwdButton").click(function() {
+	name =  $("#username").val(); 
+	newPassword = $("#updatePassword").val();
+
+	$.post("/updatePasswordA",{password: newPassword, username:name}, function(data) {
+		if (data =="Success") {
+			alert("Password successfully changed!");
+		}
+		else {
+			alert("Could not change password, try again");
+			}
+	});
+	
+
+});
+
+$("#nameButton").click(function() {
+	name =  $("#username").val(); 
+
+	newname = $("#updateName").val(); 
+
+	$.post("/updateUsernameA",{username:name, newname: newname}, function(data) {
+		if (data == "Success") {
+			alert("Name successfully changed!");
+
+		}
+		else {
+			alert("Could not change name, try again");
+		}
+
+	});
+});
+
+$("#pictureButton").click(function() {
+	name =  $("#username").val(); 
+	newPic = $("#updatePic").val();
+	//alert(newPic);
+	$.post("/updatePicA",{pic: newPic, username:name}, function(data) {
+		if (data == "Success") {
+			alert("Picture successfuly changed!");
+		}
+		else {
+			alert("Picture could not be changed, try again");
+		}
+
+	});
+});
+
+
+$("#desButton").click(function() {
+	name =  $("#username").val(); 
+	newDes = $("#updateDes").val();
+	
+	$.post("/updateDescriptionA",{description: newDes, username:name}, function(data) {
+		if (data == "Success") {
+			alert("Description successfuly changed!");
+		}
+		else {
+			alert("Description could not be changed, try again");
+		}
+	});
+});
+
+
+
+
+
+
+
+
+
+</script>
+
