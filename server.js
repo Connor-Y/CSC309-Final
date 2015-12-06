@@ -430,7 +430,7 @@ app.get("/users", function(req, res) {
 app.get("/product", function (req, res) {
 	gameId = req.query.productid;	
 	console.log(gameId);
-	var posts = getRec(gameId);
+	//var posts = getRec(gameId);
 	console.log(gameId);
 
 	console.log("got to the product page");
@@ -554,15 +554,6 @@ app.post("/updateUsernameA", function(req, res) {
     db.updateUserName(db.db,sanitizeHtml(req.body.username), sanitizeHtml(req.body.newname));
     res.send("Success");
  });
-
-
-
-
-
-
-
-
-
 
 
 
@@ -819,7 +810,7 @@ app.post("/getRecommendations", function(req, res) {
     });
 });
 
-app.get("/getrec", function(req, res) {
+app.get("/getrectest", function(req, res) {
 	getRec("5663e7e3f3ca1a481ff8683a", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
@@ -932,7 +923,8 @@ function getRec(id, next) {
             next("Not Found");
         }
     });
-}
+
+
 
 function getR(id) {
 	db.getPostById(db.db, id, function(game) {
