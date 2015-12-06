@@ -555,18 +555,6 @@ app.post("/updateUsernameA", function(req, res) {
     res.send("Success");
  });
 
-
-
-
-
-
-
-
-
-
-
-
-
 app.post("/updateUserRating", function (req, res) {
 	console.log("updating the user rank");
 //	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
@@ -777,49 +765,13 @@ app.post('/getGamesByQuery', function(req, res) {
 });
 
 app.post("/getRecommendations", function(req, res) {
-    console.log("Generate and Send Recommendations");
-    // Need database code for games
-    db.getPostByID(db.db, sanitizeHtml(req.body.id), function(post) {
-        if (post) {
-            var tags = post.tags.split(", ");
-            var lowSimTags = tags.slice();
-                        var recList = [];
-            tags = shuffleArray(tags);
-            tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            db.getAvailablePosts(db.db, function (posts) {
-                                for (var i = 0; i < posts.length; i++) {
-                                        if (recList.length >= numberOfRecs) {
-                                                res.send(recList);
-                                                break;
-                                        }
-                                        if (posts[i].title == post.title)
-                                       
-                                        // For each game, check if tags are a subset
-                                        if (isSubset(tags, posts[i].tags.split(", ")))
-                                           recList.push(posts[i]);
-                                       
-                                         // Strip copies of the same game
-                                        for (var j = 0; j < recList.length; j++) {
-                                                if (recList[j].title == post.title)
-                                                        recList.splice(recList.indexOf(recList[j]), 1);
-                                        }
-                                }
-                                res.send(recList);
-                        });
-        } else {
-            res.send('Not Found');
-        }
-    });
-});
-
-
-    getRec(req.body._id, function (results) {
+	getRec(req.body._id, function (results) {
 		console.log("Results: " + results);
 		res.send(results);
-    });
+	});
 });
 
-app.get("/getrec", function(req, res) {
+app.get("/getrectest", function(req, res) {
 	getRec("5663e7e3f3ca1a481ff8683a", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
@@ -932,7 +884,7 @@ function getRec(id, next) {
             next("Not Found");
         }
     });
-}
+	}
 
 function getR(id) {
 	db.getPostById(db.db, id, function(game) {
@@ -1065,6 +1017,8 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     };
     return newReview;
 }
+
+
 
 // ***** Old Code for Facebook Verification *****
 // Feel free to use/change it to work.
