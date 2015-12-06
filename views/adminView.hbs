@@ -12,7 +12,7 @@
      		<span class="glyphicon glyphicon-search"></span> Search
    		 </button>
     </form>
- 
+
  
  
  	<img src="http://freeiconbox.com/icon/256/28754.png" alt="logo" style="height:50px">
@@ -38,29 +38,64 @@
 	</div>
 </nav>
 
+<div id="adminBox">
+<h1 id="user">Admin: {{username}}</h1> <!--the name of the user -> will be used for request -->
+
+
+	<form role="form">
+
+   	<div class="form-group">
+  	<h3>User to update</h3>
+    <input  class="form-control" id="username">
+  	</div>
+
+
+  <!--
+	<br>
+
+
+	<form role="form" method="post" action=">
+		<button id="reviewsof" class="btn btn-primary" type="submit">reviews of user</button> 
+	</form>
+
+	<br>
+
+	<br>
+	<form role="form" method="post" action=">
+		<input type="hidden" name="username" value="{{username}}">
+		<button id="postsby" class="btn btn-primary" type="submit">posts by user</button> 
+	</form>
+
+	<br>
+	<br>
+
+	<form role="form" method:"post" action=">
+		<input type="hidden" name="username" value="{{username}}">
+
+		<button id="reviewsby" class="btn btn-primary" type="submit">reviews by user</button> 
+	</form>
+
+	<br>
+	<br>
+
+-->
 
 
 
-<div id="postingBox">
-<h1 id="user">{{username}}</h1> <!--the name of the user -> will be used for request -->
-
-
-<form role="form">
+	
   <div class="form-group">
   	<h5>Update Password</h5>
-    <input  type="password" class="form-control" id="updatePassword">
+    <input  class="form-control" id="updatePassword">
   </div>
   
 <!--change name to button later? -->
-	<button type="button" id="pwdButton" class="btn btn-primary">Change Password</button>
-
-<!--	<a id="pwdButton" class="btn btn-primary">Update Password</a> -->
+	<button  id="pwdButton" class="btn btn-primary" type="button">Update Password</button> 
 
   	<div class="form-group">
   	<h5>Update Username</h5>
     <input  class="form-control" id="updateName">
   	</div>
-  	<button type="button" id="nameButton" class="btn btn-primary">Update Username</button> 
+  	<button id="nameButton" class="btn btn-primary" type="button">Update Username</button> 
 
   	
  	<div class="form-group">
@@ -68,7 +103,7 @@
 
     <input  class="form-control" id="updatePic">
   </div>
-  	<button type="button" id="pictureButton" class="btn btn-primary" >Update Profile Picture</button> 
+  	<button id="pictureButton" class="btn btn-primary" type="button">Update Profile Picture</button> 
 
 
    <div class="form-group">
@@ -77,14 +112,22 @@
     <textarea class = "form-control" rows = "8" id="updateDes"></textarea>
 
     </div>
-  	<button type="button" id="desButton" class="btn btn-primary">Update description</button> 
-
+  	<button id="desButton" class="btn btn-primary" type="button">Update description</button> 
+  	
+	<br>
+	<br>
+  	<button id="delButton" class="btn btn-primary" type="button">Delete User</button> 
+  	<br>
+  	<br>
 
 
 </form>
 
 
 </div>
+
+
+
 
 
 

@@ -81,14 +81,21 @@
 <h1>Related Products:</h1>
 <div id="productrelated">
 
+{{#each posts}}
 
+<a href="product?productid={{this._id}}">
 
 <div class="postingwrapper">
 <div class="userposting">
+<img class="img-thumbnail" src={{this.image}}>
+
 </div>
-<p>Game Name</p>
-<p>$7 per week</p>
+<p>{{this.title}}</p>
+<p>${{this.price}} per week</p>
 </div>
+</a>
+
+{{/each}}
 
 
 </div>
