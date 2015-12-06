@@ -113,11 +113,37 @@ app.get("/usersearch", function(req, res) {
 });
 app.get("/userupdate", function(req, res) {
     console.log("got to the user update page");
-    res.render('userupdateView', {
-        username: sess.username,
-        layout: 'userupdate'
-    });
+
+    db.getUserByUsername(db.db, sess.username, function(user) {
+		if (user) {
+			if (user.admintype == 2) {
+				res.render('userupdateView', {
+       			username: sess.username,
+        		layout: 'userupdate'
+    			});
+	
+			}
+			else if (user.admintype ==1){
+					res.redirect("admin");
+				
+				}
+			else {
+				res.redirect("superadmin");
+			}
+		}
+
+	});
+
 });
+
+app.get("/admin", function(req, res) {
+	res.render("adminView", {username: sess.username, layout: 'admin'});
+});
+
+app.get("/superadmin", function(req, res) {
+	res.render("superadminView", {username: sess.username, layout: 'superadmin'});
+});
+
 
 app.get("/userpost", function(req, res) {
     console.log("got to the user post game page");
@@ -137,7 +163,6 @@ var results = searchPostings(sanitizeHtml(req.params.query), posts);
 res.send(results)
 });
 });
-
 */
 app.post("/list", function (req, res) {
 	console.log("got to the /list path");
@@ -162,6 +187,40 @@ app.get("/remove", function() {
 		res.send("removed all posts");
 	});
 });
+
+app.get("/removeusers", function() {
+	db.removeallusers(db.db, function () {
+		res.send("removed all users");
+	});
+});
+
+app.get("/removereviews", function() {
+	db.removeallreviews(db.db, function () {
+		res.send("removed all reviews");
+	});
+});
+
+app.get("/allposts", function(req, res) {
+	db.getAvailablePosts(db.db, function(posts) {
+		res.send(posts);
+	});
+});
+
+app.get("/allusers", function(req, res) {
+	db.getAllUsers(db.db, function(users) {
+		res.send(users);
+	});
+});
+
+app.get("/allreviews", function(req, res) {
+	db.getAllReviews (db.db, function(users) {
+		res.send(users);
+	});
+});
+
+
+
+
 
 
 app.get('/404', function() {
@@ -333,11 +392,13 @@ app.get("/product", function (req, res) {
 
     db.getPostByID(db.db, gameId, function(post) {
         if (post) {
-        	db.getReviewsByID(db.db, sess.game, function(reviews) {
+        	db.getPostsByTag(db.db, post.tags[0], function(posts) {
+        		db.getReviewsByID(db.db, sess.game, function(reviews) {
+					
+        			sess.game = post._id;
 
-        		sess.game = post._id;
-
-            	res.render("productView", {game: post,reviews:reviews, layout:"product"});
+            		res.render("productView", {posts:posts, username: sess.username, game: post,reviews:reviews, layout:"product"});
+				});
 			});
 
         } else {
@@ -395,6 +456,7 @@ app.post("/updateUserPassword", function (req, res) {
             });
         }   
     });
+});
 
 app.post("/updatePassword", function(req, res) {
     console.log(req.body.password);
@@ -414,6 +476,40 @@ app.post("/updatePic", function(req, res) {
 
 
 //Admin Update functions
+app.post("/updatePasswordA", function(req, res) {
+    console.log(req.body.description);
+    db.updateUserPassword(db.db,sanitizeHtml(req.body.username), generateHash(req.body.password));
+    res.send("Success");
+});
+
+app.post("/updateDescriptionA", function(req, res) {
+    console.log(req.body.description);
+    db.updateUserDescription(db.db,sanitizeHtml(req.body.username), sanitizeHtml(req.body.description));
+    res.send("Success");
+    });
+
+
+app.post("/updatePicA", function(req, res) {
+    console.log(req.body.pic);
+    db.updateUserPic(db.db,sanitizeHtml(req.body.username), sanitizeHtml(req.body.pic));//, function(data) {
+    res.send("Success");
+	/*	if (data) {
+			res.send("Success");
+		}
+		else {
+		res.send("Fail");
+
+		}
+	});	
+	*/
+});
+
+app.post("/updateUsernameA", function(req, res) {
+    console.log(req.body.newname);
+    db.updateUserName(db.db,sanitizeHtml(req.body.username), sanitizeHtml(req.body.newname));
+    res.send("Success");
+ });
+
 
 
 
@@ -472,27 +568,25 @@ app.post("/toggleAdmin" , function (req, res) {
     console.log("admin toggle request received");
     //console.log("" + req.body.username);
     //console.log("" + req.body.email);
-    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function (result) {
-        if (!result) {
-            console.log("user does not exist");
-            res.send("Invalid user");
-        }
-        db.getUserByUsername(db.db, sess.username, function (usersess) {
+    db.getUserByUsername(db.db,  sanitizeHtml(req.body.username), function(user) {
+    	if (user) {
 
-                //if admintype of the user being changed is less, don't allow it
-            if (usersess.admintype != 0) {
-                console.log("this user does not have permission to modify the admin type");
-                res.send("Invalid permissions");
-            }
-                
-            else {
-                db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
+    		if (user.adminType == 0) {
+				res.send("fail");
+			}
+			else {
+    	        db.toggleAdmin(db.db, sanitizeHtml(req.body.username));
                 console.log("admin status changed!");
                 res.send("Success");
             }
+		}
         
-        });
-    });
+       	else {
+			res.send("could not find user!");
+		}
+
+	});
+
 });
 
 
@@ -521,25 +615,13 @@ app.post("/getPostsFromUsername", function(req, res) {
 app.post("/post:id", function(req, res) {
     console.log("post retrieval request received");
 
-    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
+    db.getPostByID(db.db, sanitizeHtml(req.body.id), function(post) {
         if (post) {
             res.json(post);
         } else {
             res.send("Not Found");
         }
     });
-});
-
-app.get("/allposts", function(req, res) {
-	db.getAvailablePosts(db.db, function(posts) {
-		res.send(posts);
-	});
-});
-
-app.get("/allusers", function(req, res) {
-	db.getAllUsers(db.db, function(users) {
-		res.send(users);
-	});
 });
 
 
@@ -558,7 +640,7 @@ app.post("/createPosting", function (req, res) {
 	var posting = createPosting(sanitizeHtml(sess.username), id,  date, sanitizeHtml(req.body.title),
 		sanitizeHtml(req.body.price),sanitizeHtml(req.body.content), sanitizeHtml(req.body.image), tags);
 	
-    if ((sanitizeHtml(req.params.content) == '') || (sanitizeHtml(req.params.username) == '') || (sanitizeHtml(req.params.tags) == '')) {
+    if ((sanitizeHtml(req.body.content) == '') || (sanitizeHtml(req.body.username) == '') || (sanitizeHtml(req.body.tags) == '')) {
         res.send("Invalid");
     }
     else {
@@ -579,7 +661,7 @@ app.post("/createReview", function(req, res) {
 			res.send("could not find the game");
 		}
        		 		
-    	if ((sanitizeHtml(req.params.reviewer) == '') || (sanitizeHtml(req.params.reviewee) == '') || (sanitizeHtml(req.params.comment) == '')) {
+    	if ((sanitizeHtml(req.body.reviewer) == '') || (sanitizeHtml(req.body.reviewee) == '') || (sanitizeHtml(req.body.comment) == '')) {
         	res.send("Invalid");
     	} else {
         	db.insertReview(db.db, review);
@@ -596,9 +678,17 @@ app.get("/allreviews", function(req, res) {
 
   		
 
-app.post("/deleteUserByID", function(req, res) {
-    db.deletePost(db.db, sanitizeHtml(req.params.id));
-    res.send("Success");
+app.post("/deleteUser", function(req, res) {
+    db.deletePost(db.db, sanitizeHtml(req.body.username)); //function(data) {
+    /*
+    if (data) {
+    	res.send("Success");
+	}
+	else {
+		res.send("Fail");
+	}
+	});
+*/
 });
 
 app.post("/makeUnavailable", function(req, res) {
@@ -616,20 +706,27 @@ app.post("/getRentedGamesByUsername", function(req, res) {
 });
 
 app.post("/getGameReviewsByPostID", function(req, res) {
-    db.getReviewsByID(db.db, sanitizeHtml(req.params.postID), function(reviews) {
+    db.getReviewsByID(db.db, sanitizeHtml(req.body.postID), function(reviews) {
         res.send(reviews);
     });
 });
 
-app.post("/getUserReviewsByUsername", function(req, res) {
-    db.getReviewsFrom(db.db, sanitizeHtml(req.params.username), function(reviews) {
-        res.send(reviews);
+app.post("/getUserReviewsFrom", function(req, res) {
+    db.getReviewsFrom(db.db, sanitizeHtml(req.body.username), function(reviews) {
+    res.send(reviews);
     });
 });
+
+app.post("/getUserReviewsAbout", function(req, res) {
+    db.getReviewsAbout(db.db, sanitizeHtml(req.body.username), function(reviews) {
+    res.send(reviews);
+    });
+});
+
 
 app.post('/getGamesByQuery', function(req, res) {
     db.getAvailablePosts(db.db, function(posts) {
-        var results = searchPostings(sanitizeHtml(req.params.query), posts);
+        var results = searchPostings(sanitizeHtml(req.body.query), posts);
         // TODO: Format results
         res.send(results)
     });
@@ -638,7 +735,7 @@ app.post('/getGamesByQuery', function(req, res) {
 app.post("/getRecommendations", function(req, res) {
     console.log("Generate and Send Recommendations");
     // Need database code for games
-    db.getPostByID(db.db, sanitizeHtml(req.params.id), function(post) {
+    db.getPostByID(db.db, sanitizeHtml(req.body.id), function(post) {
         if (post) {
             var tags = post.tags.split(", ");
             var lowSimTags = tags.slice();
@@ -672,12 +769,6 @@ app.post("/getRecommendations", function(req, res) {
 });
 
 
-app.get("/getrec", function(req, res) {
-	var results = getRec("pokemon blueHerRedHairedRetail");
-	console.log(results);
-	res.send(results);
-
-});
 
 function getRec(id) {
 	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
@@ -711,6 +802,18 @@ function getRec(id) {
             return "False"
             }
     });
+
+}
+
+function getR(id) {
+	db.getPostById(db.db, id, function(game) {
+		var tagarray = game.tags;
+		index = tagarray.indexOf(game.title);
+		tagarray.splice(index, 1); //remove the title from the tag list
+		db.getPostsByTag(db.db, tagarray[0], function(posts) {
+			return posts;
+		});
+	});
 
 }
 
@@ -819,7 +922,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
 // Feel free to use/change it to work.
 
 /*
-
 // This is called with the results from from FB.getLoginStatus().
   function statusChangeCallback(response) {
     console.log('statusChangeCallback');
@@ -845,7 +947,6 @@ moveTo('/');
 return response.status;
     });
   }
-
   window.fbAsyncInit = function() {
   FB.init({
     appId      : '1098933153474400',
@@ -880,16 +981,11 @@ return response.status;
     fjs.parentNode.insertBefore(js, fjs);
   }(document, 'script', 'facebook-jssdk'));
   
-
-
-
-
 */
 
 
 /*
 // Code from A4
-
 app.post("/loadTable", function (req, res) {
 console.log("Load Table");
 User.find( function (err, users) {
@@ -938,7 +1034,6 @@ res.send("User Exists");
 }
 });
 });
-
 app.post("/setView", function (req, res) {
 console.log("setView");
 if (sess != undefined) {
@@ -954,7 +1049,6 @@ addLog(sess.view);
 });
 }
 });
-
 app.post("/profile", function (req, res) {
 console.log("Profile Request Received");
 console.log("Goto: " + req.body.sessView); 
@@ -972,7 +1066,6 @@ res.send(user);
 }
 });
 });
-
 app.post("/getSession", function (req, res) {
 console.log("Session Request");
 if (sess == undefined)
@@ -982,7 +1075,6 @@ var temp = {sessMail: sess.email, sessType: sess.type, sessView: sess.view, sess
 res.send(JSON.stringify(temp));
 }
 });
-
 app.post("/saveProfile", function (req, res) {
 console.log("Save Profile Request");
 //console.log(req.body);
@@ -992,7 +1084,6 @@ if (req.body.desc != '')
 userUpdate(req.body.mail, 'desc', req.body.desc);
 res.redirect('profile');
 });
-
 app.post("/deleteProfile", function (req, res) {
 console.log("Delete Profile Request");
 console.log(req.body);
@@ -1008,7 +1099,6 @@ sess.email = "";
 sess.view = "index";
 res.send("Success");
 });
-
 app.post("/changePassword", function (req, res) {
 console.log("Change Password");
 User.findOne({ "email": req.body.sessView }, 
@@ -1035,7 +1125,6 @@ res.send("Invalid");
 }
 });
 });
-
 app.post("/toggleAdmin", function (req, res) {
 if (req.body.sessTargetType == 'admin') {
 userUpdate(req.body.sessView, 'type', 'user');
@@ -1048,12 +1137,10 @@ sess.targetType = 'admin';
 res.send(req.body.sessView + " is now an Admin");
 }
 });
-
 app.post("/logInfo", function (req, res) {
 addLog(req.body);
 res.send("Success");
 });
-
 app.post("/loadMetrics", function (req, res) {
 console.log("Load Metrics");
 if (sess == undefined || sess.type == 'user') {
@@ -1070,7 +1157,6 @@ res.send(JSON.stringify(metrics));
 });
 }
 });
-
 app.post("/logout", function (req, res) {
 if (sess == undefined)
 res.send("Invalid");
@@ -1079,20 +1165,14 @@ sess = undefined;
 res.send("Success");
 }
 });
-
 app.get("*", function (req, res) {
 res.redirect('/');
 });
-
 app.listen(PORT);
-
-
 */
 
 /*
-
 // Database code below
-
 function userUpdate (target, field, newInfo) {
 console.log("User Update");
 if (target == undefined)
@@ -1110,7 +1190,6 @@ return false;
 }
 });
 }
-
 function addLog (data) {
 var curUser;
 if (sess == undefined || sess.email == undefined)
@@ -1131,8 +1210,6 @@ curPage = data.pg;
 var newLog = new Metric({user: curUser, ip: curIP, latitude: curLat, longitude: curLong, os: curOS, browser: curBrowser, page: curPage});
 newLog.save();
 }
-
-
 mongoose.connect('mongodb://localhost/DB', PORT);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, "Connection error:"));
@@ -1146,7 +1223,6 @@ email: { type: String, required: true, unique: true },
 image: String,
 desc: String,
 });
-
 var metricSchema = mongoose.Schema({
 user: String,
 ip: String,
@@ -1156,15 +1232,8 @@ os: String,
 browser: String,
 page: String
 });
-
-
 console.log("Schema built");
-
-
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
-<<<<<<< HEAD
-<<<<<<< HEAD
 */
-

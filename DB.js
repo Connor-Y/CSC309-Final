@@ -69,8 +69,6 @@ MongoClient.connect(url, function(err, database) {
 		console.log("available (after deletion): ");
 		console.dir(posts);
 	});
-
-
 	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
 	var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
 	insertReview(db, testReview);
@@ -136,6 +134,11 @@ exports.getAllUsers = function (db, next) {
 		});
 };
 
+exports.removeallusers = function(db, next) {
+	db.collection('users').remove({});
+};
+
+
     
    
 
@@ -196,7 +199,7 @@ exports.updateUserInfo = function(db, user){
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
-}
+};
 
 
 exports.updateUserName = function(db, username, newname){
@@ -210,7 +213,7 @@ exports.updateUserName = function(db, username, newname){
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
-}
+};
 
 exports.updateUserPic = function(db, username, newpic){
 	db.collection('users').update(
@@ -223,10 +226,11 @@ exports.updateUserPic = function(db, username, newpic){
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
-}
+};
 
 
 exports.updateUserDescription = function(db, username, description){
+	console.log("got the username " + username);
 	db.collection('users').update(
 		{
 			"username" : username
@@ -237,7 +241,7 @@ exports.updateUserDescription = function(db, username, description){
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
-}
+};
 //update the user <username>'s password
 exports.updateUserPassword = function(db, username, password){
 	db.collection('users').update(
@@ -248,7 +252,7 @@ exports.updateUserPassword = function(db, username, password){
 		}, function(err, result) {
 			assert.equal(err, null);
 		});
-}
+};
 exports.updateUserRating = function(db, username, newRating){
 	db.collection('users').findOne(
 		{
@@ -285,7 +289,7 @@ exports.deleteUser = function(db, username){
 	}, function(err, result){
 		assert.equal(err, null);
 	});
-}
+};
 
 exports.toggleAdmin = function (db, username) {
     
@@ -310,7 +314,7 @@ exports.toggleAdmin = function (db, username) {
 		  assert.equal(err, null);
 		});
     });
-}
+};
 
 ///***********************POSTS COLLECTION*******************************************
 //CREATE
@@ -552,5 +556,17 @@ exports.deleteReview = function(db, postID, reviewer){
 	}, function(err, result){
 		assert.equal(err, null);
 	});
+};
+
+exports.removeallreviews = function(db, next) {
+	db.collection('reviews').remove({});
+};
+
+exports.getAllReviews = function (db, next) {
+	db.collection('reviews').find(
+		{}).toArray(function (err, users) {
+			assert.equal(err, null);
+			next(users);
+		});
 };
 
