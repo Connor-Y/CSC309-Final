@@ -281,6 +281,11 @@ exports.insertPost = function(db, newPost){
 	});
 };
 
+exports.removeall = function(db, next) {
+	db.collection('posts').remove({});
+	next();
+};
+
 //READ
 //Finds a post by it's unique id
 exports.getPostByID = function(db, postID, next){
