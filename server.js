@@ -892,9 +892,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     return newReview;
 }
 
-
-
-
 // ***** Old Code for Facebook Verification *****
 // Feel free to use/change it to work.
 
@@ -1244,5 +1241,6 @@ console.log("Schema built");
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
+<<<<<<< HEAD
 
 */
