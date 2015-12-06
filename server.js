@@ -438,6 +438,7 @@ app.post("/updateUserPassword", function (req, res) {
             });
         }   
     });
+});
 
 app.post("/updatePassword", function(req, res) {
     console.log(req.body.password);
@@ -859,7 +860,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     };
     return newReview;
 }
-
 
 
 // ***** Old Code for Facebook Verification *****

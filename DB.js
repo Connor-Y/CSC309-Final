@@ -118,12 +118,8 @@ exports.insertUser = function(db, newUser, facebook) {
             "admintype" : admin,
             "rating" : 0,
             "numReview" : 0,
-<<<<<<< HEAD
-            "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png"
-
-=======
+            "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png",
             "facebook" : facebook
->>>>>>> Facebook login
         }, function(err, result) {
             assert.equal(err, null);
             console.log("inserted a document into the users collection.");
