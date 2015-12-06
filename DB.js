@@ -96,7 +96,7 @@ MongoClient.connect(url, function(err, database) {
 
 ///***************USER COLLECTION***************************
 //Create
-exports.insertUser = function(db, newUser) {
+exports.insertUser = function(db, newUser, facebook) {
     
     db.collection('users').find().toArray(function (err, users){
         assert.equal(err, null);	
@@ -116,8 +116,8 @@ exports.insertUser = function(db, newUser) {
             "admintype" : admin,
             "rating" : 0,
             "numReview" : 0,
-            "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png"
-
+            "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png",
+            "facebook" : facebook
         }, function(err, result) {
             assert.equal(err, null);
             console.log("inserted a document into the users collection.");
@@ -147,6 +147,16 @@ exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
 		{
 			"username" : username
+		}, function(err, user){
+			assert.equal(err, null);
+			next(user);
+		});
+};
+
+exports.getUserByEmail = function(db, email, next){
+	db.collection('users').findOne(
+		{
+			"email" : email
 		}, function(err, user){
 			assert.equal(err, null);
 			next(user);

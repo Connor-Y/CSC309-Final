@@ -3,6 +3,7 @@ var assert = require('assert');
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
 var databaseFile = require('../TestDB');
+var serverFile = require('../server');
 
 // Helper Functions
 function createNoHashUser(mail, name, pass) {
@@ -39,7 +40,6 @@ function sleep(time) {
 var url = 'mongodb://localhost:27017/VGExchange';
 
 var db;
-sleep(1000);
 describe("Database", function() {
 	this.timeout(10000);
 	describe("Database check", function () {
@@ -55,17 +55,17 @@ describe("Database", function() {
 	});
 	
 	describe("User Functions", function () {	
-		var email1 = "a@test.com";
-		var name1 = "Alice";
-		var pass1 = "aPass";
+		var email1 = Math.floor((Math.random() * 100000)).toString(); 
+		var name1 = Math.floor((Math.random() * 100000)).toString(); 
+		var pass1 = Math.floor((Math.random() * 100000)).toString(); 
 		
-		var email2 = "b@test.com";
-		var name2 = "Bob";
-		var pass2 = "bpass";
+		var email2 = Math.floor((Math.random() * 100000)).toString(); 
+		var name2 = Math.floor((Math.random() * 100000)).toString(); 
+		var pass2 = Math.floor((Math.random() * 100000)).toString(); 
 		
-		var email3 = "e@test.com";
-		var name3 = "Eve";
-		var pass3 = "epass";
+		var email3 = Math.floor((Math.random() * 100000)).toString(); 
+		var name3 = Math.floor((Math.random() * 100000)).toString(); 
+		var pass3 = Math.floor((Math.random() * 100000)).toString(); 
 		
 		var user1 = createNoHashUser(email1, name1, pass1);
 		var user2 = createNoHashUser(email2, name2, pass2);
@@ -115,12 +115,29 @@ describe("Database", function() {
 			});
 		});	
 		
+		describe('Existance Check', function () {
+			it('User Exists', function (done) {
+				databaseFile.userExists(db, name2, email2, function (result) {
+					expect(result).to.be.true;
+					done();
+				});
+			});
+			
+			it('User does not exist', function (done) {
+				databaseFile.userExists(db, name2 + "fail", email2 + "fail", function (result) {
+					expect(result).to.be.false;
+					done();
+				});
+			});
+			
+		});
+		
 	
 		describe("Update User", function () {	
 			var newUser;
 			var gen;
 			before("Create Temp User", function (done) {
-				gen = Math.floor((Math.random() * 10000)).toString();
+				gen = Math.floor((Math.random() * 100000)).toString();
 				newUser = createNoHashUser(gen, gen, "pass");
 				databaseFile.insertUser(db, newUser);
 				sleep(200);
@@ -129,7 +146,7 @@ describe("Database", function() {
 			
 			it('Update name', function (done) {
 				databaseFile.getUserByUsername(db, gen, function (user) {
-					var newName = Math.floor((Math.random() * 10000)).toString(); 
+					var newName = Math.floor((Math.random() * 100000)).toString(); 
 					user.name = newName;
 					databaseFile.updateUserInfo(db, user);
 					sleep(200);
@@ -138,12 +155,21 @@ describe("Database", function() {
 						done();
 					});
 				});
+			});
 				
+			it('Update Password', function (done) {
+				var newPass = Math.floor((Math.random() * 100000)).toString(); 
+				databaseFile.updateUserPassword(db, gen, newPass);
+				sleep(200);
+				databaseFile.validateUser(db, gen, newPass, function(isValid){
+					expect(isValid).to.be.true;
+					done();
+				});
 			});
 			
 			
 			it('Update Description', function (done) {
-				var newDesc = Math.floor((Math.random() * 10000)).toString();
+				var newDesc = Math.floor((Math.random() * 100000)).toString();
 				databaseFile.getUserByUsername(db, gen, function (user) {
 					user.description = newDesc;
 					databaseFile.updateUserInfo(db, user);
@@ -160,27 +186,34 @@ describe("Database", function() {
 				sleep(200);
 				done();
 			});
+		});
+		
+		describe("Password Validation", function () {
+			it('Password Check True', function (done) {
+			  databaseFile.validateUser(db, name1, pass1, function(isValid){
+				expect(isValid).to.be.true;
+				done();
+			  });
+			});
 			
-			// Security?
-			/* TODO: Implement
-			it('Update pass', function () {
-				var newPass = Math.floor((Math.random() * 10000)).toString();
-				updateUser(email, newPass, ...);
-				expect((getUser(email).pass).to.equal(newPass));
-			}); 
-			*/
+			it('Password Check False', function (done) {
+			  databaseFile.validateUser(db, name1, pass1 + "fail", function(isValid){
+				expect(isValid).to.be.false;
+				done();
+			  });
+			});
 		});
 		
 		describe("Delete User", function () {
 			var gen;
 			before('tempUser', function (done) {
-				gen = Math.floor((Math.random() * 10000)).toString();
+				gen = Math.floor((Math.random() * 100000)).toString();
 				var newUser = createNoHashUser(gen, gen, "pass");
 				databaseFile.insertUser(db, newUser)
 				sleep(200);
 				done();
 			});
-			// What does getUserByUsername return if not existent?
+			
 			it('Delete user', function (done) {
 				databaseFile.deleteUser(db, gen);
 				sleep(200);
@@ -195,50 +228,54 @@ describe("Database", function() {
 	describe('Posting Functions', function () {
 		var gen = [], tempGen = [];
 		var u1, u2, u3;
+		var p1, p2, p3, p4;
 		before('Create Posting', function(done) {
-			u1 = createNoHashUser("A", "A", "A");
-			u2 = createNoHashUser("B", "B", "B");
-			u3 = createNoHashUser("C", "C", "C");
-			databaseFile.insertUser(db, u1);
-			databaseFile.insertUser(db, u2);
-			databaseFile.insertUser(db, u3);
-			sleep(200);
-			for (i = 0; i < 4*7; i++) {
-				if (i == 0)
-					gen.push(u1.username);
-				else if (i == 7)
-					gen.push(u2.username);
-				else if (i == 14)
-					gen.push(u3.username);
-				else if (i == 21)
-					gen.push(u1.username);
-				else
-					gen.push(Math.floor((Math.random() * 10000)).toString());
-			}
-			
-			// Name, id, date, title, postContent, tags, available (unused), buyer (unused)
-			var p1 = createPosting(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6]);
-			var p2 = createPosting(gen[7], gen[8], gen[9], gen[10], gen[11], gen[12], gen[13]);
-			var p3 = createPosting(gen[14], gen[15], gen[16], gen[17], gen[18], gen[19], gen[20]);
-			var p4 = createPosting(gen[20], gen[21], gen[22], gen[23], gen[24], gen[25], gen[26]);
-			databaseFile.insertPost(db, p1);
-			databaseFile.insertPost(db, p2);
-			databaseFile.insertPost(db, p3);
-			databaseFile.insertPost(db, p4);
-			sleep(200);
-			done();
+			databaseFile.removeall(db, function () {
+				u1 = createNoHashUser("A", "A", "A");
+				u2 = createNoHashUser("B", "B", "B");
+				u3 = createNoHashUser("C", "C", "C");
+				databaseFile.insertUser(db, u1);
+				databaseFile.insertUser(db, u2);
+				databaseFile.insertUser(db, u3);
+				sleep(200);
+				for (i = 0; i < 4*7; i++) {
+					if (i == 0)
+						gen.push(u1.username);
+					else if (i == 7)
+						gen.push(u2.username);
+					else if (i == 14)
+						gen.push(u3.username);
+					else if (i == 20)
+						gen.push(u1.username);
+					else
+						gen.push(Math.floor((Math.random() * 100000)).toString());
+				}
+				
+				// Name, id, date, title, postContent, tags, available (unused), buyer (unused)
+				p1 = createPosting(gen[0], gen[1], gen[2], gen[3], gen[4], gen[5], gen[6]);
+				p2 = createPosting(gen[7], gen[8], gen[9], gen[10], gen[11], gen[12], gen[13]);
+				p3 = createPosting(gen[14], gen[15], gen[16], gen[17], gen[18], gen[19], gen[20]);
+				p4 = createPosting(gen[20], gen[21], gen[22], gen[23], gen[24], gen[25], gen[26]);
+				databaseFile.insertPost(db, p1);
+				databaseFile.insertPost(db, p2);
+				databaseFile.insertPost(db, p3);
+				databaseFile.insertPost(db, p4);
+				sleep(200);
+				done();
+			});
 		});
 		
 		after('Delete Temp', function (done) {
 			databaseFile.deleteUser(db, u1.username);
 			databaseFile.deleteUser(db, u2.username);
 			databaseFile.deleteUser(db, u3.username);
-			databaseFile.deletePost(db, gen[1]);
-			databaseFile.deletePost(db, gen[8]);
-			databaseFile.deletePost(db, gen[15]);
-			databaseFile.deletePost(db, gen[21]);
-			sleep(200);
-			done();
+			// databaseFile.deletePost(db, gen[1]);
+			// databaseFile.deletePost(db, gen[8]);
+			// databaseFile.deletePost(db, gen[15]);
+			// databaseFile.deletePost(db, gen[21]);
+			sleep(100);
+			databaseFile.removeall(db, function () {done();});
+			
 		});
 		
 		beforeEach('Create Temporary Posting', function (done) {
@@ -247,7 +284,7 @@ describe("Database", function() {
 				if (i == 0)
 					tempGen.push(u3.username);
 				else
-					tempGen.push(Math.floor((Math.random() * 10000)).toString());
+					tempGen.push(Math.floor((Math.random() * 100000)).toString());
 			}
 			var tempPost = createPosting(tempGen[0], tempGen[1], tempGen[2], tempGen[3], tempGen[4], tempGen[5], tempGen[6]);
 			databaseFile.insertPost(db, tempPost);
@@ -283,9 +320,9 @@ describe("Database", function() {
 		describe('Update Posting', function () {	
 			var newTitle, newContent, newTags;
 			it('Update All Info', function (done) {
-				newTitle = Math.floor((Math.random() * 10000)).toString();
-				newContent = Math.floor((Math.random() * 10000)).toString();
-				newTags = Math.floor((Math.random() * 10000)).toString();
+				newTitle = Math.floor((Math.random() * 100000)).toString();
+				newContent = Math.floor((Math.random() * 100000)).toString();
+				newTags = Math.floor((Math.random() * 100000)).toString();
 				databaseFile.getPostByID(db, tempGen[1], function (post) {
 					post.title = newTitle;
 					post.postContent = newContent;
@@ -302,7 +339,7 @@ describe("Database", function() {
 			});
 			
 			it('Make Unavailable', function (done) {
-				var tempBuyer = Math.floor((Math.random() * 10000)).toString();
+				var tempBuyer = Math.floor((Math.random() * 100000)).toString();
 				databaseFile.makeUnavailable(db, tempGen[1], tempBuyer);
 				sleep(100);
 				databaseFile.getPostByID(db, tempGen[1], function (post) {
@@ -323,7 +360,32 @@ describe("Database", function() {
 				});
 			});
 		})
+		
+		describe("'get' functions", function () {
+			it('getPostsByTag', function (done) {
+				databaseFile.getPostsByTag(db, gen[5], function(posts){
+					expect(posts.length).to.equal(1);
+					expect(posts[0].title).to.equal(p1.title);
+					expect(posts[0].postContent).to.equal(p1.postContent);
+					expect(posts[0].id).to.equal(p1.id);
+					done();
+				});	
+			});	
 			
+			it('getPostsFrom', function (done) {
+				databaseFile.getPostsFrom(db, u1.username, function (posts) {
+					expect(posts.length).to.equal(2);
+					expect(posts[0].title).to.equal(p1.title);			
+					expect(posts[0].id).to.equal(p1.id);
+					expect(posts[1].title).to.equal(p4.title);
+					expect(posts[1].id).to.equal(p4.id);
+					done();
+				});
+			});
+		});
+	
+	
+	
 	});
 	
 	// Review Testing
@@ -353,7 +415,7 @@ describe("Database", function() {
 				else if (i == 21)
 					gen.push(u1.username);
 				else
-					gen.push(Math.floor((Math.random() * 10000)).toString());
+					gen.push(Math.floor((Math.random() * 100000)).toString());
 			}
 			
 			// Name, id, date, title, postContent, tags, available (unused), buyer (unused)
@@ -392,7 +454,7 @@ describe("Database", function() {
 				else if (i == 2)
 					tempGen.push(p1.id);
 				else
-					tempGen.push(Math.floor((Math.random() * 10000)).toString());
+					tempGen.push(Math.floor((Math.random() * 100000)).toString());
 			}
 			tempReview = createReview(tempGen[0], tempGen[1], tempGen[2], tempGen[3], tempGen[4], tempGen[5], tempGen[6]);
 			databaseFile.insertReview(db, tempReview);
@@ -418,109 +480,38 @@ describe("Database", function() {
 					done();
 				});
 			});
-			/*
-			it('getReviewByID', function (done) {
-				databaseFile.getReviewsByID(db, tempGen[2], function (review) {
-					console.log(review);
-					console.log('----');
-					console.log(tempReview);
-					console.log('----');
-					console.log(review.getReviewer);
-					expect(review.reviewer).to.equal(tempGen[0]);
-					expect(review.reviewee).to.equal(tempGen[1]);
-					expect(review.postID).to.equal(tempGen[2]);
-					expect(review.date).to.equal(tempGen[3]);
-					expect(review.rating).to.equal(tempGen[4]);
-					expect(review.comment).to.equal(tempGen[5]);
-					done();
-				});
-			});
-			
-			
-			it('getReviewsFrom', function (done) {
-				databaseFile.getReviewsFrom(db, u2.username, tempGen[0], function (review) {
-					expect(review.reviewer).to.equal(tempGen[0]);
-					expect(review.reviewee).to.equal(tempGen[1]);
-					expect(review.postID).to.equal(tempGen[2]);
-					expect(review.date).to.equal(tempGen[3]);
-					expect(review.rating).to.equal(tempGen[4]);
-					expect(review.comment).to.equal(tempGen[5]);
-					done();
-				});
-			});*/
 		});
 	});
 });	
-// === In Progress Below ===	
-		
-		
- 		
-	
-		/*
-		decribe('Verify Games', function () {
-			it('Game 1, Comment 3', function () {
-			
-				
-			});
-			it('Game 2, Comment 1', function () {
-		
-				
-			});
-			it('Game 2, Comment 2', function () {
-		
-				
-			});
-		});
-		
-		decribe('Verify User', function () {
-			it('User 1, Comment 1', function () {
-				
-				
-			});
-			it('User 1, Comment 2', function () {
-			
-				
-			});
-			it('User 2, Comment 2', function () {
-				
-				
-			});
-		});
-		
-		describe('Edit Comment', function () {
-			it('Edit Comment 1', function () {
-				// Edit and verify
-			})
-		});	
-		
-		describe('Delete Comment', function () {
-			before('Create deletable comment', function () {
-			
-				
-			});
-			
-			it('Delete comment 1', function () {
-				// Delete comment and verify null
-				
-			});
-			
-		});
+
+// === In Progress ===
+
+
+
+/*
+	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
+	var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
+	insertReview(db, testReview);
+	getReviewsFrom(db, "user222", function(reviews){  
+		console.log("Reviews from user1");
+		console.dir(reviews);
 	});
-	
-	describe('Ratings', function() {
-		before('Init Ratings', function() {
-			// Create ratings on various Postings
-			
-			// Create ratings on users
-			
-			// Create rating on games
-		});
-		
-		// See above for tests
+	getReviewsAbout(db, "user1", function(reviews){
+		console.log("Reviews about user222");
+		console.dir(reviews);
 	});
-	*/
-//	});
-	
-//});
+	getReviewsByID(db, 1, function(reviews){
+		console.log("Reviews about post#1");
+		console.dir(reviews);
+	});
+	updateReview(db, updatedReview);
+	getReview(db, 1, "user222", function(reviews){
+		console.log("Reviews about post#1 by user222");
+		console.dir(reviews);
+	});
+	deleteReview(db, 1, "user222");
+		*/
+
+
 
 	

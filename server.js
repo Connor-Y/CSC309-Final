@@ -14,7 +14,7 @@ var db = require('./DB');
 
 // How similar recommendations should be by
 // number of tags
-var recommendationSimiliarityFactor = 0.8;
+var recommendationSimiliarityFactor = 0.6;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
@@ -235,7 +235,7 @@ app.listen(PORT);
 
 app.post("/getSession", function(req, res) {
     console.log("Session Request");
-    if ((sess.username == '') || (sess.email == '')) {
+    if (sess.email == '') {
         res.send(JSON.stringify({
             result: "Invalid"
         }));
@@ -270,7 +270,7 @@ app.post("/registration", function(req, res) {
 
                 req.body.password = generateHash(req.body.password);
                 console.log("New User");
-                db.insertUser(db.db, req.body);
+                db.insertUser(db.db, req.body, false);
                 //res.send("Success");
 
                 //ADD STUFF TO SESSION AS NEEDED
@@ -296,13 +296,13 @@ app.post("/loginVerification", function(req, res) {
         //a user was found when the email was queried
         if (result) {
             console.log("User exists");
-
+            
             db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function(user) {
                 console.log("the password is" + user.password);
                 if (!validPassword(req.body.password, user.password)) {
                     console.log("Invalid Password");
                     res.send("Invalid");
-                } else {
+                } else if (!user.facebook) {
                     console.log("Successful Login");
                     console.log("logged in on " + getDate());
 
@@ -311,7 +311,10 @@ app.post("/loginVerification", function(req, res) {
                     //res.send("Success");
                     res.redirect("main"); //log in to the main page.
                 }
-
+                else {
+                    console.log("Trying to login a fb user with regular login");
+                    res.send("Invalid");
+                }
             });
         } else {
             console.log("Not Found");
@@ -322,6 +325,46 @@ app.post("/loginVerification", function(req, res) {
     
 
   });
+
+app.post("/fbLogin", function(req, res) {
+    console.log("Facebook Login Request Received");
+    db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function(result) {
+        
+        console.log("" + req.body.username);
+        console.log("" + req.body.password);        
+        
+        //a user was found when the email was queried
+        if (result) {
+            console.log("User exists");
+            console.log("" + req.body.email);
+            db.getUserByEmail(db.db, sanitizeHtml(req.body.email), function(user) {
+                console.log("the password is" + user.password);
+                if (!validPassword(req.body.password, user.password)) {
+                    console.log("Invalid Password");
+                    res.send("Invalid");
+                } else {
+                    console.log("Successful Login");
+                    console.log("logged in on " + getDate());
+
+                    sess.email = sanitizeHtml(req.body.email);
+                    sess.username = sanitizeHtml(req.body.username);
+                    //res.send("Success");
+                    res.redirect("main"); //log in to the main page.
+                }
+
+            });
+        } else {
+            console.log("New User");
+            
+            req.body.password = generateHash(req.body.email);
+            db.insertUser(db.db, req.body, true);
+            
+            sess.email = req.body.email;
+            sess.username = req.body.username;
+            res.redirect("main");
+        }
+    });
+});
 
 app.get("/logout", function(req, res) {
     sess.username = '';
@@ -727,7 +770,6 @@ app.post("/getUserReviewsAbout", function(req, res) {
 app.post('/getGamesByQuery', function(req, res) {
     db.getAvailablePosts(db.db, function(posts) {
         var results = searchPostings(sanitizeHtml(req.body.query), posts);
-        // TODO: Format results
         res.send(results)
     });
 });
@@ -769,40 +811,125 @@ app.post("/getRecommendations", function(req, res) {
 });
 
 
+    getRec(req.body._id, function (results) {
+		console.log("Results: " + results);
+		res.send(results);
+    });
+});
 
-function getRec(id) {
-	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
+app.get("/getrec", function(req, res) {
+	getRec("5663e7e3f3ca1a481ff8683a", function (results) {
+		console.log("Results: " + results);
+		res.send(results);
+	});
+});
+
+app.get("/allAvailable", function (req, res) {
+	db.getAvailablePosts(db.db, function (posts) {
+		res.send(posts)
+	});
+});
+
+function getRec(id, next) {
+	//console.log("id: " + id);
+	  db.getPostByID(db.db, id, function(post) {
+		  //console.log("get");
         if (post) {
-            var tags = post.tags.split(", ");
+			//console.log("Current Post: "+ JSON.stringify(post));
+			var tags = "";
+			for (var k = 0; k < post.tags.length; k++) {
+				tags = tags + ", " + post.tags[k];
+			}
+            tags = tags.split(", ");
             var lowSimTags = tags.slice();
-                        var recList = [];
+            var recList = [];
+			
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-            db.getAvailablePosts(db.db, function (posts) {
-                                for (var i = 0; i < posts.length; i++) {
-                                        if (recList.length >= numberOfRecs) {
-                                                return recList;
-                                                break;
-                                        }
-                                        if (posts[i].title == post.title)
-                                       
-                                        // For each game, check if tags are a subset
-                                        if (isSubset(tags, posts[i].tags.split(", ")))
-                                           recList.push(posts[i]);
-                                       
-                                         // Strip copies of the same game
-                                        for (var j = 0; j < recList.length; j++) {
-                                                if (recList[j].title == post.title)
-                                                        recList.splice(recList.indexOf(recList[j]), 1);
-                                        }
-                                }
-                                return recList;
-                        });
-        } else {
-            return "False"
-            }
-    });
+			lowSimTags = tags.slice(0, 2);
+            console.log("Tags: " + tags);
+			db.getAvailablePosts(db.db, function (posts) {
+				
+				for (var i = 0; i < posts.length; i++) {
+						if (recList.length >= numberOfRecs) {
+								console.log("Found enough recs: " + recList);
+								next(recList);
+								break;
+						}
+						// Don't recommend the same game
+						if (posts[i].title == post.title) {
+							continue;
+						}
+						// If we have already recommend a game, don't recommend it again
+						var skipFlag = false;
+						for (var j = 0; j < recList.length; j++) {
+								if (recList[j].title == posts[i].title)
+									skipFlag = true;
+						}
+						if (skipFlag) {
+							skipFlag = false;
+							continue;
+						} 
+						var postTags = "";
+						for (var k = 0; k < post.tags.length; k++) {
+							postTags = postTags + ", " + posts[i].tags[k];
+						}
 
+						// For each game, check if tags are a subset
+						if (isSubset(tags, postTags.split(", ")))
+						   recList.push(posts[i]);
+						
+				}
+				
+				//Searching for less similar games	
+				if (recList.length >= numberOfRecs) {
+					next(recList);
+					return ;
+				}
+				else {
+					for (var i = 0; i < Math.min(10, posts.length); i++) {
+						var curTitle = posts[i].title;
+						if (recList.length >= numberOfRecs) {
+								//console.log("Found enough recs: " + recList);
+								next(recList);
+								return ;
+						}
+						
+						console.log(curTitle);
+						// Don't recommend the same game
+						if (curTitle == post.title) {
+							continue;
+						}
+						
+						// If we have already recommend a game, don't recommend it again
+						var skipFlag = false;
+						for (var j = 0; j < recList.length; j++) {
+							//console.log("Rec: " + recList[j].title + " cur: " +curTitle);
+							if (recList[j].title == curTitle)
+								skipFlag = true;
+						}
+						if (skipFlag == true) {
+							//console.log("Skipping: " + curTitle);
+							skipFlag = false;
+							continue;
+						}
+						var postTags = "";
+						for (var k = 0; k < post.tags.length; k++) {
+							postTags = postTags + ", " + posts[i].tags[k];
+						}
+						// For each game, check if tags are a subset
+						if (isSubset(lowSimTags, postTags.split(", ")))
+						   recList.push(posts[i]);
+					}
+				}
+	
+				next(recList);
+				
+			});
+        } else {
+            next("Not Found");
+        }
+    });
 }
 
 function getR(id) {
@@ -837,7 +964,13 @@ function getDate() {
     return today;
 }
 
-
+app.get("/searchTest", function (req, res) {
+	    db.getAvailablePosts(db.db, function(posts) {
+        var results = searchPostings("d, e", posts);
+        // TODO: Format results
+        res.send(results)
+    });
+});
 
 function searchPostings(q, postings) {
     var results = [];
@@ -851,17 +984,32 @@ function searchPostings(q, postings) {
         else if (postings[j].id == query)
             results.push(postings[j]);
  
-                var tags = postings[j].tags.split(", ");
+                var tags = "";
+				for (var k = 0; k < postings[j].tags.length; k++) {
+					tags = tags + ", " + postings[j].tags[k];
+				}
+				tags = tags.split(", ");
                 var splitQuery = query.split(" ");
                 for (var i = 0; i < splitQuery.length; i++ ) {
                         if (tags.indexOf(splitQuery[i]) > -1) {
-                                results.push(posting[j]);
+                                results.push(postings[j]);
                                 break;
                         }
+
         }
+        
     }
+	
+	// Strip copies of the same game
+	for (var i = 0; i < results.length; i++) {
+		for (var j = i + 1; j < results.length; j++) {
+			if (results[i].id == results[j].id)
+					results.splice(results.indexOf(results[j]), 1);
+		}
+	}
     return results;
-} 
+}
+ 
 function isSubset(sub, master) {
         var found = false;
         for (var i = 0; i < sub.length; i++) {
@@ -915,8 +1063,6 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     };
     return newReview;
 }
-
-
 
 // ***** Old Code for Facebook Verification *****
 // Feel free to use/change it to work.
@@ -1236,4 +1382,14 @@ console.log("Schema built");
 var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
+<<<<<<< HEAD
 */
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+<<<<<<< HEAD
+>>>>>>> cbca4d56a02e106dd6ecaca7506e4d7407e4e1e3
+*/
+>>>>>>> upstream/master
