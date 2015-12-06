@@ -430,6 +430,8 @@ app.get("/users", function(req, res) {
 app.get("/product", function (req, res) {
 	gameId = req.query.productid;	
 	console.log(gameId);
+	var posts = getRec(gameId);
+	console.log(gameId);
 
 	console.log("got to the product page");
 
@@ -1384,12 +1386,4 @@ var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 <<<<<<< HEAD
 */
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
->>>>>>> cbca4d56a02e106dd6ecaca7506e4d7407e4e1e3
-*/
->>>>>>> upstream/master
