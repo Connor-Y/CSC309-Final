@@ -680,14 +680,14 @@ app.post('/getGamesByQuery', function(req, res) {
 
 app.post("/getRecommendations", function(req, res) {
     console.log("Generate and Send Recommendations");
-    getRec(req.body.id, function (results) {
+    getRec(req.body._id, function (results) {
 		console.log("Results: " + results);
 		res.send(results);
     });
 });
 
 app.get("/getrec", function(req, res) {
-	getRec("ca", function (results) {
+	getRec("5663e7e3f3ca1a481ff8683a", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
 	});
@@ -700,17 +700,25 @@ app.get("/allAvailable", function (req, res) {
 });
 
 function getRec(id, next) {
-	  db.getPostByID(db.db, sanitizeHtml(id), function(post) {
+	//console.log("id: " + id);
+	  db.getPostByID(db.db, id, function(post) {
+		  //console.log("get");
         if (post) {
-			console.log("Current Post: "+ JSON.stringify(post));
-            var tags = post.tags.split(", ");
+			//console.log("Current Post: "+ JSON.stringify(post));
+			var tags = "";
+			for (var k = 0; k < post.tags.length; k++) {
+				tags = tags + ", " + post.tags[k];
+			}
+            tags = tags.split(", ");
             var lowSimTags = tags.slice();
-                        var recList = [];
+            var recList = [];
+			
             tags = shuffleArray(tags);
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
-			lowSimTags = tags.slice(0, 1);
+			lowSimTags = tags.slice(0, 2);
             console.log("Tags: " + tags);
 			db.getAvailablePosts(db.db, function (posts) {
+				
 				for (var i = 0; i < posts.length; i++) {
 						if (recList.length >= numberOfRecs) {
 								console.log("Found enough recs: " + recList);
@@ -724,49 +732,66 @@ function getRec(id, next) {
 						// If we have already recommend a game, don't recommend it again
 						var skipFlag = false;
 						for (var j = 0; j < recList.length; j++) {
-								if (recList[j].title == post.title)
+								if (recList[j].title == posts[i].title)
 									skipFlag = true;
 						}
 						if (skipFlag) {
 							skipFlag = false;
 							continue;
 						} 
+						var postTags = "";
+						for (var k = 0; k < post.tags.length; k++) {
+							postTags = postTags + ", " + posts[i].tags[k];
+						}
+
 						// For each game, check if tags are a subset
-						if (isSubset(tags, posts[i].tags.split(", ")))
+						if (isSubset(tags, postTags.split(", ")))
 						   recList.push(posts[i]);
 						
 				}
 				
-				//Searching for less similar games - Too slow	
-				if (recList.length >= numberOfRecs)
+				//Searching for less similar games	
+				if (recList.length >= numberOfRecs) {
 					next(recList);
+					return ;
+				}
 				else {
-					for (var i = 0; i < 10; i++) {
+					for (var i = 0; i < Math.min(10, posts.length); i++) {
+						var curTitle = posts[i].title;
 						if (recList.length >= numberOfRecs) {
-								console.log("Found enough recs: " + recList);
+								//console.log("Found enough recs: " + recList);
 								next(recList);
-								break;
+								return ;
 						}
-						// Don't recommend the same game
-						if (posts[i].title == post.title)
-							continue;
 						
+						console.log(curTitle);
+						// Don't recommend the same game
+						if (curTitle == post.title) {
+							continue;
+						}
 						
 						// If we have already recommend a game, don't recommend it again
 						var skipFlag = false;
 						for (var j = 0; j < recList.length; j++) {
-								if (recList[j].title == post.title)
-									skipFlag = true;
+							//console.log("Rec: " + recList[j].title + " cur: " +curTitle);
+							if (recList[j].title == curTitle)
+								skipFlag = true;
 						}
-						if (skipFlag) {
+						if (skipFlag == true) {
+							//console.log("Skipping: " + curTitle);
+							skipFlag = false;
 							continue;
 						}
-						
+						var postTags = "";
+						for (var k = 0; k < post.tags.length; k++) {
+							postTags = postTags + ", " + posts[i].tags[k];
+						}
 						// For each game, check if tags are a subset
-						if (isSubset(lowSimTags, posts[i].tags.split(", ")))
+						if (isSubset(lowSimTags, postTags.split(", ")))
 						   recList.push(posts[i]);
 					}
 				}
+	
 				next(recList);
 				
 			});
@@ -798,7 +823,7 @@ function getDate() {
 
 app.get("/searchTest", function (req, res) {
 	    db.getAvailablePosts(db.db, function(posts) {
-        var results = searchPostings("c", posts);
+        var results = searchPostings("d, e", posts);
         // TODO: Format results
         res.send(results)
     });
@@ -816,7 +841,11 @@ function searchPostings(q, postings) {
         else if (postings[j].id == query)
             results.push(postings[j]);
  
-                var tags = postings[j].tags.split(", ");
+                var tags = "";
+				for (var k = 0; k < postings[j].tags.length; k++) {
+					tags = tags + ", " + postings[j].tags[k];
+				}
+				tags = tags.split(", ");
                 var splitQuery = query.split(" ");
                 for (var i = 0; i < splitQuery.length; i++ ) {
                         if (tags.indexOf(splitQuery[i]) > -1) {
