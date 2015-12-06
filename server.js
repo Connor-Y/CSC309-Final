@@ -1242,5 +1242,9 @@ var User = mongoose.model('User', userSchema, uniqueTestDB);
 var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
 console.log("Model Created");
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+>>>>>>> cbca4d56a02e106dd6ecaca7506e4d7407e4e1e3
 */

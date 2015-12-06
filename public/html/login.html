@@ -50,8 +50,8 @@
     if (response.status === 'connected') {
       // Logged into your app and Facebook.
       FB.api('/me', { locale: 'en_US', fields: 'name, email, id' },  function(response) {
-        FB.logout(function(response) {
-        });
+        //FB.logout(function(response) {
+        //});
         $.post("/fbLogin", { email: response.email, username: response.id, password: response.email}, function(data, status) {
         });
     });
@@ -160,7 +160,7 @@
    		<li><a  id="pg1">Sign-Up</a></li>
     	<li><a  id="pg2">Log-In</a></li>
         <br>
-        <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
+        <fb:login-button scope="public_profile,email" onclick="checkLoginState();">
 </fb:login-button>
 	</ul>
 
