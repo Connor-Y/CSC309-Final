@@ -43,3 +43,9 @@ refreshing certain pages on action and including additional redirects.
 Testing Framework:
 To use the testing framework, navigate your terminal to the main directory
 then run the command mocha. Make sure the dependencies first are installed.
+
+Aside:
+(Connor-Y - g4yoshi)
+Unfortunately, as far as I can tell GitHub doesn't track the repository owner's contributions.
+If you want to view my work, the vast majority of it is in cBranch with a small portion at the
+end being pushed directly to master.
