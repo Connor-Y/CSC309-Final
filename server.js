@@ -890,6 +890,8 @@ function getRec(id, next) {
 					db.getPostsFrom(db.db, post.username, function (result) {
 						var k = 0;
 						while (recList.length < numberOfRecs) {
+							if (k >= result.length)
+								break;
 							if (result[k].title != post.title)
 								recList.push(result[k]);
 							k = k + 1;
