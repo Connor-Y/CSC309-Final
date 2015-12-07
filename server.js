@@ -33,10 +33,11 @@ app.engine('hbs', expressHbs({
 }));
 app.set('view engine', 'hbs');
 
-app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/public/html'));
-app.use(express.static(__dirname + '/public/css'));
-app.use(express.static(__dirname + '/public/javascript'));
+app.use(express.static(__dirname + '/public', {maxAge: 86400000}));
+app.use(express.static(__dirname + '/public/html', {maxAge: 86400000})));
+app.use(express.static(__dirname + '/public/css', {maxAge: 86400000})));
+app.use(express.static(__dirname + '/public/javascript', {maxAge: 86400000})));
+
 
 app.use(sess({
     cookieName: 'sess',
@@ -889,11 +890,12 @@ function getRec(id, next) {
 				} else {
 					db.getPostsFrom(db.db, post.username, function (result) {
 						var k = 0;
-						while (recList.length < numberOfRecs) {
-							if (result[k].title != post.title)
-								recList.push(result[k]);
-							k = k + 1;
-						}
+							while (recList.length < numberOfRecs) {
+								if (result[k].title != post.title)
+									recList.push(result[k]);
+								k = k + 1;
+							}
+						
 						
 						// If we still don't have enough recommendations
 						// pick random games.
