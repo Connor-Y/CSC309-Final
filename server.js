@@ -14,7 +14,7 @@ var db = require('./DB');
 
 // How similar recommendations should be by
 // number of tags
-var recommendationSimiliarityFactor = 0.6;
+var recommendationSimiliarityFactor = 0.4;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
@@ -777,7 +777,7 @@ app.post("/getRecommendations", function(req, res) {
 });
 
 app.get("/getrectest", function(req, res) {
-	getRec("5663e7e3f3ca1a481ff8683a", function (results) {
+	getRec("5664d03233ac4a54152b17f7", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
 	});
@@ -808,7 +808,6 @@ function getRec(id, next) {
 			lowSimTags = tags.slice(0, 2);
             console.log("Tags: " + tags);
 			db.getAvailablePosts(db.db, function (posts) {
-				
 				for (var i = 0; i < posts.length; i++) {
 						if (recList.length >= numberOfRecs) {
 								console.log("Found enough recs: " + recList);
@@ -846,7 +845,7 @@ function getRec(id, next) {
 					return ;
 				}
 				else {
-					for (var i = 0; i < Math.min(10, posts.length); i++) {
+					for (var i = 0; i < posts.length; i++) {
 						var curTitle = posts[i].title;
 						if (recList.length >= numberOfRecs) {
 								//console.log("Found enough recs: " + recList);
@@ -881,8 +880,40 @@ function getRec(id, next) {
 						   recList.push(posts[i]);
 					}
 				}
-	
-				next(recList);
+				
+				// If we don't have enough recommendations
+				// Recommend things uploaded by the same user
+				if (recList.length >= numberOfRecs) {
+					next(recList);
+					return ;
+				} else {
+					db.getPostsFrom(db.db, post.username, function (result) {
+						var k = 0;
+						while (recList.length < numberOfRecs) {
+							if (result[k].title != post.title)
+								recList.push(result[k]);
+							k = k + 1;
+						}
+						
+						// If we still don't have enough recommendations
+						// pick random games.
+						if (recList.length >= numberOfRecs) {
+							next(recList);
+							return ;
+						} else {
+							var k = 0;
+							while (recList.length < numberOfRecs) {
+								if (posts[k].title != post.title)
+									recList.push(posts[k]);
+								k = k + 1;
+							}
+							
+						}
+						
+						
+						next(recList);	
+					});
+				}
 				
 			});
         } else {
