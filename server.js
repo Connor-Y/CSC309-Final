@@ -18,14 +18,17 @@ var recommendationSimiliarityFactor = 0.4;
 // How many recommendations do you want
 var numberOfRecs = 4;
 
+// Validate password
 var validPassword = function(password, storedpassword) {
     return bcrypt.compareSync(password, storedpassword);
 };
 
+// Generate a hash for the password
 var generateHash = function(password) {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
 
+// Handlebars for presentation
 var expressHbs = require('express3-handlebars');
 app.engine('hbs', expressHbs({
     extname: 'hbs',
@@ -33,12 +36,13 @@ app.engine('hbs', expressHbs({
 }));
 app.set('view engine', 'hbs');
 
+// Serve Static pages
 app.use(express.static(__dirname + '/public', {maxAge: 86400000}));
 app.use(express.static(__dirname + '/public/html', {maxAge: 86400000}));
 app.use(express.static(__dirname + '/public/css', {maxAge: 86400000}));
 app.use(express.static(__dirname + '/public/javascript', {maxAge: 86400000}));
 
-
+// Create user session
 app.use(sess({
     cookieName: 'sess',
     secret: 'kauKoG0TtFB2LxpLRXMH',
@@ -46,7 +50,7 @@ app.use(sess({
     activeDuration: 5 * 60 * 1000,
 }));
 
-//default
+//default user session (not logged in)
 sess.username = '';
 sess.email = '';
 sess.game = '';
@@ -57,16 +61,15 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-
-app.get('/', function(req, res) { //main page not logged in
+// Redirect to main page (not logged in)
+app.get('/', function(req, res) {
     res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 
-
-app.get('/main', function(req, res) { //main page logged in
+// Redirect to main page (logged in)
+app.get('/main', function(req, res) { 
     //res.sendFile(__dirname + '/public/html/login.html');
-    console.log("logged in to main page");
     console.log(sess.username);
     res.render('mainPageView', {
         username: sess.username,
@@ -74,17 +77,17 @@ app.get('/main', function(req, res) { //main page logged in
     });
 });
 
+// Redirect to the login page
 app.get('/login', function(req, res) {
-    console.log("got to the login page");
     res.sendFile(__dirname + '/public/html/login.html');
     //	res.render('loginView', {layout:'login'});
 });
 
+// Send a query to the database for profile information
+// Then format that information and send it to front end.
 app.get("/myuserpage", function(req, res) {
-    console.log("got to my user page");
     db.getUserByUsername(db.db, sess.username, function(user) {
         if (user) {
-            //res.json(user);
             db.getPostsBoughtBy(db.db, sess.username, function(bought) {
             	db.getPostsFrom(db.db, sess.username, function(posts) {
 
@@ -105,13 +108,16 @@ app.get("/myuserpage", function(req, res) {
     //	res.render('myPageView', {username: sess.username, layout:'mypage'});
 });
 
+// Render the user search page
 app.get("/usersearch", function(req, res) {
-    console.log("got to the user search page");
     res.render('usersearchView', {
         username: sess.username,
         layout: 'usersearch'
     });
 });
+
+// Retrieve information from presentation layer 
+// and send it to the database layer to update the database
 app.get("/userupdate", function(req, res) {
     console.log("got to the user update page");
 
@@ -137,17 +143,18 @@ app.get("/userupdate", function(req, res) {
 
 });
 
+// Render the admin view
 app.get("/admin", function(req, res) {
 	res.render("adminView", {username: sess.username, layout: 'admin'});
 });
 
+// Render the superadmin view
 app.get("/superadmin", function(req, res) {
 	res.render("superadminView", {username: sess.username, layout: 'superadmin'});
 });
 
-
+// Render a user's post
 app.get("/userpost", function(req, res) {
-    console.log("got to the user post game page");
     res.render('userpostView', {
         username: sess.username,
         layout: 'userpost'
@@ -165,10 +172,9 @@ res.send(results)
 });
 });
 */
-app.post("/list", function (req, res) {
-	console.log("got to the /list path");
-	console.log(req.body.query);
 
+// List through all available postings that match the given tags
+app.post("/list", function (req, res) {
 	db.getAvailablePosts(db.db, function (posts) { 
 	//	var games = searchPostings(sanitizeHtml(req.body.query), posts);
 		//res.send(results)
@@ -182,37 +188,42 @@ app.post("/list", function (req, res) {
 	});
 });
 
-//testing
+// Clear the database
 app.get("/remove", function() {
 	db.removeall(db.db, function () {
 		res.send("removed all posts");
 	});
 });
 
+// Remove all users
 app.get("/removeusers", function() {
 	db.removeallusers(db.db, function () {
 		res.send("removed all users");
 	});
 });
 
+// Remove all reviews
 app.get("/removereviews", function() {
 	db.removeallreviews(db.db, function () {
 		res.send("removed all reviews");
 	});
 });
 
+// Remove all posts
 app.get("/allposts", function(req, res) {
 	db.getAvailablePosts(db.db, function(posts) {
 		res.send(posts);
 	});
 });
 
+// Get all users
 app.get("/allusers", function(req, res) {
 	db.getAllUsers(db.db, function(users) {
 		res.send(users);
 	});
 });
 
+// Get all reviews
 app.get("/allreviews", function(req, res) {
 	db.getAllReviews (db.db, function(users) {
 		res.send(users);
@@ -220,12 +231,9 @@ app.get("/allreviews", function(req, res) {
 });
 
 
-
-
-
-
+// On 404, redirect to the main page.
 app.get('/404', function() {
-    res.sendFile(__dirname + '/public/html/404.html');
+    res.sendFile(__dirname + '/public/html/mainpage.html');
 });
 
 app.listen(PORT);
@@ -233,7 +241,7 @@ app.listen(PORT);
 // ====
 
 
-
+// Get the current users session
 app.post("/getSession", function(req, res) {
     console.log("Session Request");
     if (sess.email == '') {
@@ -249,6 +257,7 @@ app.post("/getSession", function(req, res) {
     }
 });
 
+// Logic to register a new user
 app.post("/registration", function(req, res) {
 
     console.log("Registration Request Received");
@@ -261,14 +270,15 @@ app.post("/registration", function(req, res) {
         console.log("script detected!");
         res.send("Invalid");
     } else {
-
+		// If the user already exists, return 'Invalid'
         db.userExists(db.db, req.body.username, req.body.email, function(result) {
             //a user was found when the email and username queried
             if (result) {
                 console.log("User already exists");
                 res.send("Invalid");
             } else {
-
+				// Otherwise, generate a new user in the database
+				// and redirect to the main page
                 req.body.password = generateHash(req.body.password);
                 console.log("New User");
                 db.insertUser(db.db, req.body, false);
@@ -285,9 +295,9 @@ app.post("/registration", function(req, res) {
 
 });
 
+// Verify a users credentials when logging in.
 app.post("/loginVerification", function(req, res) {
-	
-    console.log("Login Request Received");
+	// Remove possible scripts from login fields
     db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function(result) {
         console.log("" + req.body.username);
         console.log("" + sanitizeHtml(req.body.username));
@@ -296,10 +306,10 @@ app.post("/loginVerification", function(req, res) {
 
         //a user was found when the email was queried
         if (result) {
-            console.log("User exists");
-            
+			// Get the user's information from the database
             db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function(user) {
                 console.log("the password is" + user.password);
+				// If they fail at logging in, send 'Invalid'
                 if (!validPassword(req.body.password, user.password)) {
                     console.log("Invalid Password");
                     res.send("Invalid");
@@ -318,6 +328,7 @@ app.post("/loginVerification", function(req, res) {
                 }
             });
         } else {
+			// User not found in database
             console.log("Not Found");
             res.send("Not Found");
         }
@@ -327,6 +338,7 @@ app.post("/loginVerification", function(req, res) {
 
   });
 
+// Login Script for facebook users
 app.post("/fbLogin", function(req, res) {
     console.log("Facebook Login Request Received");
     db.userExists(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.email), function(result) {
@@ -367,6 +379,7 @@ app.post("/fbLogin", function(req, res) {
     });
 });
 
+// Logout from site and redirect to mainpage
 app.get("/logout", function(req, res) {
     sess.username = '';
     sess.email = '';
@@ -378,7 +391,7 @@ app.get("/logout", function(req, res) {
 
 });
 
-
+// Retrieve the requested profile from the database
 app.post("/profile", function(req, res) {
     console.log("profile view request received");
 
@@ -404,13 +417,10 @@ app.post("/profile", function(req, res) {
     });
 });
 
+// Retrieve the requested user information from the database.
 app.get("/users", function(req, res) {
-	console.log("hi");
-	
 	username = 	req.query.username;	
 	console.log(username);
-
-    console.log("profile view request received");
 
     db.getUserByUsername(db.db, username, function(user) {
         if (user) {
@@ -459,16 +469,16 @@ app.get("/product", function (req, res) {
 
 
 
-/*User*/
+
+// Update user's description
 app.post("/updateDescription", function(req, res) {
-    console.log(req.body.description);
     db.updateUserDescription(db.db, sess.username, sanitizeHtml(req.body.description));
     res.send("Success");
     //res.redirect(req.get('referer'));   		
 });
 
+// Update the sessions user
 app.post("/updateUsername", function(req, res) {
-    console.log(req.body.username);
     db.updateUserName(db.db, sess.username, sanitizeHtml(req.body.username));
     sess.username = req.body.username;
     res.send("Success");
@@ -477,7 +487,7 @@ app.post("/updateUsername", function(req, res) {
 
 
 
-//should validate old password on server side
+// Validate and update a user's password
 app.post("/updateUserPassword", function (req, res) {
     
     //this may be redundant, but just makes sure user exists incase user tries to send request without
@@ -506,6 +516,7 @@ app.post("/updateUserPassword", function (req, res) {
     });
 });
 
+// Depreciated - updatePassword function. - Use '/updateUserPassword'
 app.post("/updatePassword", function(req, res) {
     console.log(req.body.password);
     db.updateUserPassword(db.db, sess.username, generateHash(req.body.password));
@@ -513,6 +524,7 @@ app.post("/updatePassword", function(req, res) {
     //res.redirect(req.get('referer'));   		
 });
 
+// Update a User's profile picture 
 app.post("/updatePic", function(req, res) {
     console.log(req.body.pic);
     db.updateUserPic(db.db, sess.username, sanitizeHtml(req.body.pic));
@@ -523,7 +535,8 @@ app.post("/updatePic", function(req, res) {
 //Post update
 
 
-//Admin Update functions
+// *** Admin Update functions ***
+// Update another user's information
 app.post("/updatePasswordA", function(req, res) {
     console.log(req.body.description);
     db.updateUserPassword(db.db,sanitizeHtml(req.body.username), generateHash(req.body.password));
@@ -560,30 +573,25 @@ app.post("/updateUsernameA", function(req, res) {
 
 
 
-
+// Update the rating associated with a given user
 app.post("/updateUserRating", function (req, res) {
-	console.log("updating the user rank");
-//	db.updateUserRating(db.db, sanitizeHtml(req.params.username), sanitizeHtml(req.params.rating));
-//	res.send("Success");
-
+	// Get requested user
  	 db.getUserByUsername(db.db, sanitizeHtml(req.body.username), function (user) {
         if (user) {
-            //res.json(user);
-            console.log("found")
-            console.log(sanitizeHtml(req.body.rating));
+			// Update their rating
             db.updateUserRating(db.db, sanitizeHtml(req.body.username), sanitizeHtml(req.body.rating));
 
             res.send("Success");
         }
         
         else {
-        	console.log("cannot find")
-
+        	// Otherwise, user not found error
             res.send("Not Found, try again!");
         }
     }); 
 });
 
+// Update a user's name and/or description
 app.post("/updateUserInfo", function(req, res) {
     if (sess.username != req.params.username)
         res.send("Invalid");
@@ -601,12 +609,9 @@ app.post("/updateUserInfo", function(req, res) {
     }
 });
 
-
+// Toggle a user's class between regular and administrator.
 app.post("/toggleAdmin" , function (req, res) {
-    
-    console.log("admin toggle request received");
-    //console.log("" + req.body.username);
-    //console.log("" + req.body.email);
+   
     db.getUserByUsername(db.db,  sanitizeHtml(req.body.username), function(user) {
     	if (user) {
 
@@ -628,7 +633,7 @@ app.post("/toggleAdmin" , function (req, res) {
 
 });
 
-
+// Retrieve the current user's user type.
 app.get("/getcurrentadmin", function (req, res) {
     if (sess.username != '') {
         db.getUserByUsername(db.db, sess.username, function (user) {
@@ -640,7 +645,6 @@ app.get("/getcurrentadmin", function (req, res) {
 });
 
 //password must be hashed first generateHash(req.body.password)
-
 app.post("/getPostsFromUsername", function(req, res) {
     db.getPostsFrom(db.db, sanitizeHtml(req.params.username), function(posts) {
         if (post) {
@@ -650,7 +654,7 @@ app.post("/getPostsFromUsername", function(req, res) {
     });
 });
 
-
+// Retrive posting with id
 app.post("/post:id", function(req, res) {
     console.log("post retrieval request received");
 
@@ -665,10 +669,9 @@ app.post("/post:id", function(req, res) {
 
 
 
-
+// Generate a new posting with supplied information.
 app.post("/createPosting", function (req, res) {
-	console.log("got to create a posting");
-
+	// Sanitize all inputs to prevent inject attacks
 	var id = sanitizeHtml(req.body.title) + sess.username;
 	var tags = sanitizeHtml(req.body.tags).split(",");
 	for (var i = 0; i < tags.length; i++)
@@ -688,6 +691,8 @@ app.post("/createPosting", function (req, res) {
         res.send("Success");
     }
 });
+
+// Create a new review on a given game
 //format is reviewer, reviewee, id, date, rating, comment
 app.post("/createReview", function(req, res) {
 	console.log("got to the create review");
@@ -709,6 +714,9 @@ app.post("/createReview", function(req, res) {
 		});
 
 	});
+	
+	
+// Get all reviews from the database
 app.get("/allreviews", function(req, res) {
 	db.getAllReviews(db.db, function(users) {
 		res.send(users);
@@ -716,7 +724,7 @@ app.get("/allreviews", function(req, res) {
 });
 
   		
-
+// Remove a user from the database
 app.post("/deleteUser", function(req, res) {
     db.deletePost(db.db, sanitizeHtml(req.body.username)); //function(data) {
     /*
@@ -730,6 +738,7 @@ app.post("/deleteUser", function(req, res) {
 */
 });
 
+// Make a posting unavailable.
 app.post("/makeUnavailable", function(req, res) {
 	console.log("made posting unavailable");
     // id refers to the posting's id
@@ -738,31 +747,36 @@ app.post("/makeUnavailable", function(req, res) {
 	res.redirect("myuserpage");//check to see if working
     });
 
+// Retrieve a list of games rented by the supplied username
 app.post("/getRentedGamesByUsername", function(req, res) {
     db.getPostsBoughtBy(db.db, sess.username, function(posts) {
         res.send(posts);
     });
 });
 
+// Retrieve the list of reviews on a given post
 app.post("/getGameReviewsByPostID", function(req, res) {
     db.getReviewsByID(db.db, sanitizeHtml(req.body.postID), function(reviews) {
         res.send(reviews);
     });
 });
 
+// Retrieve a list of reviews by a given user
 app.post("/getUserReviewsFrom", function(req, res) {
     db.getReviewsFrom(db.db, sanitizeHtml(req.body.username), function(reviews) {
     res.send(reviews);
     });
 });
 
+// Retrieve a list of reviews about the given user
 app.post("/getUserReviewsAbout", function(req, res) {
     db.getReviewsAbout(db.db, sanitizeHtml(req.body.username), function(reviews) {
     res.send(reviews);
     });
 });
 
-
+// Retrieve a list of games that match the query
+// Query supports name, tags, uploader and id  
 app.post('/getGamesByQuery', function(req, res) {
     db.getAvailablePosts(db.db, function(posts) {
         var results = searchPostings(sanitizeHtml(req.body.query), posts);
@@ -770,6 +784,8 @@ app.post('/getGamesByQuery', function(req, res) {
     });
 });
 
+// Generate a list of recommendations based on the current game
+// page you are viewing
 app.post("/getRecommendations", function(req, res) {
 	getRec(req.body._id, function (results) {
 		console.log("Results: " + results);
@@ -777,25 +793,28 @@ app.post("/getRecommendations", function(req, res) {
 	});
 });
 
+// Test Function - Displays a set of recommendations
 app.get("/getrectest", function(req, res) {
 	getRec("5664d03233ac4a54152b17f7", function (results) {
 		console.log("Results: " + results);
 		res.send(results);
 	});
-});
+}); 
 
+// Generate a list of all available games.
 app.get("/allAvailable", function (req, res) {
 	db.getAvailablePosts(db.db, function (posts) {
 		res.send(posts)
 	});
 });
 
+// Generate a list of recommendations based on the 
+// given game id.
 function getRec(id, next) {
-	//console.log("id: " + id);
+	  // Get the current page info
 	  db.getPostByID(db.db, id, function(post) {
-		  //console.log("get");
         if (post) {
-			//console.log("Current Post: "+ JSON.stringify(post));
+			// Get its tags
 			var tags = "";
 			for (var k = 0; k < post.tags.length; k++) {
 				tags = tags + ", " + post.tags[k];
@@ -805,9 +824,10 @@ function getRec(id, next) {
             var recList = [];
 			
             tags = shuffleArray(tags);
+			// Take a subset of the given tags to match for similarity with other games
             tags = tags.slice(0, Math.ceil(tags.length * recommendationSimiliarityFactor) + 1);
 			lowSimTags = tags.slice(0, 2);
-            console.log("Tags: " + tags);
+            // Get other available games
 			db.getAvailablePosts(db.db, function (posts) {
 				for (var i = 0; i < posts.length; i++) {
 						if (recList.length >= numberOfRecs) {
@@ -928,6 +948,8 @@ function getRec(id, next) {
     });
 }
 
+// Get a list of posts that match the given tags
+// less the title
 function getR(id) {
 	db.getPostById(db.db, id, function(game) {
 		var tagarray = game.tags;
@@ -941,7 +963,7 @@ function getR(id) {
 }
 
 
-
+// Generate the current date
 function getDate() {
     var today = new Date();
     var dd = today.getDate();
@@ -960,6 +982,8 @@ function getDate() {
     return today;
 }
 
+// Testing Function
+// Searches for a given query
 app.get("/searchTest", function (req, res) {
 	    db.getAvailablePosts(db.db, function(posts) {
         var results = searchPostings("d, e", posts);
@@ -968,6 +992,8 @@ app.get("/searchTest", function (req, res) {
     });
 });
 
+// Search through the list of postings
+// Searches for title, tags, uploader, id
 function searchPostings(q, postings) {
     var results = [];
     var query = q.trim();
@@ -1005,7 +1031,8 @@ function searchPostings(q, postings) {
 	}
     return results;
 }
- 
+
+// Check if sub is a subset of master
 function isSubset(sub, master) {
         var found = false;
         for (var i = 0; i < sub.length; i++) {
@@ -1023,7 +1050,7 @@ function isSubset(sub, master) {
         return true;
 }
 
-
+// Shuffle an array
 function shuffleArray(array) {
     for (var i = array.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -1034,6 +1061,7 @@ function shuffleArray(array) {
     return array;
 }
 
+// Create a json object representing a posting
 function createPosting(username, id, date, title, price, content, image, tags) {
     var newPost = {
         username: username,
@@ -1047,7 +1075,7 @@ function createPosting(username, id, date, title, price, content, image, tags) {
     };
     return newPost;
 }
-
+// Create a json object representing a review
 function createReview(reviewer, reviewee, id, date, rating, comment) {
     var newReview = {
         reviewer: reviewer,
@@ -1059,327 +1087,4 @@ function createReview(reviewer, reviewee, id, date, rating, comment) {
     };
     return newReview;
 }
-
-
-
-// ***** Old Code for Facebook Verification *****
-// Feel free to use/change it to work.
-
-/*
-// This is called with the results from from FB.getLoginStatus().
-  function statusChangeCallback(response) {
-    console.log('statusChangeCallback');
-    console.log(response);
-    // The response object is returned with a status field that lets the
-    // app know the current login status of the person.
-    // Full docs on the response object can be found in the documentation
-    // for FB.getLoginStatus().
-    if (response.status === 'connected') {
-      // Logged into your app and Facebook.
- $("#main").load("landing.php");
-    } else {
-moveTo('/');
-    }
-  }
-  
-  // This function is called when someone finishes with the Login
-  // Button.  See the onlogin handler attached to it in the sample
-  // code below.
-  function checkLoginState() {
-    FB.getLoginStatus(function(response) {
-      //statusChangeCallback(response);
-return response.status;
-    });
-  }
-  window.fbAsyncInit = function() {
-  FB.init({
-    appId      : '1098933153474400',
-    cookie     : true,  // enable cookies to allow the server to access
-                        // the session
-    xfbml      : true,  // parse social plugins on this page
-    version    : 'v2.2' // use version 2.2
-  });
-  // Now that we've initialized the JavaScript SDK, we call
-  // FB.getLoginStatus().  This function gets the state of the
-  // person visiting this page and can return one of three states to
-  // the callback you provide.  They can be:
-  //
-  // 1. Logged into your app ('connected')
-  // 2. Logged into Facebook, but not your app ('not_authorized')
-  // 3. Not logged into Facebook and can't tell if they are logged into
-  //    your app or not.
-  //
-  // These three cases are handled in the callback function.
-  
-  FB.getLoginStatus(function(response) {
-    statusChangeCallback(response);
-  });
-  };
-  
-  // Load the SDK asynchronously
-  (function(d, s, id) {
-    var js, fjs = d.getElementsByTagName(s)[0];
-    if (d.getElementById(id)) return;
-    js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk.js";
-    fjs.parentNode.insertBefore(js, fjs);
-  }(document, 'script', 'facebook-jssdk'));
-  
-*/
-
-
-/*
-// Code from A4
-app.post("/loadTable", function (req, res) {
-console.log("Load Table");
-User.find( function (err, users) {
-if (err) {
-console.log("Load Table Error");
-} else {
-res.send(users);
-}
-});
-});
-app.post("/registration", function (req, res) {
-console.log("Registration Request Received");
-User.findOne({ email: req.body.mail }, function (err, user) {
-if (err) {
-console.log(err);
-res.send("Error");
-}
-if (req.body.mail == undefined || req.body.pass == undefined){
-res.send("Invalid");
-return false;
-}
-if (user == null) {
-console.log("New User");
-var firstUser = false;
-User.findOne({}, function (err, result) {
-console.log("Result: " + result);
-if (err) {
-console.log(err);
-res.redirect('/');
-}
-if (result == null)
-firstUser = true;
-var newUser;
-console.log("first: " + firstUser)
-if (firstUser === true)
-newUser = new User({username: req.body.mail, password: req.body.pass, type:"super", email:req.body.mail, image: "default.png", desc: ""});
-else
-newUser = new User({username: req.body.mail, password: req.body.pass, type:"user", email:req.body.mail, image: "default.png", desc: ""});
-newUser.save();
-res.send("Success");
-});
-}
-else {
-console.log("User already exists");
-res.send("User Exists");
-}
-});
-});
-app.post("/setView", function (req, res) {
-console.log("setView");
-if (sess != undefined) {
-sess.view = req.body.mail;
-User.findOne({email: req.body.mail}, function (err, user) {
-if (err) {
-console.log("Error: " + err)
-sess.targetType = null;
-} else {
-sess.targetType = user.type;
-addLog(sess.view);
-}
-});
-}
-});
-app.post("/profile", function (req, res) {
-console.log("Profile Request Received");
-console.log("Goto: " + req.body.sessView); 
-User.findOne({ email: req.body.sessView }, function (err, user) {
-if (err) {
-console.log(err);
-res.send("Error");
-}
-if (user == undefined) {
-console.log("User doesn't exist error");
-res.send("Error");
-} else {
-console.log("Success");
-res.send(user);
-}
-});
-});
-app.post("/getSession", function (req, res) {
-console.log("Session Request");
-if (sess == undefined)
-res.send(JSON.stringify({result: "Invalid"}));
-else {
-var temp = {sessMail: sess.email, sessType: sess.type, sessView: sess.view, sessTargetType: sess.targetType};
-res.send(JSON.stringify(temp));
-}
-});
-app.post("/saveProfile", function (req, res) {
-console.log("Save Profile Request");
-//console.log(req.body);
-if (req.body.username != '')
-userUpdate(req.body.mail, 'username', req.body.username);
-if (req.body.desc != '')
-userUpdate(req.body.mail, 'desc', req.body.desc);
-res.redirect('profile');
-});
-app.post("/deleteProfile", function (req, res) {
-console.log("Delete Profile Request");
-console.log(req.body);
-User.findOneAndRemove({ email: req.body.sessView}, function (err) {
-if (err) {
-console.log("Error: " + err);
-res.send("Error");
-return false;
-}
-});
-if (req.body.sessView == req.body.sessMail)
-sess.email = "";
-sess.view = "index";
-res.send("Success");
-});
-app.post("/changePassword", function (req, res) {
-console.log("Change Password");
-User.findOne({ "email": req.body.sessView }, 
-function (err, user) {
-if (err) {
-console.log("changePass Error " + err);
-res.send("Error"); 
-return false;
-}
-if (user == undefined) {
-res.send("Error");
-}
-if (req.body.oldPass === user.password) { 
-var ret = userUpdate(req.body.sessView, 'password', req.body.newPass);
-if (ret !== false)
-res.send("Success");
-else {
-res.send("Error");
-return false;
-}
-}
-else {
-res.send("Invalid"); 
-}
-});
-});
-app.post("/toggleAdmin", function (req, res) {
-if (req.body.sessTargetType == 'admin') {
-userUpdate(req.body.sessView, 'type', 'user');
-sess.targetType = 'user';
-res.send(req.body.sessView + " is now an User");
-}
-else {
-userUpdate(req.body.sessView, 'type', 'admin');
-sess.targetType = 'admin';
-res.send(req.body.sessView + " is now an Admin");
-}
-});
-app.post("/logInfo", function (req, res) {
-addLog(req.body);
-res.send("Success");
-});
-app.post("/loadMetrics", function (req, res) {
-console.log("Load Metrics");
-if (sess == undefined || sess.type == 'user') {
-res.send("Invalid");
-}
-else {
-console.log("find");
-Metric.find({}, function (err, metrics) {
-if (err)
-res.send("Error");
-else {
-res.send(JSON.stringify(metrics));
-}
-});
-}
-});
-app.post("/logout", function (req, res) {
-if (sess == undefined)
-res.send("Invalid");
-else {
-sess = undefined;
-res.send("Success");
-}
-});
-app.get("*", function (req, res) {
-res.redirect('/');
-});
-app.listen(PORT);
-*/
-
-/*
-// Database code below
-function userUpdate (target, field, newInfo) {
-console.log("User Update");
-if (target == undefined)
-return false;
-if (newInfo == '')
-return false;
-var updatedField = {};
-updatedField[field] = newInfo;
-console.log(updatedField);
-User.findOneAndUpdate({ email: target }, { $set: updatedField },
-function (err) {
-if (err) {
-console.log("Error: " + err);
-return false;
-}
-});
-}
-function addLog (data) {
-var curUser;
-if (sess == undefined || sess.email == undefined)
-curUser = "";
-else
-curUser = sess.email;
-// TODO: get ip
-var curIP = '0';
-var curLat = data.lati;
-var curLong = data.longi;
-var curOS = data.os;
-var curBrowser = data.browser;
-var curPage;
-if (data.pg == "profile" || data.pg == "editProfile")
-curPage = data.pg + "/" + sess.view;
-else
-curPage = data.pg;
-var newLog = new Metric({user: curUser, ip: curIP, latitude: curLat, longitude: curLong, os: curOS, browser: curBrowser, page: curPage});
-newLog.save();
-}
-mongoose.connect('mongodb://localhost/DB', PORT);
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, "Connection error:"));
-db.once('open', function (callback) {
-console.log.bind("Database Loaded"); });
-var userSchema = mongoose.Schema({
-username: { type: String, required: true },
-password: { type: String, required: true },
-type: { type: String, required: true },
-email: { type: String, required: true, unique: true },
-image: String,
-desc: String,
-});
-var metricSchema = mongoose.Schema({
-user: String,
-ip: String,
-latitude: String,
-longitude: String,
-os: String,
-browser: String,
-page: String
-});
-console.log("Schema built");
-var User = mongoose.model('User', userSchema, uniqueTestDB);
-var Metric = mongoose.model('Metric', metricSchema, uniqueMetricDB);
-console.log("Model Created");
-<<<<<<< HEAD
-*/
 

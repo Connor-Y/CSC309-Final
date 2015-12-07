@@ -2,7 +2,7 @@ var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 var ObjectId = require('mongodb').ObjectID;
 
-var url = 'mongodb://localhost:27017/VGExchange';
+var url = 'mongodb://localhost:27017/VGExchangeTestDB';
 
 exports.connect = function(next) {
 	MongoClient.connect(url, function(err, database) {
