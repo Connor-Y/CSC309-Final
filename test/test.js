@@ -484,33 +484,7 @@ describe("Database", function() {
 	});
 });	
 
-// === In Progress ===
 
-
-
-/*
-	var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
-	var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
-	insertReview(db, testReview);
-	getReviewsFrom(db, "user222", function(reviews){  
-		console.log("Reviews from user1");
-		console.dir(reviews);
-	});
-	getReviewsAbout(db, "user1", function(reviews){
-		console.log("Reviews about user222");
-		console.dir(reviews);
-	});
-	getReviewsByID(db, 1, function(reviews){
-		console.log("Reviews about post#1");
-		console.dir(reviews);
-	});
-	updateReview(db, updatedReview);
-	getReview(db, 1, "user222", function(reviews){
-		console.log("Reviews about post#1 by user222");
-		console.dir(reviews);
-	});
-	deleteReview(db, 1, "user222");
-		*/
 
 
 
