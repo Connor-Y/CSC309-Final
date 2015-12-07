@@ -60,12 +60,47 @@
 <h1 id="user">Just a Surrogate</h1> <!--the name of the user -> will be used for request -->
 
 
-<form role="form">
+	<form role="form">
 
-   <div class="form-group">
+   	<div class="form-group">
   	<h3>User to update</h3>
-    <input  class="form-control" id="userName">
-  </div>
+    <input  class="form-control" id="username">
+  	</div>
+
+
+  
+	<br>
+
+
+	<form role="form">
+		<button id="reviewsof" class="btn btn-primary" type="button">reviews of user</button> 
+	</form>
+
+	<br>
+
+	<br>
+	<form role="form">
+		<button id="postsby" class="btn btn-primary" type="button">posts by user</button> 
+	</form>
+
+	<br>
+	<br>
+
+	<form role="form">
+		<button id="reviewsby" class="btn btn-primary" type="button">reviews by user</button> 
+	</form>
+
+	<br>
+	<br>
+
+	<form role="form">
+		<button id="makeadmin" class="btn btn-primary" type="button">make user admin</button> 
+	</form>
+
+	<br>
+
+
+
 
 	
   <div class="form-group">
@@ -116,9 +151,6 @@
     <input  class="form-control" id="delReview">
   	</div>
   	<button id="reviewButton" class="btn btn-primary" type="button">Delete Review</button> 
-
-
-
 
 
 
@@ -190,7 +222,7 @@ $("#pwdButton").click(function() {
 	//alert(newPassword);
 	name =  $("#userName").val(); //Pass along Name!!??
 
-	$.post("placehoder",{password: newPassword} function(data) {
+	$.post("placehoder",{password: newPassword}, function(data) {
 		if (data =="Success") {
 			alert("Password successfully changed!");
 		}
@@ -255,3 +287,4 @@ $("#desButton").click(function() {
 
 
 </script>
+
