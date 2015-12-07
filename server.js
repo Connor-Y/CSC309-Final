@@ -34,9 +34,9 @@ app.engine('hbs', expressHbs({
 app.set('view engine', 'hbs');
 
 app.use(express.static(__dirname + '/public', {maxAge: 86400000}));
-app.use(express.static(__dirname + '/public/html', {maxAge: 86400000})));
-app.use(express.static(__dirname + '/public/css', {maxAge: 86400000})));
-app.use(express.static(__dirname + '/public/javascript', {maxAge: 86400000})));
+app.use(express.static(__dirname + '/public/html', {maxAge: 86400000}));
+app.use(express.static(__dirname + '/public/css', {maxAge: 86400000}));
+app.use(express.static(__dirname + '/public/javascript', {maxAge: 86400000}));
 
 
 app.use(sess({
