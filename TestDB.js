@@ -10,89 +10,6 @@ exports.connect = function(next) {
 	  console.log("Connected to DB");
 	  exports.db = database;
 	  next();
-	  //console.log("testing");
-	  /*
-	  var testUser = {email: "name@mail.com", username : "no1", password : "123", name: "Nam", description : "testing the database"};
-	  var testUser2 = {email: "name2@mail.com", username : "no1", password : "123", name: "ME", description : "ALso testing the database"};
-	  insertUser(db, testUser);
-	  getUserByUsername(db, testUser.username, function(result){
-		console.log("getUserByUsername: ");
-		console.dir(result);
-	  });
-	  validateUser(db, testUser.username, testUser.password, function(isValid){
-		console.log("ValidateUser, true: " + isValid);
-	  });
-	  validateUser(db, testUser.username, "567", function(isValid){
-		console.log("ValidateUser, false: " + isValid);
-	  });
-	  userExists(db, testUser, function(exists){
-		console.log("UserExists, true: " + exists);
-	  });
-		userExists(db, testUser2, function(exists){
-		console.log("UserExists, true: " + exists);
-	  });
-	  updateUserInfo(db, testUser2);
-	  updateUserPassword(db, testUser.username, "666");
-	  validateUser(db, testUser.username, "666", function(isValid){
-		console.log("ValidateUser, true: " + isValid);
-	  });
-	  getUserByUsername(db, testUser.username, function(result){
-		console.log("getUserByUsername: ");
-		console.dir(result);
-	  });
-	  deleteUser(db, testUser.username);
-	  */
-	  /*
-		var testPost = {username : "testUser", id : 1, date : "2015-04-17", 
-			title : "RENT MY GAME", postContent : "Great Deal, only $10", image : "url.com/pic", 
-			price: 10, tags : ["rental", "Specific Game"],
-		};
-		var testPost2 = {username : "testUser", id : 1, date : "2015-04-17", 
-			title : "PLEASE RENT MY GAME", postContent : "Great Deal, only $8", image : "url.com/pic2", 
-			price: 8, tags : ["rental", "Specific Game"],
-		};
-		deletePost(db, 1);
-		insertPost(db, testPost);
-		getPostsByTag(db, "rental", function(posts){
-			console.log("Post by tag:");
-			console.dir(posts);
-		});
-		makeUnavailable(db, 1, "user222");
-		updatePost(db, testPost2);
-		getPostByID(db, 1, function(post){
-			console.log("Post by ID:");
-			console.dir(post);
-		});
-		deletePost(db, 1);
-		getAvailablePosts(db, function(posts){
-			console.log("available (after deletion): ");
-			console.dir(posts);
-		});
-
-
-		var testReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-25", rating: 4, comment: "Awesome deal!"};
-		var updatedReview = {reviewee: "user1", reviewer: "user222", postID: 1, date: "2015-11-28", rating: 5, comment: "Super Awesome deal!"};
-		insertReview(db, testReview);
-		getReviewsFrom(db, "user222", function(reviews){  
-			console.log("Reviews from user1");
-			console.dir(reviews);
-		});
-		getReviewsAbout(db, "user1", function(reviews){
-			console.log("Reviews about user222");
-			console.dir(reviews);
-		});
-		getReviewsByID(db, 1, function(reviews){
-			console.log("Reviews about post#1");
-			console.dir(reviews);
-		});
-		updateReview(db, updatedReview);
-		getReview(db, 1, "user222", function(reviews){
-			console.log("Reviews about post#1 by user222");
-			console.dir(reviews);
-		});
-		deleteReview(db, 1, "user222");
-			*/
-
 	});
 };
 
@@ -116,22 +33,6 @@ exports.insertUser = function(db, newUser) {
 	});
 
 };
-
-//READ
-//find user <username> (does not include password in data)
-/*exports.getUserByUsername = function(db, username, next){
-	db.collection('users').findOne(
-		{
-			"username" : username
-		},
-		{
-			password : 0     //does not include password field in result
-
-		}, function(err, user){
-			assert.equal(err, null);
-			next(user);
-		});
-};*/
 
 exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(

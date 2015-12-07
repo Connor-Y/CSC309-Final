@@ -95,7 +95,7 @@ MongoClient.connect(url, function(err, database) {
 });
 
 ///***************USER COLLECTION***************************
-//Create
+//Create a new user
 exports.insertUser = function(db, newUser, facebook) {
     
     db.collection('users').find().toArray(function (err, users){
@@ -126,6 +126,7 @@ exports.insertUser = function(db, newUser, facebook) {
     });
 };
 
+// Get all users in the database
 exports.getAllUsers = function (db, next) {
 	db.collection('users').find(
 		{}).toArray(function (err, users) {
@@ -134,15 +135,12 @@ exports.getAllUsers = function (db, next) {
 		});
 };
 
+// Delete all users in the database
 exports.removeallusers = function(db, next) {
 	db.collection('users').remove({});
 };
 
-
-    
-   
-
-
+// Get a user's information, querying for matching username
 exports.getUserByUsername = function(db, username, next){
 	db.collection('users').findOne(
 		{
@@ -153,6 +151,7 @@ exports.getUserByUsername = function(db, username, next){
 		});
 };
 
+// Get a user's information, querying for matching email
 exports.getUserByEmail = function(db, email, next){
 	db.collection('users').findOne(
 		{
@@ -179,6 +178,7 @@ exports.validateUser = function(db, username, password, next){
 			}
 		});
 };
+
 //Check if newUser's email or username is already in database,
 //sends boolean to next()
 exports.userExists = function(db, username, email, next){
@@ -211,7 +211,7 @@ exports.updateUserInfo = function(db, user){
 		});
 };
 
-
+// Update the user's username
 exports.updateUserName = function(db, username, newname){
 	db.collection('users').update(
 		{
@@ -225,6 +225,7 @@ exports.updateUserName = function(db, username, newname){
 		});
 };
 
+// Update the user's profile picture
 exports.updateUserPic = function(db, username, newpic){
 	db.collection('users').update(
 		{
@@ -238,7 +239,7 @@ exports.updateUserPic = function(db, username, newpic){
 		});
 };
 
-
+// Update the user's description
 exports.updateUserDescription = function(db, username, description){
 	console.log("got the username " + username);
 	db.collection('users').update(
@@ -252,6 +253,7 @@ exports.updateUserDescription = function(db, username, description){
 			assert.equal(err, null);
 		});
 };
+
 //update the user <username>'s password
 exports.updateUserPassword = function(db, username, password){
 	db.collection('users').update(
@@ -263,6 +265,9 @@ exports.updateUserPassword = function(db, username, password){
 			assert.equal(err, null);
 		});
 };
+
+// Update the user's rating based on the current rating 
+// and the new rating
 exports.updateUserRating = function(db, username, newRating){
 	db.collection('users').findOne(
 		{
@@ -270,16 +275,8 @@ exports.updateUserRating = function(db, username, newRating){
 		},function(err, user) {
 			assert.equal(err, null);
 			console.log("user rating + num reviews is: " + user.rating * user.numReviews);
-			/*
-			console.log("the new rating is " + newRating);
-			console.log("the num of reviews is" + user.numReviews);
-			console.log("user rating is " + user.rating);
-			*/
-		//	var updatedRating = ((user.rating * user.numReviews) + newRating) / (user.numReviews+1)
 			var updatedRating = ((Number(user.rating) * Number(user.numReviews) + Number(newRating)) / (Number(user.numReviews) + 1));
-		//	console.log("num reviews plus 1 " + user.numReviews + 1);
-		//	console.log("formulae " + ((user.rating * user.numReviews + newRating) / (user.numReviews + 1)));
-		//	console.log("updated rating" + updatedRating);
+	
 			db.collection('users').update(
 			{
 				"username" : username
@@ -291,7 +288,9 @@ exports.updateUserRating = function(db, username, newRating){
 			});
 		});
 }
+
 //DELETE
+// Delete the specified user
 exports.deleteUser = function(db, username){
 	db.collection('users').remove(
 	{
@@ -301,6 +300,7 @@ exports.deleteUser = function(db, username){
 	});
 };
 
+// Toggle a user's admin status
 exports.toggleAdmin = function (db, username) {
     
     db.collection('users').findOne(
