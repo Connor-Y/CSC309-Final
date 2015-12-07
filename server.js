@@ -907,6 +907,8 @@ function getRec(id, next) {
 						} else {
 							var k = 0;
 							while (recList.length < numberOfRecs) {
+								if (k >= posts.length)
+									break;
 								if (posts[k].title != post.title)
 									recList.push(posts[k]);
 								k = k + 1;
