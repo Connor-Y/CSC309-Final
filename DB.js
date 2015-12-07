@@ -115,7 +115,7 @@ exports.insertUser = function(db, newUser, facebook) {
             "description" : "NEW USER",
             "admintype" : admin,
             "rating" : 0,
-            "numReview" : 0,
+            "numReviews" : 0,
             "pic" : "http://s3.amazonaws.com/suh-s3-nfs/userProfileImages/670.png",
             "facebook" : facebook
         }, function(err, result) {
